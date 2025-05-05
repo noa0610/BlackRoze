@@ -28,13 +28,15 @@ namespace Test
 
     public class ShootForward : IState
     {
+        private LayerMask _bulletLayer;
         private BulletObject _bulletObject;         // 発射する弾のデータ
         public event Action OnShootComplete;
 
         public BulletObject BulletObject => _bulletObject;
-        public ShootForward(BulletObject bulletObject)
+        public ShootForward(BulletObject bulletObject, LayerMask bulletLayer)
         {
             _bulletObject = bulletObject;
+            _bulletLayer = bulletLayer;
         }
 
         public bool Enter(IState previousState, IUnit parent)
@@ -66,6 +68,7 @@ namespace Test
 
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_bulletObject);
+            instantiatedBullet.gameObject.layer = _bulletLayer;
             OnShootComplete?.Invoke();
             return true;
         }

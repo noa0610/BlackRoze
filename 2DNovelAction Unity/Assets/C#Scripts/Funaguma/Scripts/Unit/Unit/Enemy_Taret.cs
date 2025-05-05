@@ -27,7 +27,7 @@ namespace Test
             _searchAssistance = new SearchAssistance();
 
             // 「shoot」ステート…弾を１発撃つ (ShootForward内でOnShootComplete呼ぶ)
-            var shoot = new ShootForward(_bulletObject);
+            var shoot = new ShootForward(_bulletObject, 0);
             shoot.OnShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
 

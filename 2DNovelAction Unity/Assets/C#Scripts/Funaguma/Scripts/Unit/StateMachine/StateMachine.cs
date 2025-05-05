@@ -95,6 +95,7 @@ namespace Test
                 _currentState = new Tuple<string, IState>(targetState, state);
                 // 新しいステートに入る（Enter）
                 _currentState.Item2.Enter(tmp, _parent);
+                Debug.Log("Changed State. Current:" + targetState);
             }
             else
             {

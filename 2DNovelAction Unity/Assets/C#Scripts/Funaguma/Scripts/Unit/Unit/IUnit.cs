@@ -29,6 +29,8 @@ namespace Test
 
         StateFlags StateFlags { get; }
 
+        Animator Animator { get; set; }
+
         // Unityの Transform コンポーネント（位置や回転、スケール情報などを管理）
         Transform Transform { get; }
     }

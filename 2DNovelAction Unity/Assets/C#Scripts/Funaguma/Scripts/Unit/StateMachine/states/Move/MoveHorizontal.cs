@@ -8,15 +8,17 @@ namespace Test
     public class MoveHorizontal : IState
     {
         private Rigidbody2D _rigidbody2D;
+        private string _animationTrigger;
 
-        public MoveHorizontal(Rigidbody2D rigidbody2D)
+        public MoveHorizontal(Rigidbody2D rigidbody2D, string animationTrigger)
         {
             _rigidbody2D = rigidbody2D;
+            _animationTrigger = animationTrigger;
         }
 
         public bool Enter(IState previousState, IUnit parent)
         {
-            // MoveèÛë‘Ç…ì¸Ç¡ÇΩÇ∆Ç´ÇÃèàóùÅiç°ÇÕñ≥ÇµÅj
+            parent.Animator.SetTrigger(_animationTrigger);
             return true;
         }
 
@@ -29,7 +31,7 @@ namespace Test
         public bool Stay(IUnit parent)
         {
             var s = parent.UnitStatus;
-            _rigidbody2D.linearVelocity = new Vector2(s.speed * s.direction.x, _rigidbody2D.linearVelocity.y);
+            _rigidbody2D.velocity = new Vector2(s.speed * s.direction.x, _rigidbody2D.velocity.y);
             return true;
         }
     }

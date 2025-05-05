@@ -9,6 +9,7 @@ namespace Test
         [Header("Reference")]
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private List<BulletObject> _bullets = new List<BulletObject>();
+        [SerializeField] private LayerMask _bulletLayer;
 
         [Header("Ground Check")]
         [SerializeField] private Transform groundCheck;           // 足元チェック用のTransform
@@ -47,9 +48,9 @@ namespace Test
         {
             _stateMachine.SetCondition(StateDecision);
 
-            _stateMachine.AddState("move", new MoveHorizontal(_rigidbody));
+            _stateMachine.AddState("move", new MoveHorizontal(_rigidbody, "Move"));
 
-            var forward = new ShootForward(_bullets[0]);
+            var forward = new ShootForward(_bullets[0], _bulletLayer);
             forward.OnShootComplete += OnshootComplete;
             _stateMachine.AddState("shoot", forward);
 
@@ -78,23 +79,23 @@ namespace Test
 
         private void InMove(InputAction.CallbackContext ctx)
         {
-            status.direction = ctx.ReadValue<Vector2>();
+            _status.direction = ctx.ReadValue<Vector2>();
             _stateFlags |= StateFlags.InMove;
         }
 
         private void InCanceledMove(InputAction.CallbackContext ctx)
         {
             _stateFlags &= ~StateFlags.InMove;
-            status.direction = Vector2.zero;
+            Debug.Log("Canceled Move.");
         }
 
         private void InAttack(InputAction.CallbackContext ctx)
         {
             _stateFlags |= StateFlags.InShoot;
             var b = _bullets[0].Clone();
-            b.currentstatus.direction = status.direction == Vector2.zero
+            b.currentstatus.direction = _status.direction == Vector2.zero
                 ? Vector2.right
-                : new Vector2(status.direction.x, 0);
+                : new Vector2(_status.direction.x, 0);
             var state = (ShootForward)_stateMachine.StateMap["shoot"];
             state.SetBullet(b);
         }
@@ -124,9 +125,9 @@ namespace Test
         {
             GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
         }
+
         private void GroundCheck()
         {
-            // OverlapCircleはCollider2Dを返すから、Collider2D型で受けるとわかりやすい！
             Collider2D hit = Physics2D.OverlapCircle(
                 groundCheck.position,
                 groundCheckRadius,

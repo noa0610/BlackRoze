@@ -1,13 +1,14 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace Test
 {
     public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
     {
         [Header("Datas")]
-        [SerializeField] protected UnitStatus status;
+        [SerializeField] protected UnitStatus _status;
         [SerializeField] protected StateFlags _stateFlags; // 現在の状態（移動中・攻撃中など）
-
+        [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected StateMachine _stateMachine; // ステートマシン本体
         private IState _defaultState;
@@ -16,20 +17,30 @@ namespace Test
         protected virtual string DefaultStateKey => "idle";
         public StateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public StateFlags StateFlags => _stateFlags; // 状態フラグ取得
-
-
+        public Transform Transform => transform;
+        public Animator Animator
+        {
+            get
+            {
+                return _animator;
+            }
+            set
+            {
+                _animator = value;
+            }
+        }
         public UnitStatus UnitStatus
         {
             get
             {
-                return status;
+                return _status;
             }
             set
             {
-                status = value;
+                _status = value;
             }
         }
-        public Transform Transform => transform;
+
 
         protected virtual void Start()
         {

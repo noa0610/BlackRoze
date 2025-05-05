@@ -56,11 +56,11 @@ namespace Test
 
 
             // 現在の上方向速度はキープしつつ、横速度だけ書き換え
-            Vector2 vel = _rb.linearVelocity;
+            Vector2 vel = _rb.velocity;
             float addSpeed = parent.UnitStatus.speedInAir;
             vel.x += h * addSpeed * Time.deltaTime;
 
-            _rb.linearVelocity = vel;
+            _rb.velocity = vel;
 
             return true;
         }
@@ -68,9 +68,9 @@ namespace Test
         // ボタン離したときに呼ぶと、上向き速度をカットして短ジャンにできる
         public void CutJump()
         {
-            if (_rb.linearVelocity.y > 0f)
+            if (_rb.velocity.y > 0f)
             {
-                _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.y * _cutMultiplier);
+                _rb.velocity = new Vector2(_rb.velocity.x, _rb.velocity.y * _cutMultiplier);
             }
         }
     }

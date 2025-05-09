@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // 概要:
     // ShootForward クラスは、プレイヤーやユニットが前方に弾を発射する「攻撃ステート」の挙動を定義するクラスです。
@@ -37,6 +37,8 @@ namespace Test
         {
             _bulletObject = bulletObject;
             _bulletLayer = bulletLayer;
+
+            Debug.Log("Layer: " + (int)_bulletLayer);
         }
 
         public bool Enter(IState previousState, IUnit parent)
@@ -65,10 +67,11 @@ namespace Test
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
 
-
+            
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_bulletObject);
-            instantiatedBullet.gameObject.layer = _bulletLayer;
+            instantiatedBullet.gameObject.layer &= 0;
+            instantiatedBullet.gameObject.layer |= _bulletLayer;
             OnShootComplete?.Invoke();
             return true;
         }

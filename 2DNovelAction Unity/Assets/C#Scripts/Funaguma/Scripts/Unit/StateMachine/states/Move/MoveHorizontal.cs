@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // =======================
     // Move（移動）状態
@@ -24,7 +24,7 @@ namespace Test
 
         public bool Exit(IState nextState, IUnit parent)
         {
-            // Move状態を抜けるときの処理（今は無し）
+            _rigidbody2D.velocity = Vector3.zero;
             return true;
         }
 

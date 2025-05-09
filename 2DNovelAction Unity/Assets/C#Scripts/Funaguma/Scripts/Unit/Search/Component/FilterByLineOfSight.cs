@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     public class FilterByLineOfSight : IFilterComponent
     {

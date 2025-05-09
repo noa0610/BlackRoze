@@ -1,5 +1,5 @@
 using UnityEngine;
-namespace Test
+namespace BlackRose
 {
     public class Enemy_MoveOnLine : UnitBase
     {

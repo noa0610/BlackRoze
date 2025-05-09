@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // ユニットの状態を表す構造体（SerializableなのでUnityのInspectorでも見える！）
     [Serializable]

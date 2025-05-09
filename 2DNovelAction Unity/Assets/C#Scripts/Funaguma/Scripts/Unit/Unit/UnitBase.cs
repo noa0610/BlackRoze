@@ -1,7 +1,8 @@
 ﻿using TMPro;
+using Unity.Collections;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
     {
@@ -13,6 +14,10 @@ namespace Test
         protected StateMachine _stateMachine; // ステートマシン本体
         private IState _defaultState;
 
+#if UNITY_EDITOR
+        [Header("Debug")]
+        [SerializeField] private string _currentState;
+#endif
         protected virtual IState DefaultState => _defaultState ??= new Idle();
         protected virtual string DefaultStateKey => "idle";
         public StateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
@@ -41,7 +46,6 @@ namespace Test
             }
         }
 
-
         protected virtual void Start()
         {
             UnitManager.instance.AddUnit(this);
@@ -49,6 +53,13 @@ namespace Test
             RegisterStats();
         }
 
+        protected virtual void Update()
+        {
+            _stateMachine.Update();
+            var s = _stateMachine.CurrentState.Item1;
+            _currentState = s;
+
+        }
         protected abstract void RegisterStats();
         protected abstract string StateDecision();
         // ====== [一時停止関連のインターフェース実装（未実装）] ======

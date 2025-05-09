@@ -270,6 +270,7 @@ GameObject:
   - component: {fileID: 1959780019}
   - component: {fileID: 1959780018}
   - component: {fileID: 1959780017}
+  - component: {fileID: 1959780020}
   m_Layer: 9
   m_Name: ground
   m_TagString: Untagged
@@ -389,6 +390,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &1959780020
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1959780016}
+  m_BodyType: 2
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 6200000, guid: 50cbe3d829370174c89a129d87d01525, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!4 &703885838269489387
 Transform:
   m_ObjectHideFlags: 0
@@ -417,7 +445,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
+  m_LinearDrag: 1
   m_AngularDrag: 0.05
   m_GravityScale: 2
   m_Material: {fileID: 6200000, guid: dc4b794c54ce0b14f98d7731a65bd4c5, type: 2}
@@ -644,13 +672,14 @@ MonoBehaviour:
     direction: {x: 0, y: 0}
     speed: 6
     speedInAir: 4
-    jumpPower: 8
+    jumpPower: 12
     tags: 0
   _stateFlags: 0
   _animator: {fileID: 2304263901732056687}
+  _currentState: 
   _inputActions: {fileID: -944628639613478452, guid: 6699cb5def38b684cbe524a7e0fa7868, type: 3}
   _bullets:
-  - bulletData: {fileID: 11400000, guid: d58afeaaedf45574994b080529a2a69c, type: 2}
+  - bulletData: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
     currentstatus:
       hp: 0
       time: 0

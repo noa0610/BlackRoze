@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Test
+namespace BlackRose
 {
     // ISearch:
     // フィルターを追加・削除し、ユニットのリストに対して検索処理を実行するためのインターフェース。

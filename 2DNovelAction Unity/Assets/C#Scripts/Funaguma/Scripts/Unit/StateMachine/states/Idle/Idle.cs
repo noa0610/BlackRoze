@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // =======================
     // IdleÅië“ã@ÅjèÛë‘
@@ -8,18 +8,12 @@ namespace Test
     public class Idle : IState
     {
         private string _animationKey;
-        private Animation _animation = null;
-        public Idle(string animationKey = null, Animation animation = null)
+        public Idle(string animationKey = null)
         {
-            _animationKey = animationKey;
-            _animation = animation;
         }
         public bool Enter(IState previousState, IUnit parent)
         {
-            if (_animation != null && _animationKey != null)
-            {
-                _animation.Play();
-            }
+            parent.Animator.SetTrigger(_animationKey);
             return true;
         }
 

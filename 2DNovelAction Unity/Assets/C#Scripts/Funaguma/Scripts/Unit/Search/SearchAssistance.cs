@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // 概要:
     // SearchAssistance クラスは、複数のフィルター処理（IFilterComponent）を組み合わせて順次実行し、

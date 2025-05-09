@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     public class Enemy_Turret : UnitBase
     {
@@ -40,14 +40,14 @@ namespace Test
             _searchAssistance.AddComp("range", new FilterByXDistance(this, _detectionDistance));
         }
 
-        private void Update()
+        protected override void Update()
         {
             // ■ インターバルカウントダウン ■
             if (_shootIntervalCount > 0f)
                 _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
 
             SearchPlayer();           // プレイヤー検出＆セットアップ
-            _stateMachine.Update();   // ステートを更新
+            base.Update();
         }
 
         private void SearchPlayer()

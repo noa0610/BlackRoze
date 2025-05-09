@@ -1,6 +1,6 @@
 using System;
 
-namespace Test
+namespace BlackRose
 {
     [Flags]
     public enum UnitTags

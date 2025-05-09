@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // 概要:
     // IStopableObject は、ゲームプレイ中のオブジェクトに「一時停止」や「再開」「破棄」の処理を提供するためのインターフェースです。

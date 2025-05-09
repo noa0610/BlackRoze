@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Test
+namespace BlackRose
 {
 
     /// <summary>
@@ -11,13 +11,10 @@ namespace Test
     /// </summary>
     public interface IState
     {
-        // ステートに入ったときの処理（失敗したらfalseを返してエラーハンドリングへ）
         bool Enter(IState previousState, IUnit parent);
 
-        // ステート中に毎フレーム呼ばれる処理（falseならログ出すけど続行）
         bool Stay(IUnit parent);
 
-        // ステートから抜けるときの処理（falseでもログ出して続ける）
         bool Exit(IState nextState, IUnit parent);
     }
 

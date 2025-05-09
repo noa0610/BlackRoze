@@ -1,16 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
-    [CreateAssetMenu(menuName = "弾")]
-    public class BulletData : ScriptableObject
-    {
-        public string bulletName;
-        public Bullet bullet;
-        public BulletStatus originalstatus;
-    }
-
     [Serializable]
     public class BulletObject
     {

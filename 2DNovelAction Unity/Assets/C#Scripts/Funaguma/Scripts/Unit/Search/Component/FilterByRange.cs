@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-namespace Test
+namespace BlackRose
 {
     public class FilterByRange : IFilterComponent
     {

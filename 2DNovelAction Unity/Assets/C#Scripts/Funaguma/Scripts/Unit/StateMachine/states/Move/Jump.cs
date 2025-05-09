@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     public class Jump : IState
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // =======================
     // Idlei‘Ò‹@jó‘Ô

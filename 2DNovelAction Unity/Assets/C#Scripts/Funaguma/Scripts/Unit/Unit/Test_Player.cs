@@ -1,8 +1,9 @@
 ﻿using UnityEngine.InputSystem;
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Collections;
 
-namespace Test
+namespace BlackRose
 {
     public class Test_Player : UnitBase
     {
@@ -23,9 +24,10 @@ namespace Test
         private InputActionMap _Player;
         private Rigidbody2D _rigidbody;
 
+#if UNITY_EDITOR
         [Header("Debug")]
-        [SerializeField]private bool _forceEnableJump;
-
+        [SerializeField] private bool _forceEnableJump;
+#endif
         // 地面にいるかどうか（OverlapCircle判定＆コヨーテタイム管理）
         public bool canJump => _forceEnableJump || coyoteTimeCounter > 0f;
 
@@ -113,12 +115,6 @@ namespace Test
         {
             if (_stateMachine.StateMap["jump"] is Jump jump)
                 jump.CutJump();
-        }
-
-        private void Update()
-        {
-            
-            _stateMachine.Update();
         }
 
         private void FixedUpdate()

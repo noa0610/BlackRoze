@@ -1,6 +1,6 @@
 using System;
 
-namespace Test
+namespace BlackRose
 {
     // 状態をビットフラグで表す列挙型（複数状態を持てるように[Flags]付き）
     [Flags]

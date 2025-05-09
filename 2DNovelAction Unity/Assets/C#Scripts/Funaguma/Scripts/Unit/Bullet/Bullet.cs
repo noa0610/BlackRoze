@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // 概要:
     // Bullet クラスは、ゲーム内の弾（Projectile）オブジェクトの挙動を制御するコンポーネントです。

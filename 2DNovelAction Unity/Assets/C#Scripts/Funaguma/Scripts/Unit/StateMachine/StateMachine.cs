@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Test
+namespace BlackRose
 {
     // ===============================
     // 汎用ステートマシン（StateMachine）
     // ===============================
-    // キャラの状態（Idle・Run・Attackなど）を制御するための仕組み！
-    // 条件や予約によって、次の行動に切り替えてくれるクラスだよ！
     public class StateMachine : IStateMachine
     {
         private IUnit _parent; // ステートマシンを持ってるキャラ（親オブジェクト）

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-namespace Test
+namespace BlackRose
 {
     // 2D レイキャストを使ってヒットしたユニットをフィルタリング
     public class FilterByRaycast : IFilterComponent

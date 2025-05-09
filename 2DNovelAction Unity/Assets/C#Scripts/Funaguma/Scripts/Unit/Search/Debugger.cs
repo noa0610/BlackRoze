@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Test.Debugs
+namespace BlackRose.Debugs
 {
     public static class StringProssecing
     {

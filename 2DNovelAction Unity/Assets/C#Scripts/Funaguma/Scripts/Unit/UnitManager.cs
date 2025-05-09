@@ -1,7 +1,7 @@
 using HighElixir.Utilities;
 using System.Collections.Generic;
 
-namespace Test
+namespace BlackRose
 {
     public class UnitManager : SingletonBehavior<UnitManager>
     {

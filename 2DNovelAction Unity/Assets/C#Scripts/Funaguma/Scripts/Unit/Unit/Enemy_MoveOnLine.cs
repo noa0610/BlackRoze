@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+
 namespace BlackRose
 {
     public class Enemy_MoveOnLine : UnitBase
@@ -15,7 +17,7 @@ namespace BlackRose
 
         protected override string StateDecision()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

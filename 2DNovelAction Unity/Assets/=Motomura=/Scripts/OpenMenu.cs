@@ -2,6 +2,8 @@ using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEditor.SearchService;
+using UnityEngine.SceneManagement;
 // using Fungus;
 
 
@@ -31,7 +33,7 @@ public class OpenMenu : MonoBehaviour
 
     void Update()
     {
-        if(isKey == false)
+        if(isKey == false | SceneManager.GetActiveScene().name == "Title_GFF")//タイトル画面にいる時はESCでメニューを開けない
             return;
         if(_InputAction.GFF.Mene.triggered)//Escまたはゲームパットスタートが押された際
         {

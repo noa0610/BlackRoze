@@ -51,6 +51,8 @@ namespace BlackRose
             UnitManager.instance.AddUnit(this);
             _stateMachine = new StateMachine(this, DefaultState, StateDecision, DefaultStateKey);
             RegisterStats();
+
+            _status.hp = _status.maxHp;
         }
 
         protected virtual void Update()
@@ -77,6 +79,18 @@ namespace BlackRose
         public virtual void GamePlay_Continue()
         {
             // 停止からの再開処理を書く場所
+        }
+
+        // ===== ステータス操作 =====
+
+        public void TakeDamage(float damage)
+        {
+            _status.hp = Mathf.Max(0, _status.hp - damage);
+            if (_status.hp <= 0)
+            {
+                gameObject.SetActive(false);
+                Debug.Log($"{_status.name}が死亡した");
+            }
         }
     }
 }

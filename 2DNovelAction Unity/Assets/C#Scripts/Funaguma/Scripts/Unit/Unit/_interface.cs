@@ -31,6 +31,8 @@ namespace BlackRose
 
         // Unityの Transform コンポーネント（位置や回転、スケール情報などを管理）
         Transform Transform { get; }
+
+        void TakeDamage(float damage);
     }
 }
 // unicode

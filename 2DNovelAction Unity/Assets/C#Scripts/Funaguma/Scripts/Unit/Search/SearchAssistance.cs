@@ -59,7 +59,7 @@ namespace BlackRose
             {
                 pools = compInfo.Comp.Execute(pools);
 
-                Debug.Log($"Executing filter: {compInfo.Key}\n Result : {Debugs.StringProssecing.GetUnitSummary(pools)}");
+                //Debug.Log($"Executing filter: {compInfo.Key}\n Result : {Debugs.StringProssecing.GetUnitSummary(pools)}");
                 if (pools.Count <= 0)
                     break;
             }

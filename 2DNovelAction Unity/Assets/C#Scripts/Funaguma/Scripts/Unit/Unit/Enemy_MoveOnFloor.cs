@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BlackRose
 {
-    public class Enemy_MoveOnLine : UnitBase
+    public class Enemy_MoveOnFloor : UnitBase
     {
         [SerializeField] private float _sightDistance;
         [SerializeField] private LayerMask _layerMask;

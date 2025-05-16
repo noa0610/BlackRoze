@@ -22,14 +22,15 @@ namespace BlackRose
     public class Bullet : MonoBehaviour, IStopableObject
     {
         private BulletObject _bulletObject;
-
+        private LayerMask _targetLayer;
         public Transform Transform => transform;
         public BulletObject BulletObject => _bulletObject;
 
         // 弾のステータス設定（生成時に呼ばれる想定）
-        public void SetBulletStatus(BulletObject bullet)
+        public void SetBulletStatus(BulletObject bullet, LayerMask targetLayer)
         {
             _bulletObject = bullet;
+            _targetLayer = targetLayer;
         }
 
         // 毎フレームの更新処理（弾の移動）
@@ -40,9 +41,16 @@ namespace BlackRose
         }
 
         // 2D衝突検知（敵や壁に当たったら発動）
-        protected virtual void OnCollisionEnter2D(Collision2D collision)
+        protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
+            if (((1 << collision.gameObject.layer) & _targetLayer) == 0)
+                return;
+
             Debug.Log("Hit"); // ログ出力（当たった！）
+            if (collision.transform.TryGetComponent<UnitBase>(out var target))
+            {
+                UnitManager.instance.AddDamage(target, null, _bulletObject.bulletData.originalstatus.damage);
+            }
             Destroy(gameObject); // 弾を破壊（寿命）
         }
 

@@ -22,7 +22,7 @@ namespace BlackRose
     public interface IStateMachine
     {
         Dictionary<string, IState> StateMap { get; }  // ステートの一覧（名前と対応するインスタンス）
-        Tuple<string, IState> CurrentState { get; }                  // 現在のステート
+        (string Key, IState State) CurrentState { get; }                  // 現在のステート
 
         string DefaultStateKey { get; }
 

@@ -10,7 +10,7 @@ namespace BlackRose
         [SerializeField] private float _shootInterval;
         [SerializeField] private int _shootFireCount;       // 1サイクルあたりの連射数
         [SerializeField] private float _detectionDistance;
-
+        [SerializeField] private LayerMask _targetLayer;
         // === Reference ===
         private ISearch _searchAssistance;
 
@@ -27,7 +27,7 @@ namespace BlackRose
             _searchAssistance = new SearchAssistance();
 
             // 「shoot」ステート…弾を１発撃つ (ShootForward内でOnShootComplete呼ぶ)
-            var shoot = new ShootForward(_bulletObject, 0);
+            var shoot = new ShootForward(_bulletObject, _targetLayer);
             shoot.OnShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
 

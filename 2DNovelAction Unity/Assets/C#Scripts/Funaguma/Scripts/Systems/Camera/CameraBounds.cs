@@ -22,15 +22,6 @@ namespace BlackRose.Core
         {
             return Down.y <= pos.y && pos.y <= Up.y;
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(_bounds.center, _bounds.size);
-        }
-#endif
-
     }
 }
 // unicode

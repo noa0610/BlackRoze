@@ -28,17 +28,15 @@ namespace BlackRose
 
     public class ShootForward : IState
     {
-        private LayerMask _bulletLayer;
+        private LayerMask _targetLayer;
         private BulletObject _bulletObject;         // 発射する弾のデータ
         public event Action OnShootComplete;
 
         public BulletObject BulletObject => _bulletObject;
-        public ShootForward(BulletObject bulletObject, LayerMask bulletLayer)
+        public ShootForward(BulletObject bulletObject, LayerMask targetLayer)
         {
             _bulletObject = bulletObject;
-            _bulletLayer = bulletLayer;
-
-            Debug.Log("Layer: " + (int)_bulletLayer);
+            _targetLayer = targetLayer;
         }
 
         public bool Enter(IState previousState, IUnit parent)
@@ -69,9 +67,7 @@ namespace BlackRose
 
             
             // ステータスをセット（速度、方向、ダメージなど）
-            instantiatedBullet.SetBulletStatus(_bulletObject);
-            instantiatedBullet.gameObject.layer &= 0;
-            instantiatedBullet.gameObject.layer |= _bulletLayer;
+            instantiatedBullet.SetBulletStatus(_bulletObject, _targetLayer);
             OnShootComplete?.Invoke();
             return true;
         }

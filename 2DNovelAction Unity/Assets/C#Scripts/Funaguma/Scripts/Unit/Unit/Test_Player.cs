@@ -10,7 +10,7 @@ namespace BlackRose
         [Header("Reference")]
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private List<BulletObject> _bullets = new List<BulletObject>();
-        [SerializeField] private LayerMask _bulletLayer;
+        [SerializeField] private LayerMask _targetLayer;
 
         [Header("Ground Check")]
         [SerializeField] private Transform groundCheck;           // 足元チェック用のTransform
@@ -52,7 +52,7 @@ namespace BlackRose
 
             _stateMachine.AddState("move", new MoveHorizontal(_rigidbody, "Move"));
 
-            var forward = new ShootForward(_bullets[0], _bulletLayer);
+            var forward = new ShootForward(_bullets[0], _targetLayer);
             forward.OnShootComplete += OnshootComplete;
             _stateMachine.AddState("shoot", forward);
 

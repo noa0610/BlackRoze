@@ -10,6 +10,7 @@ namespace BlackRose
         public int id;
         public string name;
         public string description;
+        public float maxHp;
         public float hp;         // 体力
         public Vector2 direction; // 向き（2Dベクトル）
         public float speed;      // 移動速度

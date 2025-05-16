@@ -23,5 +23,10 @@ namespace BlackRose
         {
             return _unitList;
         }
+
+        public void AddDamage(IUnit target, IUnit from, float damage)
+        {
+            target.TakeDamage(damage);
+        }
     }
 }

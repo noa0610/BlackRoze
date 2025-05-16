@@ -12,13 +12,13 @@ namespace BlackRose
         private IUnit _parent; // ステートマシンを持ってるキャラ（親オブジェクト）
         private Dictionary<string, IState> _stateMap = new(); // ステートの登録一覧（名前とステート）
 
-        private Tuple<string, IState> _currentState; // 現在のステート
+        private (string Key, IState State) _currentState; // 現在のステート
         private string _defaultStateKey; // 条件なしの時に戻るステート（基本ステート）
         private string request = string.Empty; // ステート遷移の予約
 
         public IUnit Parent => _parent;
         public Dictionary<string, IState> StateMap => _stateMap;
-        public Tuple<string, IState> CurrentState => _currentState;
+        public (string Key, IState State) CurrentState => _currentState;
         public string DefaultStateKey => _defaultStateKey;
 
         // 外部で設定する「ステート条件判定用の関数」
@@ -78,21 +78,21 @@ namespace BlackRose
         // ===============================
         public void ChangeState(string targetState)
         {
-            if (_currentState.Item1 == targetState)
+            if (_currentState.Key == targetState)
                 return;
             if (_stateMap.TryGetValue(targetState, out var state))
             {
 
                 // 今のステートから出る（Exit）
-                if (!_currentState.Item2.Exit(state, _parent))
+                if (!_currentState.State.Exit(state, _parent))
                 {
                     Debug.LogError("Error in " + _currentState.ToString() + "'s Exit");
                 }
 
-                var tmp = _currentState.Item2;
-                _currentState = new Tuple<string, IState>(targetState, state);
+                var tmp = _currentState.State;
+                _currentState = (targetState, state);
                 // 新しいステートに入る（Enter）
-                _currentState.Item2.Enter(tmp, _parent);
+                _currentState.State.Enter(tmp, _parent);
                 Debug.Log("Changed State. Current:" + targetState);
             }
             else
@@ -114,7 +114,7 @@ namespace BlackRose
                 ChangeState(StateDecision());
 
             // 現在のステートの処理を実行（Stay）
-            _currentState.Item2.Stay(_parent);
+            _currentState.State.Stay(_parent);
         }
 
         // ===============================
@@ -130,17 +130,17 @@ namespace BlackRose
         // ===============================
         public void SetStateDirect(string targetState)
         {
-            var tmp = _currentState?.Item2;
+            var tmp = _currentState.State;
             if (_stateMap.TryGetValue(targetState, out var state))
             {
-                _currentState = new Tuple<string, IState>(targetState, state);
-                _currentState.Item2.Enter(tmp, _parent);
+                _currentState = (targetState, state);
+                _currentState.State.Enter(tmp, _parent);
             }
         }
 
         public override string ToString()
         {
-            return $"CurrentState: {_currentState?.Item1 ?? "None"}";
+            return $"CurrentState: {_currentState.Key ?? "None"}";
         }
     }
 }

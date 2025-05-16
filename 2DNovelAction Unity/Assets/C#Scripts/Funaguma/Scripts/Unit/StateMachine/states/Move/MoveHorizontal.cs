@@ -24,7 +24,7 @@ namespace BlackRose
 
         public bool Exit(IState nextState, IUnit parent)
         {
-            _rigidbody2D.velocity = Vector3.zero;
+            _rigidbody2D.velocity = new(0, _rigidbody2D.velocity.y);
             return true;
         }
 

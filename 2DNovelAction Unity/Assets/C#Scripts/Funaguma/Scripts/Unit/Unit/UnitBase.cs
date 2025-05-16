@@ -83,7 +83,7 @@ namespace BlackRose
 
         // ===== ステータス操作 =====
 
-        public void TakeDamage(float damage)
+        public virtual void TakeDamage(float damage)
         {
             _status.hp = Mathf.Max(0, _status.hp - damage);
             if (_status.hp <= 0)

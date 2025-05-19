@@ -10,6 +10,7 @@
         /// 受けるダメージの割合
         /// </summary>
         DamageRatio, 
+        Power,
     }
 }
 // unicode

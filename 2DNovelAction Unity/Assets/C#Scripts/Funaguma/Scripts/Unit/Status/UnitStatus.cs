@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace BlackRose
@@ -13,7 +14,8 @@ namespace BlackRose
         public string description;
         public float maxHp;
         public float speed;         // 移動速度
-        public float speedInAir;
+        public float speedInAir;    // 空中での移動速度
+        public float power;         // 技の威力がスケール
         public float jumpPower;
         public UnitTags tags;
         public List<OptionStatus> options;

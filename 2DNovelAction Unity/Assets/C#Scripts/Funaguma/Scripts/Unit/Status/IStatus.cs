@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -10,11 +10,11 @@ namespace BlackRose
         {
             public readonly float defaultAmount;
             /// <summary>
-            /// Œ»İ‚Ì’l‚Éì—p‚·‚éˆ×AHP‚È‚Ç‚Ì•p”É‚É•Ï“®‚·‚é’lˆÈŠO‚Å‚ÍŠî–{“I‚É•s—v
+            /// ç¾åœ¨ã®å€¤ã«ä½œç”¨ã™ã‚‹ç‚ºã€HPãªã©ã®é »ç¹ã«å¤‰å‹•ã™ã‚‹å€¤ä»¥å¤–ã§ã¯åŸºæœ¬çš„ã«ä¸è¦
             /// </summary>
             public float currentAmount;
             public float temporaryChanged;
-            public float temporaryRatio = 1f; // ‘«‚µZEˆø‚«Z‚ÅŠÇ—
+            public float temporaryRatio = 1f; // è¶³ã—ç®—ãƒ»å¼•ãç®—ã§ç®¡ç†
 
             public float CurrentMax => (defaultAmount + temporaryChanged) * Math.Max(0, temporaryRatio);
 
@@ -25,51 +25,54 @@ namespace BlackRose
             }
 
         }
-        ReadOnlyDictionary<Status, StatusAmount> Status { get; }
+        Dictionary<Status, StatusAmount> StatusPair { get; }
+
+        Action DeadCallBack { get; set; }
         void TakeDamage(float damage);
 
         StatusAmount GetStatusAmount(Status status);
         /// <summary>
-        /// Šù‚É‘¶İ‚·‚éê‡‚Íã‘‚«‚³‚ê‚é
+        /// æ—¢ã«å­˜åœ¨ã™ã‚‹å ´åˆã¯ä¸Šæ›¸ãã•ã‚Œã‚‹
         /// </summary>
-        /// <param name="status">’Ç‰Á‚µ‚½‚¢ƒXƒe[ƒ^ƒX</param>
-        /// <param name="amount">’l</param>
+        /// <param name="status">è¿½åŠ ã—ãŸã„ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹</param>
+        /// <param name="amount">å€¤</param>
         void AddStatus(Status status, float amount);
 
         /// <summary>
-        /// ƒXƒe[ƒ^ƒX‚ğíœ‚Å‚«‚é‚ªAHP“™‚Ì•K{ƒXƒe[ƒ^ƒX‚Íc‚·‚±‚Æ
-        /// Note:–³“G‚É‚µ‚½‚¢ê‡‚ÍTakeDamageIncrease‚ğ0‚É‚·‚ê‚Î‚¢‚¢
+        /// ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’å‰Šé™¤ã§ãã‚‹ãŒã€HPç­‰ã®å¿…é ˆã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã¯æ®‹ã™ã“ã¨
+        /// Note:ç„¡æ•µã«ã—ãŸã„å ´åˆã¯TakeDamageIncreaseã‚’0ã«ã™ã‚Œã°ã„ã„
         /// </summary>
         /// <param name="status"></param>
         void RemoveStatus(Status status);
 
         /// <summary>
-        /// ’l‚ğXV‚·‚é‚±‚Æ‚ª–¾¦“I‚Èƒƒ\ƒbƒh
-        /// ‘¶İ‚µ‚È‚¢ƒXƒe[ƒ^ƒX‚ğQÆ‚·‚é‚ÆƒGƒ‰[ƒƒO‚ğ•Ô‚·‚ª‰½‚à‚µ‚È‚¢
+        /// å€¤ã‚’æ›´æ–°ã™ã‚‹ã“ã¨ãŒæ˜ç¤ºçš„ãªãƒ¡ã‚½ãƒƒãƒ‰
+        /// å­˜åœ¨ã—ãªã„ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’å‚ç…§ã™ã‚‹ã¨ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ã‚’è¿”ã™ãŒä½•ã‚‚ã—ãªã„
         /// </summary>
         void UpdateStatus(Status status, float amount);
 
         /// <summary>
-        /// w’è‚µ‚½ƒXƒe[ƒ^ƒX‚ğ‘Œ¸‚³‚¹‚é”{—¦‚ğ‘«‚¹‚é
-        /// 0–¢–‚É‚Í‚È‚ç‚È‚¢
+        /// æŒ‡å®šã—ãŸã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’å¢—æ¸›ã•ã›ã‚‹å€ç‡ã‚’è¶³ã›ã‚‹
+        /// 0æœªæº€ã«ã¯ãªã‚‰ãªã„
         /// </summary>
         void AddRatio(Status status, float ratio);
 
         /// <summary>
-        /// w’è‚µ‚½ƒXƒe[ƒ^ƒX‚Ìratio‚ğƒŠƒZƒbƒg
+        /// æŒ‡å®šã—ãŸã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã®ratioã‚’ãƒªã‚»ãƒƒãƒˆ
         /// </summary>
         /// <param name="status"></param>
         void ResetRatio(Status status);
 
         /// <summary>
-        /// 0–¢–‚É‚Í‚È‚ç‚È‚¢
+        /// 0æœªæº€ã«ã¯ãªã‚‰ãªã„
         /// </summary>
         void AddChanged(Status status, float amount);
 
         /// <summary>
-        /// w’è‚µ‚½ƒXƒe[ƒ^ƒX‚ÌÅ‘å’l‚Ì‰ÁŒ¸Z‚ğƒŠƒZƒbƒg
+        /// æŒ‡å®šã—ãŸã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã®æœ€å¤§å€¤ã®åŠ æ¸›ç®—ã‚’ãƒªã‚»ãƒƒãƒˆ
         /// </summary>
         /// <param name="status"></param>
         void ResetChanged(Status status);
     }
 }
+// unicode

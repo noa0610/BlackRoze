@@ -1,4 +1,4 @@
-namespace BlackRose
+﻿namespace BlackRose
 {
     public enum Status
     {
@@ -6,6 +6,10 @@ namespace BlackRose
         Speed,
         SpeedInAir,
         JumpPower,
-        TakeDamageIncrease,
+        /// <summary>
+        /// 受けるダメージの割合
+        /// </summary>
+        DamageRatio, 
     }
 }
+// unicode

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace BlackRose
@@ -26,7 +25,7 @@ namespace BlackRose
                 float distance = Mathf.Abs(targetX - myX);
                 bool flag = distance <= _detectionDistance;
 
-                Debug.Log(Debugs.StringProssecing.GetFilterSummary(this, unit, flag, $"\nDitection:{_detectionDistance}\nDistance:{distance}"));
+                // Debug.Log(Debugs.StringProssecing.GetFilterSummary(this, unit, flag, $"\nDitection:{_detectionDistance}\nDistance:{distance}"));
                 if (flag)
                 {
                     result.Add(unit);

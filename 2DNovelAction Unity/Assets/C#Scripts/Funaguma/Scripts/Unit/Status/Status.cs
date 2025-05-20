@@ -9,7 +9,7 @@
         /// <summary>
         /// 受けるダメージの割合
         /// </summary>
-        DamageRatio, 
+        DamageRatio,
         Power,
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace BlackRose
 {
@@ -16,7 +15,7 @@ namespace BlackRose
             public float temporaryChanged;
             public float temporaryRatio = 1f; // 足し算・引き算で管理
 
-            public float CurrentMax => (defaultAmount + temporaryChanged) * Math.Max(0, temporaryRatio);
+            public float ChangedMax => (defaultAmount + temporaryChanged) * Math.Max(0, temporaryRatio);
 
             public StatusAmount(float defaultAmount)
             {
@@ -25,12 +24,13 @@ namespace BlackRose
             }
 
         }
-        Dictionary<Status, StatusAmount> StatusPair { get; }
 
         Action DeadCallBack { get; set; }
         void TakeDamage(float damage);
-
         StatusAmount GetStatusAmount(Status status);
+        bool TryGetStatus(Status status, out StatusAmount amount);
+        List<Status> GetStatusList();
+        bool IsRegistered(Status status);
         /// <summary>
         /// 既に存在する場合は上書きされる
         /// </summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace BlackRose
@@ -33,14 +34,14 @@ namespace BlackRose
                 _statusAmounts.TryAdd(status, new IStatusManager.StatusAmount(amount));
         }
 
-        public IStatusManager.StatusAmount GetStatusAmount(Status status)
+        public bool TryGetStatus(Status status, out IStatusManager.StatusAmount amount)
         {
-            return _statusAmounts[status];
+            return _statusAmounts.TryGetValue(status, out amount);
         }
 
         public void RemoveStatus(Status status)
         {
-            if (status == Status.HP)return;
+            if (status == Status.HP) return;
             if (_statusAmounts.ContainsKey(status))
                 _statusAmounts.Remove(status, out var _);
         }
@@ -62,7 +63,8 @@ namespace BlackRose
         {
             if (_statusAmounts.ContainsKey(Status.HP))
             {
-                damage *= _statusAmounts.ContainsKey(Status.DamageRatio) ? _statusAmounts[Status.DamageRatio].CurrentMax : 1f;
+                float damageScale = TryGetStatus(Status.DamageRatio, out var amount) ? amount.ChangedMax : 1f;
+                damage *= damageScale;
                 _statusAmounts[Status.HP].currentAmount = Math.Max(0, _statusAmounts[Status.HP].currentAmount - damage);
                 if (_statusAmounts[Status.HP].currentAmount <= 0)
                     DeadCallBack?.Invoke();
@@ -75,6 +77,18 @@ namespace BlackRose
                 _statusAmounts[status].currentAmount = amount;
             else
                 Debug.LogError(status.ToString() + "が存在しないよ！");
+        }
+
+        public List<Status> GetStatusList()
+        {
+            return _statusAmounts.Keys.ToList();
+        }
+
+        public IStatusManager.StatusAmount GetStatusAmount(Status status) => _statusAmounts[status];
+
+        public bool IsRegistered(Status status)
+        {
+            return _statusAmounts.ContainsKey(status);
         }
     }
 }

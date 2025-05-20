@@ -1,7 +1,6 @@
-﻿using UnityEngine.InputSystem;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Collections.Generic;
-using Unity.Collections;
+using UnityEngine.InputSystem;
 
 namespace BlackRose
 {
@@ -50,13 +49,13 @@ namespace BlackRose
         {
             _stateMachine.SetCondition(StateDecision);
 
-            _stateMachine.AddState("move", new MoveHorizontal(_rigidbody, "Move"));
+            _stateMachine.AddState("move", new MoveHorizontal(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
 
             var forward = new ShootForward(_bullets[0], _targetLayer);
             forward.OnShootComplete += OnshootComplete;
             _stateMachine.AddState("shoot", forward);
 
-            _stateMachine.AddState("jump", new Jump(_rigidbody));
+            _stateMachine.AddState("jump", new Jump(_rigidbody, _statusManager.GetStatusAmount(Status.SpeedInAir)));
         }
 
         private void OnEnable()
@@ -81,7 +80,7 @@ namespace BlackRose
 
         private void InMove(InputAction.CallbackContext ctx)
         {
-            _status.direction = ctx.ReadValue<Vector2>();
+            Direction = ctx.ReadValue<Vector2>();
             _stateFlags |= StateFlags.InMove;
         }
 
@@ -95,9 +94,9 @@ namespace BlackRose
         {
             _stateFlags |= StateFlags.InShoot;
             var b = _bullets[0].Clone();
-            b.currentstatus.direction = _status.direction == Vector2.zero
+            b.currentstatus.direction = Direction == Vector2.zero
                 ? Vector2.right
-                : new Vector2(_status.direction.x, 0);
+                : new Vector2(Direction.x, 0);
             var state = (ShootForward)_stateMachine.StateMap["shoot"];
             state.SetBullet(b);
         }

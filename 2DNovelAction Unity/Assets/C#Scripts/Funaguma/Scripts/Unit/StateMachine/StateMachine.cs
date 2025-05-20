@@ -30,7 +30,7 @@ namespace BlackRose
         // parent: このステートマシンを使うキャラ本体
         // defaultState: 最初に入っておくステート
         // defaultStateKey: 登録名（デフォルトは "idle"）
-        public StateMachine(IUnit parent, IState defaultState,Func<string> condition, string defaultStateKey = "idle")
+        public StateMachine(IUnit parent, IState defaultState, Func<string> condition, string defaultStateKey = "idle")
         {
             _parent = parent;
             _defaultStateKey = defaultStateKey;

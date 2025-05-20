@@ -23,14 +23,12 @@ namespace BlackRose
     public interface IUnit
     {
         // ユニットのステータス（HP、攻撃力、移動速度など）を保持
-        UnitStatus UnitStatus { get; set; }
-
+        UnitStatusData UnitStatusData { get; }
+        IStatusManager StatusManager { get; }
         StateFlags StateFlags { get; }
-
         Animator Animator { get; set; }
-
-        // Unityの Transform コンポーネント（位置や回転、スケール情報などを管理）
         Transform Transform { get; }
+        Vector2 Direction { get; set; } // unitの向きを保持
 
         void TakeDamage(float damage);
     }

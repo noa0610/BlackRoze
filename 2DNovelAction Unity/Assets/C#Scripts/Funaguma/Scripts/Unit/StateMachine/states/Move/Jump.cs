@@ -4,9 +4,10 @@ namespace BlackRose
 {
     public class Jump : IState
     {
-        Rigidbody2D _rb;
-        bool _hasLeapt = false;
-        float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
+        private Rigidbody2D _rb;
+        private bool _hasLeapt = false;
+        private float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
+        private IStatusManager.StatusAmount _statusAmount;
 
         public bool HadLeapt
         {
@@ -20,9 +21,11 @@ namespace BlackRose
             }
         }
 
-        public Jump(Rigidbody2D rb)
+        /// <param name="amount">Status.SpeedInAir</param>
+        public Jump(Rigidbody2D rb, IStatusManager.StatusAmount amount)
         {
             _rb = rb;
+            _statusAmount = amount;
         }
 
         // 前のStateから切り替わった瞬間に呼ばれる
@@ -30,8 +33,13 @@ namespace BlackRose
         {
             if (!_hasLeapt)
             {
+                if(!parent.StatusManager.TryGetStatus(Status.JumpPower, out var amount))
+                {
+                    Debug.LogError("JumpPowerが登録されてないよ！");
+                    return false;
+                }
                 // 一度だけ上方向にインパルス
-                _rb.AddForce(Vector2.up * parent.UnitStatus.jumpPower, ForceMode2D.Impulse);
+                _rb.AddForce(Vector2.up * amount.ChangedMax, ForceMode2D.Impulse);
                 _hasLeapt = true;
             }
             return true;
@@ -49,7 +57,7 @@ namespace BlackRose
             if (!parent.StateFlags.HasFlag(StateFlags.InMove))
                 return true;
             // 横移動入力を取り出し
-            float h = parent.UnitStatus.direction.x;
+            float h = parent.Direction.x;
             if (h == 0)
                 return true;
 
@@ -57,7 +65,7 @@ namespace BlackRose
 
             // 現在の上方向速度はキープしつつ、横速度だけ書き換え
             Vector2 vel = _rb.velocity;
-            float addSpeed = parent.UnitStatus.speedInAir;
+            float addSpeed = _statusAmount.ChangedMax;
             vel.x += h * addSpeed * Time.deltaTime;
 
             _rb.velocity = vel;

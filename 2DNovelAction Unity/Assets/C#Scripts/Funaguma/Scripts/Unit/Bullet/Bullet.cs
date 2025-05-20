@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BlackRose
 {
@@ -36,7 +35,6 @@ namespace BlackRose
         // 毎フレームの更新処理（弾の移動）
         protected virtual void Update()
         {
-            // X方向に進む（Yは固定／0）
             transform.position = transform.position + (Vector3)_bulletObject.currentstatus.direction * Time.deltaTime;
         }
 

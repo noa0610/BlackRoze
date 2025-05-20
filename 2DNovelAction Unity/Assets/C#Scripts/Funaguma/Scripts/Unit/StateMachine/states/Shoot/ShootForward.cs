@@ -60,12 +60,12 @@ namespace BlackRose
             }
 
             // 弾の生成位置（プレイヤーのちょっと前）
-            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.UnitStatus.direction.x * 1.5f, 0, 0);
+            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.Direction.x * 1.5f, 0, 0);
 
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
 
-            
+
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_bulletObject, _targetLayer);
             OnShootComplete?.Invoke();

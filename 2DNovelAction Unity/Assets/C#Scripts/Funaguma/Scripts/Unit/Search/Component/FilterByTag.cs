@@ -14,7 +14,7 @@ namespace BlackRose
 
         public List<IUnit> Execute(List<IUnit> pool)
         {
-            return pool.Where(u => u.UnitStatus.tags.HasFlag(_tag)).ToList();
+            return pool.Where(u => u.UnitStatusData.tags.HasFlag(_tag)).ToList();
         }
     }
 }

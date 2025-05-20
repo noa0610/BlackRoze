@@ -10,7 +10,7 @@ namespace BlackRose.Debugs
             string messagePart = string.IsNullOrEmpty(message) ? "" : $"\nMessage: {message}";
 
             return $"Executing filter: {component.GetType().Name}\n" +
-                   $"Target: {target.UnitStatus.name}\n" +
+                   $"Target: {target.UnitStatusData.unitName}\n" +
                    $"Result: {result}{messagePart}";
         }
 
@@ -20,8 +20,8 @@ namespace BlackRose.Debugs
             string r = string.Empty;
             foreach (var u in units)
             {
-                UnitStatus s = u.UnitStatus;
-                r += $"id:{s.id}\nname:{s.name}\n";
+                var s = u.UnitStatusData;
+                r += $"id:{s.id}\nname:{s.unitName}\n";
             }
             return r;
         }

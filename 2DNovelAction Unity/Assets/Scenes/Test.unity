@@ -1167,7 +1167,7 @@ GameObject:
   - component: {fileID: 1865804496}
   - component: {fileID: 1865804494}
   - component: {fileID: 1865804493}
-  m_Layer: 13
+  m_Layer: 11
   m_Name: Triangle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1207,17 +1207,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18337210eeddaeb42b8c0dabb4a42818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _status:
-    id: 0
-    name: Turret
-    description: 
-    maxHp: 3
-    hp: 0
-    direction: {x: 0, y: 0}
-    speed: 0
-    speedInAir: 0
-    jumpPower: 0
-    tags: 2
+  _status: {fileID: 11400000, guid: 2d212e9d4ddabd241987f0a2d879ae0f, type: 2}
   _stateFlags: 0
   _animator: {fileID: 1865804493}
   _currentState: 
@@ -1894,17 +1884,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fafcf1a151ad9c4cb1504133415ab0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _status:
-    id: 0
-    name: Player
-    description: 
-    maxHp: 5
-    hp: 0
-    direction: {x: 0, y: 0}
-    speed: 6
-    speedInAir: 4
-    jumpPower: 17
-    tags: 1
+  _status: {fileID: 11400000, guid: 8f027c1fc253958428ed83fa9c922dc6, type: 2}
   _stateFlags: 0
   _animator: {fileID: 2304263901732056687}
   _currentState: 

@@ -3,6 +3,7 @@
 
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Fungus
 {
@@ -26,6 +27,17 @@ namespace Fungus
     /// </summary>
     public class DialogInput : MonoBehaviour
     {
+
+//=============================================================
+        [Header("追加機能；オートモード")]
+        [SerializeField] private bool _autoModeEnabled = false;
+        [SerializeField] private float _autoDelay = 2.0f; // 自動で次に進むまでの秒数
+        [SerializeField] private Button _AutoButton;
+        private float _autoTimer = 0f;
+//=============================================================
+
+
+        [Header("標準機能")]
         [Tooltip("Click to advance story")]
         [SerializeField] protected ClickMode clickMode;
 
@@ -33,11 +45,13 @@ namespace Fungus
         [SerializeField] protected float nextClickDelay = 0f;
 
         [Tooltip("Allow holding Cancel to fast forward text")]
-        [SerializeField] protected bool cancelEnabled = true;
+        [SerializeField] protected bool cancelEnabled = false;
 
         [Tooltip("Ignore input if a Menu dialog is currently active")]
         [SerializeField] protected bool ignoreMenuClicks = true;
 
+        [SerializeField] protected bool _isKey = false;
+    
         protected bool dialogClickedFlag;
 
         protected bool nextLineInputFlag;
@@ -89,8 +103,73 @@ namespace Fungus
                 if (Input.GetButtonDown(currentStandaloneInputModule.submitButton) ||
                     (cancelEnabled && Input.GetButton(currentStandaloneInputModule.cancelButton)))
                 {
-                    SetNextLineFlag();
+                    if(_isKey)
+                    {
+                        SetNextLineFlag();
+                    }
+                    
                 }
+
+
+//=============================================================
+                // オートモードが有効なとき自動で次の行へ
+            if (_autoModeEnabled && writer != null)
+            {
+                if (writer.IsWaitingForInput) // 入力待ちの状態
+                {
+                    _autoTimer += Time.deltaTime;
+                    if (_autoTimer >= _autoDelay)
+                    {
+                        SetNextLineFlag();
+                        _autoTimer = 0f;
+                    }
+                }
+                else
+                {
+                    _autoTimer = 0f; // テキスト出力中はタイマーリセット
+                }
+            }
+                var ButtonColor = _AutoButton.colors;
+                if (_autoModeEnabled == true)
+                {
+                    ButtonColor.normalColor = new Color(1f, 1f, 0.5f, 1f);
+                    ButtonColor.highlightedColor = new Color(1f, 1f, 0.6f, 1f);
+                    ButtonColor.pressedColor = new Color(1f, 0.9f, 0.3f, 1f);
+                    ButtonColor.selectedColor = new Color(1f, 1f, 0.6f, 1f);
+                    _AutoButton.colors = ButtonColor;
+                }
+                else
+                {
+                    ButtonColor.normalColor = Color.white;
+                    ButtonColor.highlightedColor = Color.white;
+                    ButtonColor.pressedColor = Color.white;
+                    ButtonColor.selectedColor = Color.white;
+                    _AutoButton.colors = ButtonColor;
+                }
+//=============================================================
+
+
+                // Check if the user has clicked on the dialog UI
+                if (clickMode == ClickMode.ClickOnDialog)
+                {
+                    PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
+                    pointerEventData.position = Input.mousePosition;
+                    var results = new System.Collections.Generic.List<RaycastResult>();
+                    EventSystem.current.RaycastAll(pointerEventData, results);
+                    foreach (var result in results)
+                    {
+                        if (result.gameObject == gameObject)
+                        {
+                            SetDialogClickedFlag();
+                            break;
+                        }
+                    }
+                }
+
+
+
+
+
             }
 
             switch (clickMode)
@@ -143,6 +222,15 @@ namespace Fungus
         }
 
         #region Public members
+
+
+//=============================================================
+            public void AutoMode() 
+            {
+                _autoModeEnabled = !_autoModeEnabled; // オートモードのトグル
+            }
+//=============================================================
+
 
         /// <summary>
         /// Trigger next line input event from script.
@@ -204,4 +292,8 @@ namespace Fungus
 
         #endregion
     }
+
+
+
+
 }

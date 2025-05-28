@@ -4,17 +4,12 @@ using UnityEngine.InputSystem;
 
 namespace BlackRose
 {
-    public class Test_Player : UnitBase
+    public class ActionRobot : GroundedUnit
     {
         [Header("Reference")]
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private List<BulletObject> _bullets = new List<BulletObject>();
         [SerializeField] private LayerMask _targetLayer;
-
-        [Header("Ground Check")]
-        [SerializeField] private Transform groundCheck;           // 足元チェック用のTransform
-        [SerializeField] private float groundCheckRadius = 0.1f;  // チェック半径
-        [SerializeField] private LayerMask groundLayer;           // 地面Layer
 
         [Header("Coyote Time")]
         [SerializeField] private float coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
@@ -49,12 +44,11 @@ namespace BlackRose
         {
             _stateMachine.SetCondition(StateDecision);
 
-            _stateMachine.AddState("move", new MoveHorizontal(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
-
             var forward = new ShootForward(_bullets[0], _targetLayer);
             forward.OnShootComplete += OnshootComplete;
             _stateMachine.AddState("shoot", forward);
-
+            _stateMachine.AddState("move", new MoveOnGround(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
+            _stateMachine.AddState("dash", new DashOnGround(_rigidbody, _statusManager.GetStatusAmount(Status.DashSpeed)));
             _stateMachine.AddState("jump", new Jump(_rigidbody, _statusManager.GetStatusAmount(Status.SpeedInAir)));
         }
 
@@ -66,6 +60,8 @@ namespace BlackRose
             _Player.FindAction("Attack").performed += InAttack;
             _Player.FindAction("Jump").performed += InJump;
             _Player.FindAction("Jump").canceled += InCancelJump;
+            _Player.FindAction("Dash").performed += InDash;
+            _Player.FindAction("Dash").canceled += InCancelDash;
         }
 
         private void OnDisable()
@@ -75,6 +71,8 @@ namespace BlackRose
             _Player.FindAction("Attack").performed -= InAttack;
             _Player.FindAction("Jump").performed -= InJump;
             _Player.FindAction("Jump").canceled -= InCancelJump;
+            _Player.FindAction("Dash").performed -= InDash;
+            _Player.FindAction("Dash").canceled -= InCancelDash;
             _Player.Disable();
         }
 
@@ -117,35 +115,26 @@ namespace BlackRose
                 jump.CutJump();
         }
 
-        private void FixedUpdate()
+        private void InDash(InputAction.CallbackContext ctx)
         {
-            GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
+            _stateFlags |= StateFlags.InDash;
         }
-
-        private void GroundCheck()
+        private void InCancelDash(InputAction.CallbackContext ctx)
         {
-            Collider2D hit = Physics2D.OverlapCircle(
-                groundCheck.position,
-                groundCheckRadius,
-                groundLayer.value       // LayerMaskをIntに変換して渡す
-            );
-
-            bool grounded = hit != null;
-
-            if (grounded)
-            {
-                coyoteTimeCounter = coyoteTime;
-                _stateFlags &= ~StateFlags.InJump;
-
-                if (_stateMachine.StateMap["jump"] is Jump jump)
-                    jump.HadLeapt = false;
-            }
-            else
-            {
-                coyoteTimeCounter -= Time.fixedDeltaTime;
-            }
+            _stateFlags &= ~StateFlags.InDash;
         }
+        protected override void OnGrounded()
+        {
+            coyoteTimeCounter = coyoteTime;
+            _stateFlags &= ~StateFlags.InJump;
 
+            if (_stateMachine.StateMap["jump"] is Jump jump)
+                jump.HadLeapt = false;
+        }
+        protected override void OnUnGrounded()
+        {
+            coyoteTimeCounter -= Time.fixedDeltaTime;
+        }
         protected override string StateDecision()
         {
             if (_stateFlags.HasFlag(StateFlags.InShoot))
@@ -154,7 +143,12 @@ namespace BlackRose
                 return "shoot";
             }
             if (_stateFlags.HasFlag(StateFlags.InJump))
+            {
+                _stateFlags &= ~StateFlags.InJump;
                 return "jump";
+            }
+            if (_stateFlags.HasFlag(StateFlags.InDash) && IsGrounded)
+                return "dash";
             if (_stateFlags.HasFlag(StateFlags.InMove))
                 return "move";
             return "idle";
@@ -163,16 +157,6 @@ namespace BlackRose
         private void OnshootComplete()
         {
             _stateFlags &= ~StateFlags.InShoot;
-        }
-
-        // デバッグ用にGizmos表示
-        private void OnDrawGizmosSelected()
-        {
-            if (groundCheck != null)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-            }
         }
     }
 }

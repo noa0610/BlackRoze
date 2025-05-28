@@ -5,6 +5,7 @@
         HP,
         Speed,
         SpeedInAir,
+        DashSpeed,
         JumpPower,
         /// <summary>
         /// 受けるダメージの割合

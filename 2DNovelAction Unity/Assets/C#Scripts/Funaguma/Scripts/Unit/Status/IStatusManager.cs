@@ -14,8 +14,22 @@ namespace BlackRose
             public float currentAmount;
             public float temporaryChanged;
             public float temporaryRatio = 1f; // 足し算・引き算で管理
+            private bool _isDirty = true;
+            private float _changedAmount = 0f;
 
-            public float ChangedMax => (defaultAmount + temporaryChanged) * Math.Max(0, temporaryRatio);
+            public float ChangedMax
+            {
+                get
+                {
+                    if (_isDirty)
+                    {
+                        _changedAmount = defaultAmount + temporaryChanged;
+                        _changedAmount = Math.Max(0, _changedAmount * temporaryRatio);
+                        _isDirty = false;
+                    }
+                    return _changedAmount;
+                }
+            }
 
             public StatusAmount(float defaultAmount)
             {

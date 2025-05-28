@@ -14,6 +14,7 @@ namespace BlackRose
         public float maxHp;
         public float speed;         // 移動速度
         public float speedInAir;    // 空中での移動速度
+        public float dashSpeed;      // ダッシュ速度
         public float power;         // 技の威力がスケール
         public float jumpPower;
         public UnitTags tags;

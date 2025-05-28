@@ -62,6 +62,7 @@ namespace BlackRose
             _statusManager.AddStatus(Status.Speed, _status.speed);
             _statusManager.AddStatus(Status.SpeedInAir, _status.speedInAir);
             _statusManager.AddStatus(Status.JumpPower, _status.jumpPower);
+            _statusManager.AddStatus(Status.DashSpeed, _status.dashSpeed);
             _statusManager.AddStatus(Status.Power, _status.power);
             _statusManager.DeadCallBack += DeadCallBack;
         }

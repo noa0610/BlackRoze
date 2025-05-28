@@ -1,17 +1,17 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace BlackRose
 {
     // =======================
-    // MoveiˆÚ“®jó‘Ô
+    // Moveï¼ˆç§»å‹•ï¼‰çŠ¶æ…‹
     // =======================
-    public class MoveHorizontal : IState
+    public class MoveOnGround : IState
     {
         private Rigidbody2D _rigidbody2D;
         private string _animationTrigger;
         private IStatusManager.StatusAmount _statusAmount;
 
-        public MoveHorizontal(Rigidbody2D rigidbody2D, string animationTrigger, IStatusManager.StatusAmount status)
+        public MoveOnGround(Rigidbody2D rigidbody2D, string animationTrigger, IStatusManager.StatusAmount status)
         {
             _rigidbody2D = rigidbody2D;
             _animationTrigger = animationTrigger;
@@ -26,7 +26,6 @@ namespace BlackRose
 
         public bool Exit(IState nextState, IUnit parent)
         {
-            _rigidbody2D.velocity = new(0, _rigidbody2D.velocity.y);
             return true;
         }
 

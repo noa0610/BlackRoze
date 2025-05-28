@@ -1095,7 +1095,7 @@ MonoBehaviour:
       speed: 0
       direction: {x: 0, y: 0}
   _rotateSpeed: 5
-  _shootInterval: 3
+  _shootInterval: 3.5
   _shootFireCount: 5
   _detectionDistance: 9
   _targetLayer:
@@ -1674,6 +1674,11 @@ MonoBehaviour:
   _stateFlags: 0
   _animator: {fileID: 2304263901732056687}
   _currentState: 
+  groundCheck: {fileID: 703885838269489387}
+  groundCheckRadius: 0.1
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 513
   _inputActions: {fileID: -944628639613478452, guid: 6699cb5def38b684cbe524a7e0fa7868, type: 3}
   _bullets:
   - bulletData: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
@@ -1686,11 +1691,6 @@ MonoBehaviour:
   _targetLayer:
     serializedVersion: 2
     m_Bits: 2048
-  groundCheck: {fileID: 703885838269489387}
-  groundCheckRadius: 0.1
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 513
   coyoteTime: 0.2
   _forceEnableJump: 0
 --- !u!58 &7340325418745476333

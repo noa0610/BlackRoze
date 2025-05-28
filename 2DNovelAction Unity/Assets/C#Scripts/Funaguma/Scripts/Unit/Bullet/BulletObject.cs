@@ -19,6 +19,15 @@ namespace BlackRose
             };
             return clone;
         }
+
+        private void Awake()
+        {
+            if (bulletData == null)
+            {
+                throw new NullReferenceException("BulletData is not set.");
+            }
+            currentstatus = bulletData.originalstatus; // Initialize current status with original status
+        }
     }
 }
 //unicode

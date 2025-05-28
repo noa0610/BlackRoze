@@ -7,7 +7,7 @@ namespace BlackRose
         // === Data ===
         [SerializeField] private BulletObject _bulletObject;
         [SerializeField] private float _rotateSpeed;
-        [SerializeField] private float _shootInterval;
+        [SerializeField] private float _shootInterval = 100f;
         [SerializeField] private int _shootFireCount;       // 1サイクルあたりの連射数
         [SerializeField] private float _detectionDistance;
         [SerializeField] private LayerMask _targetLayer;
@@ -16,6 +16,7 @@ namespace BlackRose
 
         // === Internal ===
         private float _shootIntervalCount = 0f;  // 待機タイマー
+        private float _trishootInterval; // インターバルカウント
         private int _shootCount;            // 現在までに撃ったカウント
 
         // === StateMachine ===
@@ -45,6 +46,8 @@ namespace BlackRose
             // ■ インターバルカウントダウン ■
             if (_shootIntervalCount > 0f)
                 _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
+            if (_trishootInterval > 0f)
+                _trishootInterval = Mathf.Max(0f, _trishootInterval - Time.deltaTime);
 
             SearchPlayer();           // プレイヤー検出＆セットアップ
             base.Update();
@@ -74,6 +77,7 @@ namespace BlackRose
         {
             // 弾をセット
             var clone = _bulletObject.Clone();
+            clone.currentstatus = clone.bulletData.originalstatus;
             clone.currentstatus.direction =
                 (target.Transform.position - transform.position).normalized;
 
@@ -84,7 +88,7 @@ namespace BlackRose
         protected override string StateDecision()
         {
             // 1) インターバル中は必ずshootInterval
-            if (_shootIntervalCount > 0f)
+            if (_shootIntervalCount > 0f || _trishootInterval > 0f)
                 return "shootInterval";
 
             // 2) プレイヤー見つかってて、インターバル終了ならshoot
@@ -98,6 +102,7 @@ namespace BlackRose
         // ShootForward が１発撃ち終わるたびに呼ばれる
         private void OnShootComplete()
         {
+            _trishootInterval = 0.3f;
             _shootCount++;
             if (_shootCount >= _shootFireCount)
             {

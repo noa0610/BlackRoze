@@ -94,6 +94,7 @@ namespace BlackRose
         {
             _stateFlags |= StateFlags.InShoot;
             var b = _bullets[0].Clone();
+            b.currentstatus = b.bulletData.originalstatus; // 初期状態をコピー
             b.currentstatus.direction = Direction == Vector2.zero
                 ? Vector2.right
                 : new Vector2(Direction.x, 0);

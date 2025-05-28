@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Collections;
+using UnityEngine;
 
 namespace BlackRose
 {
@@ -20,6 +21,7 @@ namespace BlackRose
 
     public class Bullet : MonoBehaviour, IStopableObject
     {
+        [SerializeField, ReadOnly]
         private BulletObject _bulletObject;
         private LayerMask _targetLayer;
         public Transform Transform => transform;
@@ -35,7 +37,7 @@ namespace BlackRose
         // 毎フレームの更新処理（弾の移動）
         protected virtual void Update()
         {
-            transform.position = transform.position + (Vector3)_bulletObject.currentstatus.direction * Time.deltaTime;
+            transform.position = transform.position + (Vector3)_bulletObject.currentstatus.direction * _bulletObject.currentstatus.speed * Time.deltaTime;
         }
 
         // 2D衝突検知（敵や壁に当たったら発動）

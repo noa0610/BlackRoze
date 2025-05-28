@@ -48,7 +48,7 @@ namespace BlackRose
             forward.OnShootComplete += OnshootComplete;
             _stateMachine.AddState("shoot", forward);
             _stateMachine.AddState("move", new MoveOnGround(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
-            _stateMachine.AddState("dash", new DashOnGround(_rigidbody, _statusManager.GetStatusAmount(Status.DashSpeed)));
+            _stateMachine.AddState("dash", new DashOnGround(_rigidbody, this, _statusManager.GetStatusAmount(Status.DashSpeed)));
             _stateMachine.AddState("jump", new Jump(_rigidbody, _statusManager.GetStatusAmount(Status.SpeedInAir)));
         }
 
@@ -117,6 +117,8 @@ namespace BlackRose
 
         private void InDash(InputAction.CallbackContext ctx)
         {
+            if (_stateFlags.HasFlag(StateFlags.InJump | StateFlags.InFall) || !IsGrounded)
+                return; // 既にダッシュ中、または地面にいない場合は無視
             _stateFlags |= StateFlags.InDash;
         }
         private void InCancelDash(InputAction.CallbackContext ctx)

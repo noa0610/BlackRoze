@@ -1,15 +1,18 @@
 ﻿using UnityEngine;
+using System;
 
 namespace BlackRose
 {
     public abstract class GroundedUnit : UnitBase
     {
         [Header("Ground Check")]
-        [SerializeField] private Transform groundCheck;           // 足元チェック用のTransform
-        [SerializeField] private float groundCheckRadius = 0.1f;  // チェック半径
-        [SerializeField] private LayerMask groundLayer;           // 地面Layer
+        [SerializeField] private Transform _groundCheck;           // 足元チェック用のTransform
+        [SerializeField] private float _groundCheckRadius = 0.1f;  // チェック半径
+        [SerializeField] private LayerMask _groundLayer;           // 地面Layer
+        [SerializeField] private float _disableCheckTime = 0.2f; // 地面判定を無効にする
 
         public bool IsGrounded { get; private set; }
+        public Action OnAirToGround { get; set; } = null; // 地面に着地したときのコールバック
         private void FixedUpdate()
         {
             GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
@@ -17,16 +20,26 @@ namespace BlackRose
 
         private void GroundCheck()
         {
+            if (_disableCheckTime > 0f)
+            {
+                _disableCheckTime -= Time.fixedDeltaTime; // 地面判定を無効にする時間を減らす
+                return; // 無効な場合は地面チェックを行わない
+            }
             Collider2D hit = Physics2D.OverlapCircle(
-                groundCheck.position,
-                groundCheckRadius,
-                groundLayer.value       // LayerMaskをIntに変換して渡す
+                _groundCheck.position,
+                _groundCheckRadius,
+                _groundLayer.value       // LayerMaskをIntに変換して渡す
             );
-
+            bool beforeGrounded = IsGrounded; // 前回の地面状態を保存
             bool grounded = hit != null;
 
             if (grounded)
             {
+                if (!beforeGrounded && OnAirToGround != null)
+                {
+                    Debug.Log("GroundedUnit: OnAirToGround called");
+                    OnAirToGround.Invoke(); // 地面に着地したときのコールバックを呼び出す
+                }
                 IsGrounded = true;
                 OnGrounded(); // 地面にいる場合の処理
             }
@@ -42,11 +55,16 @@ namespace BlackRose
         // デバッグ用にGizmos表示
         private void OnDrawGizmosSelected()
         {
-            if (groundCheck != null)
+            if (_groundCheck != null)
             {
                 Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+                Gizmos.DrawWireSphere(_groundCheck.position, _groundCheckRadius);
             }
+        }
+
+        public void OnJump()
+        {
+            _disableCheckTime = 0.2f; // ジャンプしたら地面判定を無効にする
         }
     }
 }

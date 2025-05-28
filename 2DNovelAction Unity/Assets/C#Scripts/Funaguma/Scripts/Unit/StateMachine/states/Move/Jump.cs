@@ -4,10 +4,10 @@ namespace BlackRose
 {
     public class Jump : IState
     {
-        private Rigidbody2D _rb;
-        private bool _hasLeapt = false;
-        private float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
-        private IStatusManager.StatusAmount _statusAmount;
+        protected Rigidbody2D _rb;
+        protected bool _hasLeapt = false;
+        protected float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
+        protected IStatusManager.StatusAmount _statusAmount;
 
         public bool HadLeapt
         {
@@ -29,7 +29,7 @@ namespace BlackRose
         }
 
         // 前のStateから切り替わった瞬間に呼ばれる
-        public bool Enter(IState previousState, IUnit parent)
+        public virtual bool Enter(IState previousState, IUnit parent)
         {
             if (!_hasLeapt)
             {
@@ -46,13 +46,13 @@ namespace BlackRose
         }
 
         // 他のStateへ行くときに呼ばれる
-        public bool Exit(IState nextState, IUnit parent)
+        public virtual bool Exit(IState nextState, IUnit parent)
         {
             return true;
         }
 
         // ジャンプ中ずっと毎フレーム呼ばれる
-        public bool Stay(IUnit parent)
+        public virtual bool Stay(IUnit parent)
         {
             if (!parent.StateFlags.HasFlag(StateFlags.InMove))
                 return true;

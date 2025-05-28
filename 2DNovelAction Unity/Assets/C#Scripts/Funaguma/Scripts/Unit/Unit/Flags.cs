@@ -12,5 +12,6 @@ namespace BlackRose
         InShoot = 1 << 2,    // 射撃中
         InJump = 1 << 3,     // ジャンプ
         InDash = 1 << 4,     // ダッシュ中
+        InStun = 1 << 5,     // スタン中
     }
 }

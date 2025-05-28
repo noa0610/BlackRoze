@@ -10,6 +10,7 @@ namespace BlackRose
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private List<BulletObject> _bullets = new List<BulletObject>();
         [SerializeField] private LayerMask _targetLayer;
+        private Stun _stunState;
 
         [Header("Coyote Time")]
         [SerializeField] private float coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
@@ -50,6 +51,8 @@ namespace BlackRose
             _stateMachine.AddState("move", new MoveOnGround(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
             _stateMachine.AddState("dash", new DashOnGround(_rigidbody, this, _statusManager.GetStatusAmount(Status.DashSpeed)));
             _stateMachine.AddState("jump", new Jump(_rigidbody, _statusManager.GetStatusAmount(Status.SpeedInAir)));
+            _stunState = new Stun(_rigidbody, 0.5f);
+            _stateMachine.AddState("stun", _stunState);
         }
 
         private void OnEnable()
@@ -139,6 +142,10 @@ namespace BlackRose
         }
         protected override string StateDecision()
         {
+            if (_stateFlags.HasFlag(StateFlags.InStun))
+            {
+                return "stun";
+            }
             if (_stateFlags.HasFlag(StateFlags.InShoot))
             {
                 _stateFlags &= ~StateFlags.InShoot;
@@ -156,9 +163,23 @@ namespace BlackRose
             return "idle";
         }
 
+        public override void TakeDamage(float damage)
+        {
+            base.TakeDamage(damage);
+            _stateFlags |= StateFlags.InStun; // ダメージを受けたらスタン状態にする
+        }
         private void OnshootComplete()
         {
             _stateFlags &= ~StateFlags.InShoot;
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+            if (_stateFlags.HasFlag(StateFlags.InStun) && _stunState.StunTimer <= 0f)
+            {
+                _stateFlags &= ~StateFlags.InStun; // スタンが終わったらフラグを下ろす
+            }
         }
     }
 }

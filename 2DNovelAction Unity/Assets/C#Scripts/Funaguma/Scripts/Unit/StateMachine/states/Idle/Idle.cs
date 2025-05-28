@@ -1,7 +1,7 @@
-namespace BlackRose
+ï»¿namespace BlackRose
 {
     // =======================
-    // Idlei‘Ò‹@jó‘Ô
+    // Idleï¼ˆå¾…æ©Ÿï¼‰çŠ¶æ…‹
     // =======================
     public class Idle : IState
     {
@@ -9,18 +9,18 @@ namespace BlackRose
         public Idle(string animationKey = null)
         {
         }
-        public bool Enter(IState previousState, IUnit parent)
+        public virtual bool Enter(IState previousState, IUnit parent)
         {
             parent.Animator.SetTrigger(_animationKey);
             return true;
         }
 
-        public bool Exit(IState nextState, IUnit parent)
+        public virtual bool Exit(IState nextState, IUnit parent)
         {
             return true;
         }
 
-        public bool Stay(IUnit parent)
+        public virtual bool Stay(IUnit parent)
         {
             return true;
         }

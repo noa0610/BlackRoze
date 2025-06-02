@@ -38,7 +38,7 @@ namespace BlackRose
                 if (!beforeGrounded && OnAirToGround != null)
                 {
                     Debug.Log("GroundedUnit: OnAirToGround called");
-                    OnAirToGround.Invoke(); // 地面に着地したときのコールバックを呼び出す
+                    OnAirToGround?.Invoke(); // 地面に着地したときのコールバックを呼び出す
                 }
                 IsGrounded = true;
                 OnGrounded(); // 地面にいる場合の処理

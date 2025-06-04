@@ -29,7 +29,7 @@ namespace BlackRose
 
             // 「shoot」ステート…弾を１発撃つ (ShootForward内でOnShootComplete呼ぶ)
             var shoot = new ShootForward(_bulletObject, _targetLayer);
-            shoot.OnShootComplete += OnShootComplete;
+            shoot.onShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
 
             // インターバル用ステート…何もしないIdle

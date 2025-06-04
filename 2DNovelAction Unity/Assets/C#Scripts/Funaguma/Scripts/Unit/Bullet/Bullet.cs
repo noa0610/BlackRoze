@@ -24,6 +24,7 @@ namespace BlackRose
         [SerializeField, ReadOnly]
         private BulletObject _bulletObject;
         private LayerMask _targetLayer;
+        [SerializeField] private LayerMask _canHitLayer; // 常に衝突可能なレイヤー
         public Transform Transform => transform;
         public BulletObject BulletObject => _bulletObject;
 
@@ -43,6 +44,10 @@ namespace BlackRose
         // 2D衝突検知（敵や壁に当たったら発動）
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
+            if (((1 << collision.gameObject.layer) & _canHitLayer) == 1)
+            {
+                Destroy(gameObject);
+            }
             if (((1 << collision.gameObject.layer) & _targetLayer) == 0)
                 return;
 

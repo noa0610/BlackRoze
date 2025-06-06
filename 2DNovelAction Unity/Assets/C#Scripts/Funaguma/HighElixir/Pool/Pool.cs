@@ -2,26 +2,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Minigames
+namespace HighElixir.Pool
 {
     public class Pool<T> where T : MonoBehaviour
     {
         private readonly T _original;
         private readonly int _maxPoolSize;
         private readonly Stack<T> _available = new();
-        private readonly GameObject _container;
+        private readonly Transform _container;
         private readonly HashSet<T> _inUse = new();
 
-        public Pool(T original, int maxPoolSize, Transform parent = null, bool isRect = false)
+        public Transform Container => _container;
+        public Pool(T original, int maxPoolSize, Transform customContainer, Transform parent = null, bool isRect = false)
         {
             if (original == null) throw new ArgumentNullException(nameof(original));
             if (maxPoolSize <= 0) throw new ArgumentOutOfRangeException(nameof(maxPoolSize));
 
             _original = original;
             _maxPoolSize = maxPoolSize;
-            _container = new GameObject(typeof(T).Name + "Container");
+            if (customContainer != null)
+            {
+                _container = customContainer;
+            }
+            else
+            {
+                var c = new GameObject(typeof(T).Name + "Container" + "_" + Guid.NewGuid().ToString());
+                _container = c.transform;
+            }
+
             if (parent != null) _container.transform.SetParent(parent);
-            if (isRect)
+            if (isRect && !_container.TryGetComponent<RectTransform>(out var _))
             {
                 var r = _container.gameObject.AddComponent<RectTransform>();
                 r.anchoredPosition = Vector3.zero;

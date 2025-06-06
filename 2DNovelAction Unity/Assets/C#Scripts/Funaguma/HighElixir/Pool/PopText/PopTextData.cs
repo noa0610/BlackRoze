@@ -1,7 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
-namespace Minigames.UI
+namespace HighElixir.Pool
 {
     public abstract class PopTextData : ScriptableObject, IPopTextData
     {

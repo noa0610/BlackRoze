@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-namespace Minigames.UI
+namespace HighElixir.Pool
 {
     public class PopText : MonoBehaviour
     {
@@ -16,23 +16,23 @@ namespace Minigames.UI
         }
 
         [Header("Reference")]
-        [SerializeField] TextMeshProUGUI _uGUI;
-        [SerializeField] PopTextData _popTextData;
-        [SerializeField] RectTransform _canvasRect;
-        [SerializeField] Camera _camera;
+        [SerializeField] private TextMeshProUGUI _uGUI;
+        [SerializeField] private PopTextData _popTextData;
+        [SerializeField] private RectTransform _canvasRect;
+        [SerializeField] private Camera _camera;
 
         [Header("Data")]
-        [SerializeField] float _duration = 1f;
-        [SerializeField] Vector2 _moveDir = Vector2.up;
-        [SerializeField] float _speed = 50f;
-        [SerializeField] int _maxEntries = 10;
-        [SerializeField] Easing.Ease _ease;
+        [SerializeField] private float _duration = 1f;
+        [SerializeField] private Vector2 _moveDir = Vector2.up;
+        [SerializeField] private float _speed = 50f;
+        [SerializeField] private int _maxEntries = 10;
+        [SerializeField] private Easing.Ease _ease;
 
-        Pool<TextMeshProUGUI> _pool;
-        List<PopEntry> _entries = new();
+        private Pool<TextMeshProUGUI> _pool;
+        private List<PopEntry> _entries = new();
         private Func<float, float> _easeMethod;
 
-        void Awake()
+        private void Awake()
         {
             // Nullチェック
             if (!_uGUI || _popTextData == null || !_canvasRect || !_camera)
@@ -41,7 +41,7 @@ namespace Minigames.UI
                 enabled = false;
                 return;
             }
-            _pool = new Pool<TextMeshProUGUI>(_uGUI, 5, _canvasRect, true);
+            _pool = new Pool<TextMeshProUGUI>(_uGUI, 5, null, _canvasRect, true);
             _easeMethod += Easing.GetEasingMethod(_ease);
         }
 
@@ -78,7 +78,7 @@ namespace Minigames.UI
             _entries.Add(entry);
         }
 
-        void Update()
+        private void Update()
         {
             float dt = Time.deltaTime;
             for (int i = _entries.Count - 1; i >= 0; i--)

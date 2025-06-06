@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using HighElixir.Pool;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,6 +17,7 @@ namespace BlackRose
         [SerializeField] private float coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
         [SerializeField] private float[] _chargeShoot = new float[2] { 1.8f, 3.4f}; // チャージ攻撃用の時間配列
         [SerializeField] private bool _canChargeCount = false;
+        [SerializeField] private Vector2 _stunKnockback = Vector2.zero;
 
         private float coyoteTimeCounter;
         private InputActionMap _Player;
@@ -62,7 +64,7 @@ namespace BlackRose
             _stateMachine.AddState("move", new MoveOnGround(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
             _stateMachine.AddState("dash", new DashOnGround(_rigidbody, this, _statusManager.GetStatusAmount(Status.DashSpeed)));
             _stateMachine.AddState("jump", new Jump(_rigidbody, _statusManager.GetStatusAmount(Status.SpeedInAir)));
-            _stunState = new Stun(_rigidbody, 0.5f);
+            _stunState = new Stun(_rigidbody, GetComponent<PopText>(), 0.5f, _stunKnockback);
             _stateMachine.AddState("stun", _stunState);
         }
 
@@ -117,11 +119,13 @@ namespace BlackRose
             _canChargeCount = false; // 攻撃ボタンを離したのでチャージ不可状態にする
             if (_chargeShoot[0] <= _shootPressTime && _shootPressTime < _chargeShoot[1])
             {
+                Debug.Log("チャージ１");
                 // チャージ攻撃の状態にする
                 SetBulletToShootstate<ShootForward>("chargeShoot", _bullets[1].Clone());
             }
             else if (_shootPressTime >= _chargeShoot[1])
             {
+                Debug.Log("フルチャージ");
                 // フルチャージ攻撃の状態にする
                 SetBulletToShootstate<ShootForward>("fullChargeShoot", _bullets[2].Clone());
             }
@@ -210,9 +214,8 @@ namespace BlackRose
         {
             base.Update();
             if (_canChargeCount)
-            {
                 _shootPressTime += Time.deltaTime; // 攻撃ボタンを押している間、時間をカウント
-            }
+            
             if (_stateFlags.HasFlag(StateFlags.InStun) && _stunState.StunTimer <= 0f)
             {
                 _stateFlags &= ~StateFlags.InStun; // スタンが終わったらフラグを下ろす

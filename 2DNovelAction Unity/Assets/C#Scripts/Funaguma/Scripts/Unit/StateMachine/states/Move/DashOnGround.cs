@@ -6,12 +6,12 @@ namespace BlackRose
 {
     public class DashOnGround : IState
     {
-        private IStatusManager.StatusAmount _dashSpeed;
+        private StatusAmount _dashSpeed;
         private Rigidbody2D _rigidbody2D;
         private DynamicAfterImageEffect2DPlayer _afterImagePlayer;
         private bool _onDashJump = false;
 
-        public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent, IStatusManager.StatusAmount dashSpeed)
+        public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent, StatusAmount dashSpeed)
         {
             if (_afterImagePlayer == null)
                 _afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();

@@ -37,14 +37,10 @@ namespace BlackRose
             get => _bullets;
             set => _bullets = value;
         }
-        protected virtual void Awake()
+        protected override void Awake()
         {
             _Player = _inputActions.FindActionMap("Player");
-        }
-        protected override void Start()
-        {
             _rigidbody = GetComponent<Rigidbody2D>();
-            base.Start();
         }
 
         protected override void RegisterStats()
@@ -61,9 +57,9 @@ namespace BlackRose
             full.onShootComplete += OnshootComplete;
             _stateMachine.AddState("fullChargeShoot", full);
 
-            _stateMachine.AddState("move", new MoveOnGround(_rigidbody, "Move", _statusManager.GetStatusAmount(Status.Speed)));
-            _stateMachine.AddState("dash", new DashOnGround(_rigidbody, this, _statusManager.GetStatusAmount(Status.DashSpeed)));
-            _stateMachine.AddState("jump", new Jump(_rigidbody, _statusManager.GetStatusAmount(Status.SpeedInAir)));
+            _stateMachine.AddState("move", new MoveOnGround(_rigidbody, "Move", statusManager.GetStatusAmount(Status.Speed)));
+            _stateMachine.AddState("dash", new DashOnGround(_rigidbody, this, statusManager.GetStatusAmount(Status.DashSpeed)));
+            _stateMachine.AddState("jump", new Jump(_rigidbody, statusManager.GetStatusAmount(Status.SpeedInAir)));
             _stunState = new Stun(_rigidbody, GetComponent<PopText>(), 0.5f, _stunKnockback);
             _stateMachine.AddState("stun", _stunState);
         }

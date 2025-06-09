@@ -5,10 +5,10 @@ using UnityEngine;
 
 namespace BlackRose
 {
-    public class StatusManager : IStatusManager
+    public class StatusManager 
     {
-        private Dictionary<Status, IStatusManager.StatusAmount> _statusAmounts = new();
-        public Dictionary<Status, IStatusManager.StatusAmount> StatusPair => _statusAmounts;
+        private Dictionary<Status, StatusAmount> _statusAmounts = new();
+        public Dictionary<Status, StatusAmount> StatusPair => _statusAmounts;
         public Action DeadCallBack { get; set; }
         public void AddChanged(Status status, float amount)
         {
@@ -31,10 +31,10 @@ namespace BlackRose
             if (_statusAmounts.ContainsKey(status))
                 _statusAmounts[status].currentAmount = amount;
             else
-                _statusAmounts.TryAdd(status, new IStatusManager.StatusAmount(amount));
+                _statusAmounts.TryAdd(status, new StatusAmount(amount));
         }
 
-        public bool TryGetStatus(Status status, out IStatusManager.StatusAmount amount)
+        public bool TryGetStatus(Status status, out StatusAmount amount)
         {
             return _statusAmounts.TryGetValue(status, out amount);
         }
@@ -84,7 +84,7 @@ namespace BlackRose
             return _statusAmounts.Keys.ToList();
         }
 
-        public IStatusManager.StatusAmount GetStatusAmount(Status status) => _statusAmounts[status];
+        public StatusAmount GetStatusAmount(Status status) => _statusAmounts[status];
 
         public bool IsRegistered(Status status)
         {

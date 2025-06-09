@@ -5,7 +5,8 @@ namespace BlackRose
     public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
     {
         // === Reference ===
-        protected IStatusManager _statusManager;
+        public StatusManager statusManager;
+        public EffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected StateFlags _stateFlags; // 現在の状態（移動中・攻撃中など）
@@ -25,8 +26,9 @@ namespace BlackRose
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public StateFlags StateFlags => _stateFlags; // 状態フラグ取得
         public Transform Transform => transform;
-        public IStatusManager StatusManager => _statusManager;
-        public Vector2 Direction {  get; set; }
+        public StatusManager StatusManager => statusManager;
+        public EffectManager EffectManager => effectManager;
+        public Vector2 Direction { get; set; }
         public Animator Animator
         {
             get
@@ -39,11 +41,12 @@ namespace BlackRose
             }
         }
 
-        protected virtual void Start()
+        protected virtual void Awake()
         {
             UnitManager.instance.AddUnit(this);
             _stateMachine = new StateMachine(this, DefaultState, StateDecision, DefaultStateKey);
-            _statusManager = new StatusManager();
+            statusManager = new StatusManager();
+            effectManager = new(this);
             RegisterStatus();
             RegisterStats();
         }
@@ -51,20 +54,20 @@ namespace BlackRose
         protected virtual void Update()
         {
             _stateMachine.Update();
+            effectManager.Update();
             var s = _stateMachine.CurrentState.Item1;
             _currentState = s;
-
         }
 
         protected virtual void RegisterStatus()
         {
-            _statusManager.AddStatus(Status.HP, _status.maxHp);
-            _statusManager.AddStatus(Status.Speed, _status.speed);
-            _statusManager.AddStatus(Status.SpeedInAir, _status.speedInAir);
-            _statusManager.AddStatus(Status.JumpPower, _status.jumpPower);
-            _statusManager.AddStatus(Status.DashSpeed, _status.dashSpeed);
-            _statusManager.AddStatus(Status.Power, _status.power);
-            _statusManager.DeadCallBack += DeadCallBack;
+            statusManager.AddStatus(Status.HP, _status.maxHp);
+            statusManager.AddStatus(Status.Speed, _status.speed);
+            statusManager.AddStatus(Status.SpeedInAir, _status.speedInAir);
+            statusManager.AddStatus(Status.JumpPower, _status.jumpPower);
+            statusManager.AddStatus(Status.DashSpeed, _status.dashSpeed);
+            statusManager.AddStatus(Status.Power, _status.power);
+            statusManager.DeadCallBack += DeadCallBack;
         }
         protected abstract void RegisterStats();
         protected abstract string StateDecision();
@@ -89,7 +92,7 @@ namespace BlackRose
 
         public virtual void TakeDamage(float damage)
         {
-            _statusManager?.TakeDamage(damage);
+            statusManager?.TakeDamage(damage);
         }
 
         protected virtual void DeadCallBack()

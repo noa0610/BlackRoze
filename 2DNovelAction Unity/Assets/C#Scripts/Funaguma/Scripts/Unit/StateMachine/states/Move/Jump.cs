@@ -7,7 +7,7 @@ namespace BlackRose
         protected Rigidbody2D _rb;
         protected bool _hasLeapt = false;
         protected float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
-        protected IStatusManager.StatusAmount _statusAmount;
+        protected StatusAmount _statusAmount;
 
         public bool HadLeapt
         {
@@ -22,7 +22,7 @@ namespace BlackRose
         }
 
         /// <param name="amount">Status.SpeedInAir</param>
-        public Jump(Rigidbody2D rb, IStatusManager.StatusAmount amount)
+        public Jump(Rigidbody2D rb, StatusAmount amount)
         {
             _rb = rb;
             _statusAmount = amount;

@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace BlackRose
 {
-    // unitStatus構造体からスクリプタブルオブジェクトに移行作業中
     [CreateAssetMenu(menuName = "BlackRose/UnitStatus")]
     public class UnitStatusData : ScriptableObject
     {

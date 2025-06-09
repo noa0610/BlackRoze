@@ -9,9 +9,9 @@ namespace BlackRose
     {
         private Rigidbody2D _rigidbody2D;
         private string _animationTrigger;
-        private IStatusManager.StatusAmount _statusAmount;
+        private StatusAmount _statusAmount;
 
-        public MoveOnGround(Rigidbody2D rigidbody2D, string animationTrigger, IStatusManager.StatusAmount status)
+        public MoveOnGround(Rigidbody2D rigidbody2D, string animationTrigger, StatusAmount status)
         {
             _rigidbody2D = rigidbody2D;
             _animationTrigger = animationTrigger;

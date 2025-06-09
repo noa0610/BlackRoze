@@ -13,24 +13,16 @@ namespace HighElixir.Pool
         private readonly HashSet<T> _inUse = new();
 
         public Transform Container => _container;
-        public Pool(T original, int maxPoolSize, Transform customContainer, Transform parent = null, bool isRect = false)
+        public Pool(T original, int maxPoolSize, Transform customContainer, bool isRect = false)
         {
             if (original == null) throw new ArgumentNullException(nameof(original));
+            if (customContainer == null) throw new ArgumentNullException(nameof(customContainer));
             if (maxPoolSize <= 0) throw new ArgumentOutOfRangeException(nameof(maxPoolSize));
 
             _original = original;
             _maxPoolSize = maxPoolSize;
-            if (customContainer != null)
-            {
-                _container = customContainer;
-            }
-            else
-            {
-                var c = new GameObject(typeof(T).Name + "Container" + "_" + Guid.NewGuid().ToString());
-                _container = c.transform;
-            }
+            _container = customContainer;
 
-            if (parent != null) _container.transform.SetParent(parent);
             if (isRect && !_container.TryGetComponent<RectTransform>(out var _))
             {
                 var r = _container.gameObject.AddComponent<RectTransform>();

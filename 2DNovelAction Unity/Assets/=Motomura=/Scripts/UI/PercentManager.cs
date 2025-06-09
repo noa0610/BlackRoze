@@ -3,9 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-using UnityEditor.SearchService;
 using UnityEngine.SceneManagement;
-using UnityEditor.VersionControl;
 using System;
 
 public class PercentManager : MonoBehaviour

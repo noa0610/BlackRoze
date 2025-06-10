@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BlackRose
 {
-    public class EffectManager
+    public class StatusEffectManager
     {
         public UnitBase parent;
         public List<StatusEffectBase> effects = new List<StatusEffectBase>();
@@ -59,7 +59,7 @@ namespace BlackRose
             }
             return null;
         }
-        public EffectManager(UnitBase parent)
+        public StatusEffectManager(UnitBase parent)
         {
             this.parent = parent;
         }

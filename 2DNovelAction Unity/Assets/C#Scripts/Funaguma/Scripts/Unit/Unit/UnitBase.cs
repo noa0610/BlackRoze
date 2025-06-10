@@ -6,7 +6,7 @@ namespace BlackRose
     {
         // === Reference ===
         public StatusManager statusManager;
-        public EffectManager effectManager;
+        public StatusEffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected StateFlags _stateFlags; // 現在の状態（移動中・攻撃中など）
@@ -27,7 +27,7 @@ namespace BlackRose
         public StateFlags StateFlags => _stateFlags; // 状態フラグ取得
         public Transform Transform => transform;
         public StatusManager StatusManager => statusManager;
-        public EffectManager EffectManager => effectManager;
+        public StatusEffectManager StatusEffectManager => effectManager;
         public Vector2 Direction { get; set; }
         public Animator Animator
         {

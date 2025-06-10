@@ -25,7 +25,7 @@ namespace BlackRose
         // ユニットのステータス（HP、攻撃力、移動速度など）を保持
         UnitStatusData UnitStatusData { get; }
         StatusManager StatusManager { get; }
-        EffectManager EffectManager { get; }
+        StatusEffectManager StatusEffectManager { get; }
         StateFlags StateFlags { get; }
         Animator Animator { get; set; }
         Transform Transform { get; }

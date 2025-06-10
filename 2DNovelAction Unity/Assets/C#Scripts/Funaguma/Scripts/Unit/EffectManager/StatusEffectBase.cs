@@ -20,6 +20,8 @@ namespace BlackRose
         public virtual void OnTickEffect() => OnTick?.Invoke(this);
         public virtual void OnRemoveEffect() => OnRemove?.Invoke(this);
         public abstract IEnumerator<Effect> GetAvaibleEffect();
+
+        public abstract void Converter(StatusEffectData data);
     }
 
     [Serializable]

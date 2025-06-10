@@ -8,7 +8,7 @@ namespace BlackRose
         private float _stunTime;
         private float _stunTimer = 0f;
         private Rigidbody2D _rigidbody2D;
-        private Vector2 _knockbackDirection = new Vector2(0.6f, 0.4f); // Default knockback direction
+        private Vector2 _knockbackDirection = new Vector2(0.78f, 0.9f); // Default knockback direction
         private PopText _popText;
         public float StunTimer => _stunTimer; // Expose the stun timer for external checks
 
@@ -30,7 +30,8 @@ namespace BlackRose
             _popText.CreateText((parent as UnitBase).transform, "Stun!");
             parent.Animator.SetFloat("StunTime", _stunTime);
             _rigidbody2D.velocity = Vector2.zero;
-            _rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 10f, ForceMode2D.Impulse); // Apply knockback force
+            _rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force
+            parent.StatusEffectManager.AddEffect(StatusEffectHolder.instance.Stun.EffectFactory());
             return true;
         }
 

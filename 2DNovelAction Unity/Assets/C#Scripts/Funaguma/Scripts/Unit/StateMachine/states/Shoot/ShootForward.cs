@@ -10,11 +10,13 @@ namespace BlackRose
 
         public override bool Enter(IState previousState, IUnit parent)
         {
+            parent.Animator?.SetTrigger(_animeTrigger);
             return true;
         }
 
         public override bool Exit(IState nextState, IUnit parent)
         {
+            parent.Animator?.SetTrigger(_animeTrigger);
             // 攻撃終了時（今は特に処理なし）
             return true;
         }
@@ -41,7 +43,7 @@ namespace BlackRose
             return true;
         }
 
-        public ShootForward(BulletObject bulletObject, LayerMask targetLayer) : base(bulletObject, targetLayer) { }
+        public ShootForward(BulletObject bulletObject, LayerMask targetLayer, string animeTrigger) : base(bulletObject, targetLayer, animeTrigger) { }
     }
 }
 //unicode

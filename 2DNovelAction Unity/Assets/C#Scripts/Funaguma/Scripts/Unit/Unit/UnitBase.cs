@@ -70,6 +70,7 @@ namespace BlackRose
             statusManager.AddStatus(Status.JumpPower, _status.jumpPower);
             statusManager.AddStatus(Status.DashSpeed, _status.dashSpeed);
             statusManager.AddStatus(Status.Power, _status.power);
+            statusManager.AddStatus(Status.DamageRatio, 1);
             statusManager.DeadCallBack += DeadCallBack;
         }
         protected abstract void RegisterStats();

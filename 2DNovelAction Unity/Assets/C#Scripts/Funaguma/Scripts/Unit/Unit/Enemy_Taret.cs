@@ -28,7 +28,7 @@ namespace BlackRose
             _searchAssistance = new SearchAssistance();
 
             // 「shoot」ステート…弾を１発撃つ (ShootForward内でOnShootComplete呼ぶ)
-            var shoot = new ShootForward(_bulletObject, _targetLayer);
+            var shoot = new ShootForward(_bulletObject, _targetLayer, "");
             shoot.onShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
 

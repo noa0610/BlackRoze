@@ -8,7 +8,10 @@ namespace BlackRose
         // 弾丸にセットするレイヤー
         protected LayerMask _targetLayer;
         protected BulletObject _bulletObject;         // 発射する弾のデータ
+        protected string _animeTrigger;
         public event Action onShootComplete;
+
+        // === Public ===
         public abstract bool Enter(IState previousState, IUnit parent);
         public abstract bool Exit(IState nextState, IUnit parent);
         public abstract bool Stay(IUnit parent);
@@ -20,10 +23,13 @@ namespace BlackRose
         {
             _bulletObject = bullet;
         }
-        public ShootStateBase(BulletObject bulletObject, LayerMask targetLayer)
+
+        // === Constractor ===
+        public ShootStateBase(BulletObject bulletObject, LayerMask targetLayer, string animeTrigger)
         {
             _bulletObject = bulletObject;
             _targetLayer = targetLayer; // レイヤーをセット
+            _animeTrigger = animeTrigger;
         }
     }
 }

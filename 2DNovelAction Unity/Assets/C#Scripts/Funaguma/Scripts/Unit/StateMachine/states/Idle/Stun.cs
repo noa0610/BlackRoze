@@ -31,6 +31,7 @@ namespace BlackRose
             parent.Animator.SetFloat("StunTime", _stunTime);
             _rigidbody2D.velocity = Vector2.zero;
             _rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force
+            parent.Player.AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, 1.5f);
             parent.StatusEffectManager.AddEffect(StatusEffectHolder.instance.Stun.EffectFactory());
             return true;
         }

@@ -26,6 +26,7 @@ namespace BlackRose
         UnitStatusData UnitStatusData { get; }
         StatusManager StatusManager { get; }
         StatusEffectManager StatusEffectManager { get; }
+        SpriteEffectPlayer Player { get; }
         StateFlags StateFlags { get; }
         Animator Animator { get; set; }
         Transform Transform { get; }

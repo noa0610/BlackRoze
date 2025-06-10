@@ -2,9 +2,11 @@
 
 namespace BlackRose
 {
+    [RequireComponent(typeof(SpriteEffectPlayer))]
     public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
     {
         // === Reference ===
+        public SpriteEffectPlayer player;
         public StatusManager statusManager;
         public StatusEffectManager effectManager;
         [Header("Datas")]
@@ -28,6 +30,7 @@ namespace BlackRose
         public Transform Transform => transform;
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
+        public SpriteEffectPlayer Player => player;
         public Vector2 Direction { get; set; }
         public Animator Animator
         {

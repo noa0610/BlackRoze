@@ -17,7 +17,7 @@ namespace HighElixir.Pool
 
         [Header("Reference")]
         [SerializeField] private TextMeshProUGUI _uGUI;
-        [SerializeField] private RectTransform _canvasRect;
+        [SerializeField] private RectTransform _container;
         [SerializeField] private Camera _camera;
 
         [Header("Data")]
@@ -34,13 +34,13 @@ namespace HighElixir.Pool
         private void Awake()
         {
             // Nullチェック
-            if (!_uGUI || !_canvasRect || !_camera)
+            if (!_uGUI || !_container || !_camera)
             {
                 Debug.LogError("Inspector設定不足！", this);
                 enabled = false;
                 return;
             }
-            _pool = new Pool<TextMeshProUGUI>(_uGUI, 5, _canvasRect, null, true);
+            _pool = new Pool<TextMeshProUGUI>(_uGUI, 5, _container, true);
             _easeMethod += Easing.GetEasingMethod(_ease);
         }
 

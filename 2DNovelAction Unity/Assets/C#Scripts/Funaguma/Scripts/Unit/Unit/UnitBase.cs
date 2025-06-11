@@ -44,6 +44,7 @@ namespace BlackRose
             }
         }
 
+        // 子クラスで行いたい処理に合わせてBase.Awake()の位置は調整すること
         protected virtual void Awake()
         {
             UnitManager.instance.AddUnit(this);
@@ -54,6 +55,7 @@ namespace BlackRose
             RegisterStats();
         }
 
+        // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
         protected virtual void Update()
         {
             _stateMachine.Update();
@@ -81,12 +83,6 @@ namespace BlackRose
         {
             // ここにゲーム一時停止処理を書く予定
         }
-
-        public virtual void Dispose()
-        {
-            // ゲーム終了時の後始末など
-        }
-
         public virtual void GamePlay_Continue()
         {
             // 停止からの再開処理を書く場所

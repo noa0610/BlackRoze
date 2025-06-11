@@ -8,7 +8,7 @@ namespace BlackRose
     {
         public UnitBase unit;
         private TMP_Text _text;
-        private StatusAmount _statusAmount;
+        private StatusAmount _statusAmount; // HPへの参照
 
         
         private void Awake()

@@ -8,6 +8,7 @@
         private string _animationKey;
         public Idle(string animationKey = null)
         {
+            _animationKey = animationKey;
         }
         public virtual bool Enter(IState previousState, IUnit parent)
         {

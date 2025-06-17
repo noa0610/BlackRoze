@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
-using static BlackRose.SpriteEffectHolders;
 
 namespace BlackRose
 {
@@ -13,7 +12,7 @@ namespace BlackRose
         // Intensity
         private float _defaultAmount;
         [SerializeField] private float _maxAmount = 0.5f;
-        [SerializeField] private float _maxTime = 2.5f;// 最大値に達するまでにかかる時間
+        [SerializeField] private float _maxTime = 1f;// 最大値に達するまでにかかる時間
         private float _currentTime = 0f;
 
         // Deta

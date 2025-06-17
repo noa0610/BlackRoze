@@ -60,8 +60,8 @@ namespace BlackRose
         {
             _stateMachine.Update();
             effectManager.Update();
-            var s = _stateMachine.CurrentState.Item1;
-            _currentState = s;
+            var s = _stateMachine.CurrentState.Key;
+            _currentState = s; // インスペクターからの監視用変数
         }
 
         protected virtual void RegisterStatus()

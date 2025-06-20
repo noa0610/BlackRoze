@@ -1,14 +1,15 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 
 namespace BlackRose
 {
 
     /// <summary>
-    /// ó‘ÔiƒXƒe[ƒgj‚²‚Æ‚ÌƒCƒ“ƒ^[ƒtƒF[ƒXB
-    /// ŠeƒXƒe[ƒgis“®ƒpƒ^[ƒ“j‚É‚±‚ÌƒCƒ“ƒ^[ƒtƒF[ƒX‚ğÀ‘•‚³‚¹‚éB
-    /// •Ô‚è’l‚Ìbool‚Íˆ—‚Ì¬Œ÷^¸”s‚ğ¦‚·B
+    /// çŠ¶æ…‹ï¼ˆã‚¹ãƒ†ãƒ¼ãƒˆï¼‰ã”ã¨ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã€‚
+    /// å„ã‚¹ãƒ†ãƒ¼ãƒˆï¼ˆè¡Œå‹•ãƒ‘ã‚¿ãƒ¼ãƒ³ï¼‰ã«ã“ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã‚’å®Ÿè£…ã•ã›ã‚‹ã€‚
+    /// è¿”ã‚Šå€¤ã®boolã¯å‡¦ç†ã®æˆåŠŸï¼å¤±æ•—ã‚’ç¤ºã™ã€‚
     /// </summary>
+    // Note : ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚¿ãƒ¼ã¨é€£æºã™ã‚‹å ´åˆã¯ã€ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã«Animatorã¨Enteræ™‚ã«èµ·å‹•ã™ã¹ããƒˆãƒªã‚¬ãƒ¼ã‚’æ¸¡ã™ãªã©ã—ã¦ã€é€£æºã™ã‚‹ã“ã¨
     public interface IState
     {
         bool Enter(IState previousState, IUnit parent);
@@ -18,18 +19,18 @@ namespace BlackRose
         bool Exit(IState nextState, IUnit parent);
     }
 
-    // ƒXƒe[ƒgƒ}ƒVƒ“–{‘Ì‚ÌƒCƒ“ƒ^[ƒtƒF[ƒX
+    // ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ³æœ¬ä½“ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
     public interface IStateMachine
     {
-        Dictionary<string, IState> StateMap { get; }  // ƒXƒe[ƒg‚Ìˆê——i–¼‘O‚Æ‘Î‰‚·‚éƒCƒ“ƒXƒ^ƒ“ƒXj
-        (string Key, IState State) CurrentState { get; }                  // Œ»İ‚ÌƒXƒe[ƒg
+        Dictionary<string, IState> StateMap { get; }  // ã‚¹ãƒ†ãƒ¼ãƒˆã®ä¸€è¦§ï¼ˆåå‰ã¨å¯¾å¿œã™ã‚‹ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ï¼‰
+        (string Key, IState State) CurrentState { get; }                  // ç¾åœ¨ã®ã‚¹ãƒ†ãƒ¼ãƒˆ
 
         string DefaultStateKey { get; }
 
         void SetCondition(Func<string> condition);
-        void ChangeState(string newStateKey);         // ‘¦ƒXƒe[ƒg•ÏX
-        void ChangeRequest(string requestKey);        // ƒXƒe[ƒg•ÏX‚Ì—\–ñ or ğŒ•t‚«•ÏX
-        void Update();                                // ƒXƒe[ƒgƒ}ƒVƒ“‚ÌXVˆ—iStay‚ÌŒÄ‚Ño‚µ‚È‚Çj
-        void AddState(string newStateKey, IState state);  // ƒXƒe[ƒg‚Ì’Ç‰Á
+        void ChangeState(string newStateKey);         // å³æ™‚ã‚¹ãƒ†ãƒ¼ãƒˆå¤‰æ›´
+        void ChangeRequest(string requestKey);        // ã‚¹ãƒ†ãƒ¼ãƒˆå¤‰æ›´ã®äºˆç´„ or æ¡ä»¶ä»˜ãå¤‰æ›´
+        void Update();                                // ã‚¹ãƒ†ãƒ¼ãƒˆãƒã‚·ãƒ³ã®æ›´æ–°å‡¦ç†ï¼ˆStayã®å‘¼ã³å‡ºã—ãªã©ï¼‰
+        void AddState(string newStateKey, IState state);  // ã‚¹ãƒ†ãƒ¼ãƒˆã®è¿½åŠ 
     }
 }

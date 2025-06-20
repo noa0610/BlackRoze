@@ -12,7 +12,7 @@
         }
         public virtual bool Enter(IState previousState, IUnit parent)
         {
-            parent.Animator.SetTrigger(_animationKey);
+            parent.Animator?.SetTrigger(_animationKey);
             return true;
         }
 

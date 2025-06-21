@@ -1,0 +1,33 @@
+﻿using HighElixir.Utilities;
+using UnityEngine;
+
+namespace BlackRose.Core
+{
+    public class PlayerSpawnner : SingletonBehavior<PlayerSpawnner>
+    {
+        private RespawnPoint _currentRespawnPoint;
+        [SerializeField] private UnitBase player;
+        public void Spawn(UnitBase Player, RespawnPoint customRespawnPoint = null)
+        {
+            if (customRespawnPoint == null)
+            {
+                Player.transform.position = _currentRespawnPoint.transform.position;
+            }
+            else
+            {
+                Player.transform.position = customRespawnPoint.transform.position;
+            }
+        }
+
+        public void SetRespawnPoint(RespawnPoint respawnPoint)
+        {
+            _currentRespawnPoint = respawnPoint;
+        }
+        protected override void Awake()
+        {
+            base.Awake();
+            Spawn(player);
+            player.gameObject.SetActive(true);
+        }
+    }
+}

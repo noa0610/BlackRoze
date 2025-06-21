@@ -37,18 +37,25 @@ namespace BlackRose
         // EnterとExitのタイミングで通知が送られる
         public bool Triggerd { get; private set; } = false;
 
-        private void OnTriggerEnter2D(Collider2D _)
+        private void OnTriggerEnter2D(Collider2D collider2D)
         {
-            Triggerd = true;
-            foreach (var observer in _observers) 
-                observer.OnNext(Triggerd);
+
+            if (collider2D.CompareTag(_targetTag))
+            {
+                Triggerd = true;
+                foreach (var observer in _observers)
+                    observer.OnNext(Triggerd);
+            }
         }
 
-        private void OnTriggerExit2D(Collider2D _)
+        private void OnTriggerExit2D(Collider2D collider2D)
         {
-            Triggerd = false;
-            foreach (var observer in _observers)
-                observer.OnNext(Triggerd);
+            if (collider2D.CompareTag(_targetTag))
+            {
+                Triggerd = false;
+                foreach (var observer in _observers)
+                    observer.OnNext(Triggerd);
+            }
         }
         private void OnDestroy()
         {

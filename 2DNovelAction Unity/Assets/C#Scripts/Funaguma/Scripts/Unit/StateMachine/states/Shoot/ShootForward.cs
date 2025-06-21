@@ -11,18 +11,6 @@ namespace BlackRose
         public override bool Enter(IState previousState, IUnit parent)
         {
             parent.Animator?.SetTrigger(_animeTrigger);
-            return true;
-        }
-
-        public override bool Exit(IState nextState, IUnit parent)
-        {
-            parent.Animator?.SetTrigger(_animeTrigger);
-            // 攻撃終了時（今は特に処理なし）
-            return true;
-        }
-
-        public override bool Stay(IUnit parent)
-        {
             var b = _bulletObject.bulletData.bullet;
             if (b == null)
             {
@@ -39,7 +27,22 @@ namespace BlackRose
 
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_bulletObject, _targetLayer);
-            ActionInvoke();
+            return true;
+        }
+
+        public override bool Exit(IState nextState, IUnit parent)
+        {
+            parent.Animator?.SetTrigger(_animeTrigger);
+            // 攻撃終了時（今は特に処理なし）
+            return true;
+        }
+
+        public override bool Stay(IUnit parent)
+        {
+            if (parent.Animator == null || parent.Animator?.GetCurrentAnimatorStateInfo(0).IsName(_animeTrigger) == false)
+            {
+                ActionInvoke();
+            }
             return true;
         }
 

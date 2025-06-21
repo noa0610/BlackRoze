@@ -91,7 +91,7 @@ namespace BlackRose
             }
             if (_stateFlags.HasFlag(StateFlags.InShoot))
             {
-                _stateFlags &= ~StateFlags.InShoot;
+                //_stateFlags &= ~StateFlags.InShoot;
                 if (_fullCharge)
                 {
                     _fullCharge = false;
@@ -122,6 +122,8 @@ namespace BlackRose
             base.TakeDamage(damage);
             _stateFlags |= StateFlags.InStun; // ダメージを受けたらスタン状態にする
         }
+        
+        // === Private ===
         private void SetBulletToShootstate<T>(string targetState, BulletObject bullet) where T : ShootStateBase
         {
             var b = bullet.Clone(); // 初期状態をコピー
@@ -132,9 +134,10 @@ namespace BlackRose
             var state = (T)_stateMachine.StateMap[targetState];
             state.SetBullet(b);
         }
-        // === Private ===
+        
         private void OnshootComplete()
         {
+            Debug.Log("Shoot completed.");
             _stateFlags &= ~StateFlags.InShoot;
         }
 

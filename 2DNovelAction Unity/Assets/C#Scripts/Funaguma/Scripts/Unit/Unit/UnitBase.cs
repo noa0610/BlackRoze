@@ -31,7 +31,7 @@ namespace BlackRose
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
         public SpriteEffectPlayer Player => player;
-        public Vector2 Direction { get; set; }
+        public Vector2 Direction { get; set; } = new Vector2(1, 0); // ユニットの向き（右方向が1,0）
         public Animator Animator
         {
             get

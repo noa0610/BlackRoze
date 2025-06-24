@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class SceneSelectLoad : MonoBehaviour
 {
-    [SerializeField] private GameObject TargetObject; // ターゲットオブジェクト
+    [SerializeField] private RectTransform TargetObject; // ターゲットオブジェクト
     [SerializeField] private Vector3 ENDPosition; // ターゲットオブジェクトの最終的な位置
     [SerializeField] private float AnimationTime = 1f; // アニメーション時間
     [SerializeField] private string LoadEffectName = "Load_GFF"; // ロードシーン名
@@ -25,7 +25,7 @@ public void OnButtonClick(string  _AfterLoadingSceneName)//引数の中はロー
         else//アタッチされてる場合スライドアニメーションを実行したのちロードシーンへ
         {
             Debug.Log("アニメーションが終わり次第シーン遷移します。");
-            TargetObject.transform.DOMove(ENDPosition, AnimationTime).OnComplete(() =>//現在は座標指定式スライドアニメーション
+            TargetObject.DOAnchorPos(ENDPosition, AnimationTime).OnComplete(() =>//現在は座標指定式スライドアニメーション
             {
                 Load();
             });

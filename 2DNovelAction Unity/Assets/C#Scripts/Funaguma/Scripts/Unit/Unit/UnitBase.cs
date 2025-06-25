@@ -11,7 +11,6 @@ namespace BlackRose
         public StatusEffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected StateFlags _stateFlags; // 現在の状態（移動中・攻撃中など）
         [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
@@ -26,12 +25,11 @@ namespace BlackRose
         protected virtual string DefaultStateKey => "idle";
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
-        public StateFlags StateFlags => _stateFlags; // 状態フラグ取得
         public Transform Transform => transform;
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
         public SpriteEffectPlayer Player => player;
-        public Vector2 Direction { get; set; }
+        public Vector2 Direction { get; set; } = new Vector2(1, 0); // ユニットの向き（右方向が1,0）
         public Animator Animator
         {
             get

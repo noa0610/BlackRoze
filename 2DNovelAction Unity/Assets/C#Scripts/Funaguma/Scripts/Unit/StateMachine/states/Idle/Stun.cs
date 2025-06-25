@@ -1,4 +1,5 @@
 ﻿using HighElixir.Pool;
+using System.Linq.Expressions;
 using UnityEngine;
 
 namespace BlackRose
@@ -23,7 +24,6 @@ namespace BlackRose
                 _knockbackDirection = knockbackDirection.normalized; // Ensure the knockback direction is normalized
             }
         }
-
         public override bool Enter(IState previousState, IUnit parent)
         {
             _stunTimer = _stunTime; // Initialize the stun timer
@@ -35,13 +35,15 @@ namespace BlackRose
             parent.StatusEffectManager.AddEffect(StatusEffectHolder.instance.Stun.EffectFactory());
             return true;
         }
-
         public override bool Stay(IUnit parent)
         {
-
             if (_stunTimer <= 0f) return true;
             _stunTimer = Mathf.Max(0f, _stunTimer - Time.deltaTime); // Decrease the stun timer
             return true; // Continue staying in the Stun state
+        }
+        public bool FinishedStun()
+        {
+            return _stunTimer <= 0f; // Check if the stun duration has ended
         }
     }
 }

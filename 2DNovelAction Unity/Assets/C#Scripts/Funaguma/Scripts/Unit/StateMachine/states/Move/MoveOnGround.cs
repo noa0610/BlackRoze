@@ -10,12 +10,14 @@ namespace BlackRose
         private Rigidbody2D _rigidbody2D;
         private string _animationTrigger;
         private StatusAmount _statusAmount;
+        private bool _inex = false; // inExitStopの代わりに使用するフラグ
 
-        public MoveOnGround(Rigidbody2D rigidbody2D, string animationTrigger, StatusAmount status)
+        public MoveOnGround(Rigidbody2D rigidbody2D, string animationTrigger, StatusAmount status, bool inExitStop = false)
         {
             _rigidbody2D = rigidbody2D;
             _animationTrigger = animationTrigger;
             _statusAmount = status;
+            _inex = inExitStop; // inExitStopの代わりに使用するフラグを設定
         }
 
         public bool Enter(IState previousState, IUnit parent)
@@ -26,6 +28,8 @@ namespace BlackRose
 
         public bool Exit(IState nextState, IUnit parent)
         {
+            if (_inex)
+                _rigidbody2D.velocity = Vector2.zero; // inExitStopの代わりに使用するフラグがtrueなら速度をゼロにする
             return true;
         }
 

@@ -5,29 +5,31 @@ namespace BlackRose
     public class Enemy_Turret : UnitBase
     {
         // === Data ===
-        [SerializeField] private BulletObject _bulletObject;
+        [SerializeField] private BulletData _bulletData;
         [SerializeField] private float _rotateSpeed;
         [SerializeField] private float _shootInterval = 100f;
         [SerializeField] private int _shootFireCount;       // 1サイクルあたりの連射数
         [SerializeField] private float _detectionDistance;
         [SerializeField] private LayerMask _targetLayer;
+
         // === Reference ===
         private ISearch _searchAssistance;
 
         // === Internal ===
-        private float _shootIntervalCount = 0f;  // 待機タイマー
-        private float _trishootInterval; // インターバルカウント
+        [SerializeField] private float _shootIntervalCount = 0f;  // 待機タイマー
+        [SerializeField] private float _trishootInterval; // インターバルカウント
         private int _shootCount;            // 現在までに撃ったカウント
 
         // === StateMachine ===
         protected override IState DefaultState => new Idle_Rotate(transform, _rotateSpeed);
+        private StateFlags _stateFlags = StateFlags.None;
 
         // ステート登録
         protected override void RegisterStats()
         {
             _searchAssistance = new SearchAssistance();
 
-            var shoot = new ShootForward(_bulletObject, _targetLayer, "");
+            var shoot = new ShootForward(_bulletData, _targetLayer, "");
             shoot.onShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
 
@@ -65,20 +67,8 @@ namespace BlackRose
                     return diffA.sqrMagnitude
                         .CompareTo(diffB.sqrMagnitude);
                 });
-                SetBullet(result[0]);
+                _bulletData.originalstatus.direction = (result[0].Transform.position - transform.position).normalized;
             }
-        }
-
-        private void SetBullet(IUnit target)
-        {
-            // 弾をセット
-            var clone = _bulletObject.Clone();
-            clone.currentstatus = clone.bulletData.originalstatus;
-            clone.currentstatus.direction =
-                (target.Transform.position - transform.position).normalized;
-
-            var shootState = (ShootForward)_stateMachine.StateMap["shoot"];
-            shootState.SetBullet(clone);
         }
         // ステート遷移判定
         protected override string StateDecision()

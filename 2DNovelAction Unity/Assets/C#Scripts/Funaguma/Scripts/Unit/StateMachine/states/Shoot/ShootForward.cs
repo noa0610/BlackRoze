@@ -6,12 +6,10 @@ namespace BlackRose
 
     public class ShootForward : ShootStateBase
     {
-        public BulletObject BulletObject => _bulletObject;
-
         public override bool Enter(IState previousState, IUnit parent)
         {
             parent.Animator?.SetTrigger(_animeTrigger);
-            var b = _bulletObject.bulletData.bullet;
+            var b = _data.prefab;
             if (b == null)
             {
                 Debug.Log("Do not set bullet.");
@@ -26,27 +24,27 @@ namespace BlackRose
 
 
             // ステータスをセット（速度、方向、ダメージなど）
-            instantiatedBullet.SetBulletStatus(_bulletObject, _targetLayer);
+            instantiatedBullet.SetBulletStatus(_data, _targetLayer);
             return true;
         }
 
         public override bool Exit(IState nextState, IUnit parent)
         {
-            parent.Animator?.SetTrigger(_animeTrigger);
+            parent.Animator?.ResetTrigger(_animeTrigger);
             // 攻撃終了時（今は特に処理なし）
             return true;
         }
 
         public override bool Stay(IUnit parent)
         {
-            if (parent.Animator == null || parent.Animator?.GetCurrentAnimatorStateInfo(0).IsName(_animeTrigger) == false)
+            if (parent.Animator == null || parent.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animeTrigger) == false)
             {
                 ActionInvoke();
             }
             return true;
         }
 
-        public ShootForward(BulletObject bulletObject, LayerMask targetLayer, string animeTrigger) : base(bulletObject, targetLayer, animeTrigger) { }
+        public ShootForward(BulletData data, LayerMask targetLayer, string animeTrigger) : base(data, targetLayer, animeTrigger) { }
     }
 }
 //unicode

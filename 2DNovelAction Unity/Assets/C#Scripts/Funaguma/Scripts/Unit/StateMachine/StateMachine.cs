@@ -93,7 +93,6 @@ namespace BlackRose
                 _currentState = (targetState, state);
                 // 新しいステートに入る（Enter）
                 _currentState.State.Enter(tmp, _parent);
-                //Debug.Log("Changed State. Current:" + targetState);
             }
             else
             {

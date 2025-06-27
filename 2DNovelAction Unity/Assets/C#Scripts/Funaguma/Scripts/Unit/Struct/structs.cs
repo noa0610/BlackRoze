@@ -1,9 +1,9 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
 namespace BlackRose
 {
-    // ƒ†ƒjƒbƒg‚Ìó‘Ô‚ğ•\‚·\‘¢‘ÌiSerializable‚È‚Ì‚ÅUnity‚ÌInspector‚Å‚àŒ©‚¦‚éIj
+    // ãƒ¦ãƒ‹ãƒƒãƒˆã®çŠ¶æ…‹ã‚’è¡¨ã™æ§‹é€ ä½“ï¼ˆSerializableãªã®ã§Unityã®Inspectorã§ã‚‚è¦‹ãˆã‚‹ï¼ï¼‰
     [Serializable]
     public struct UnitStatus
     {
@@ -11,22 +11,36 @@ namespace BlackRose
         public string name;
         public string description;
         public float maxHp;
-        public float hp;         // ‘Ì—Í
-        public Vector2 direction; // Œü‚«i2DƒxƒNƒgƒ‹j
-        public float speed;      // ˆÚ“®‘¬“x
+        public float hp;         // ä½“åŠ›
+        public Vector2 direction; // å‘ãï¼ˆ2Dãƒ™ã‚¯ãƒˆãƒ«ï¼‰
+        public float speed;      // ç§»å‹•é€Ÿåº¦
         public float speedInAir;
         public float jumpPower;
         public UnitTags tags;
+
+        public UnitStatus(int id, string name, string description, float maxHp, float hp, Vector2 direction, float speed, float speedInAir, float jumpPower, UnitTags tags)
+        {
+            this.id = id;
+            this.name = name;
+            this.description = description;
+            this.maxHp = maxHp;
+            this.hp = hp;
+            this.direction = new Vector2(1, 0);
+            this.speed = speed;
+            this.speedInAir = speedInAir;
+            this.jumpPower = jumpPower;
+            this.tags = tags;
+        }
     }
 
-    // ’e‚Ìó‘Ô‚ğ•\‚·\‘¢‘Ì
+    // å¼¾ã®çŠ¶æ…‹ã‚’è¡¨ã™æ§‹é€ ä½“
     [Serializable]
     public struct BulletStatus
     {
-        public float hp;          // ’e‚Ì‘Ï‹v’li“G‚Ì’e‚ª‰ó‚ê‚é‚Æ‚©Hj
-        public float time;        // ‘¶İŠÔiõ–½j
-        public float damage;      // ƒ_ƒ[ƒW—Ê
-        public float speed;       // ’e‘¬
-        public Vector2 direction; // ”ò‚Ô•ûŒü
+        public float hp;          // å¼¾ã®è€ä¹…å€¤ï¼ˆæ•µã®å¼¾ãŒå£Šã‚Œã‚‹ã¨ã‹ï¼Ÿï¼‰
+        public float time;        // å­˜åœ¨æ™‚é–“ï¼ˆå¯¿å‘½ï¼‰
+        public float damage;      // ãƒ€ãƒ¡ãƒ¼ã‚¸é‡
+        public float speed;       // å¼¾é€Ÿ
+        public Vector2 direction; // é£›ã¶æ–¹å‘
     }
 }

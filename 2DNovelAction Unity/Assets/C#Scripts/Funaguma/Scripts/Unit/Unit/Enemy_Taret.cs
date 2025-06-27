@@ -27,16 +27,12 @@ namespace BlackRose
         {
             _searchAssistance = new SearchAssistance();
 
-            // 「shoot」ステート…弾を１発撃つ (ShootForward内でOnShootComplete呼ぶ)
             var shoot = new ShootForward(_bulletObject, _targetLayer, "");
             shoot.onShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
 
-            // インターバル用ステート…何もしないIdle
+
             _stateMachine.AddState("shootInterval", new Idle());
-
-            // デフォルト状態はIdle_Rotate("idle")のまま
-
             _searchAssistance.AddComp("tag", new FilterByTag(UnitTags.Player));
             _searchAssistance.AddComp("range", new FilterByXDistance(this, _detectionDistance));
         }

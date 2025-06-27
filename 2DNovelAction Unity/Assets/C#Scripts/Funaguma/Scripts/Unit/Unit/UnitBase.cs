@@ -31,7 +31,7 @@ namespace BlackRose
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
         public SpriteEffectPlayer Player => player;
-        public Vector2 Direction { get; set; }
+        public Vector2 Direction { get; set; } = new Vector2(1, 0); // ユニットの向き（右方向が1,0）
         public Animator Animator
         {
             get
@@ -60,8 +60,8 @@ namespace BlackRose
         {
             _stateMachine.Update();
             effectManager.Update();
-            var s = _stateMachine.CurrentState.Item1;
-            _currentState = s;
+            var s = _stateMachine.CurrentState.Key;
+            _currentState = s; // インスペクターからの監視用変数
         }
 
         protected virtual void RegisterStatus()

@@ -1,10 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
-using UnityEngine.InputSystem;
-using UnityEditor.SearchService;
 using UnityEngine.SceneManagement;
-// using Fungus;
 
 
 //＝＝＝＝メイン画面から一時停止メニューを開く動作＝＝＝＝

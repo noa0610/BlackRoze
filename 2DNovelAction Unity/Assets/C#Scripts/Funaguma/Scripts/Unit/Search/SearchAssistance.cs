@@ -28,7 +28,7 @@ namespace BlackRose
         {
             public string Key;
             public IFilterComponent Comp;
-            public int Priority;
+            public int Priority; // プライオリティが低いほど、検索において優先される
         }
 
         private List<SearchCompInfo> _comps = new();
@@ -57,10 +57,7 @@ namespace BlackRose
             foreach (var compInfo in _comps.OrderBy(c => c.Priority))
             {
                 pools = compInfo.Comp.Execute(pools);
-
-                //Debug.Log($"Executing filter: {compInfo.Key}\n Result : {Debugs.StringProssecing.GetUnitSummary(pools)}");
-                if (pools.Count <= 0)
-                    break;
+                if (pools.Count <= 0) break;
             }
             return pools;
         }

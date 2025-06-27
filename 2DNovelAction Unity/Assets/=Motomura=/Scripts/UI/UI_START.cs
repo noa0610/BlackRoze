@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
-public class UISTART : MonoBehaviour
+public class UI_START : MonoBehaviour
 {
     [HideInInspector] public enum EffectProperty
     {
@@ -24,11 +24,11 @@ public class UISTART : MonoBehaviour
         [InspectorName("ターゲット")] 
         public GameObject target;
 
-        [Header("スタートポジション")] [Tooltip("ポジションはワールド座標を入力してください。")]
-        public Vector3 S_Position;
+        [Header("スタートポジション")]
+        public Vector2 S_Position;
 
-        [Header("エンドポジション")] [Tooltip("ポジションはワールド座標を入力してください。")]
-        public Vector3 E_Position;
+        [Header("エンドポジション")]
+        public Vector2 E_Position;
 
         [Header("表示にかかる時間")]
         public float _Time = 1.0f; 
@@ -63,7 +63,9 @@ public class UISTART : MonoBehaviour
 
     private void Slide_UI(TargetObject obj)
     {
-        obj.target.transform.DOMove(obj.E_Position, obj._Time).SetDelay(obj.delayTime); 
+        RectTransform rt = obj.target.GetComponent<RectTransform>();
+        rt.anchoredPosition = obj.S_Position; // 初期位置を設定
+        rt.DOAnchorPos(obj.E_Position, obj._Time).SetDelay(obj.delayTime);
     }
 
     private void Fade_UI(TargetObject obj)
@@ -73,6 +75,7 @@ public class UISTART : MonoBehaviour
 
     private void SetActive_UI(TargetObject obj)
     {
-        obj.target.transform.DOMove(obj.E_Position, obj._Time).SetDelay(obj.delayTime);
+        RectTransform rt = obj.target.GetComponent<RectTransform>();
+        rt.anchoredPosition = obj.E_Position;
     }
 }

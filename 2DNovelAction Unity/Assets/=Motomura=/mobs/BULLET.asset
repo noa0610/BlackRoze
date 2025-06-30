@@ -9,17 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e7d09974cce0b747bd549481c967662, type: 3}
-  m_Name: Test
+  m_Script: {fileID: 11500000, guid: 0f34f122ce1e27f4baa65174604d674d, type: 3}
+  m_Name: BULLET
   m_EditorClassIdentifier: 
-  id: 0
-  unitName: T
-  description: 
-  maxHp: 20
-  speed: 5
-  speedInAir: 0
-  dashSpeed: 0
-  power: 0
-  jumpPower: 8
-  tags: 2
-  options: []
+  bulletName: 
+  bullet: {fileID: 4456186181579086384, guid: 7409ed57efa165d438b8781dbc71d20b, type: 3}
+  originalstatus:
+    hp: 5
+    time: 15
+    damage: 5
+    speed: 5
+    direction: {x: 0, y: 0}

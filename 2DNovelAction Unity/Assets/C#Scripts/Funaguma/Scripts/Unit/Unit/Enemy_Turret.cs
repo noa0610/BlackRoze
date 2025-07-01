@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace BlackRose
 {
+    [Serializable]
     public class Enemy_Turret : UnitBase
     {
         // === Data ===
@@ -9,11 +11,10 @@ namespace BlackRose
         [SerializeField] private float _rotateSpeed;
         [SerializeField] private float _shootInterval = 100f;
         [SerializeField] private int _shootFireCount;       // 1サイクルあたりの連射数
-        [SerializeField] private float _detectionDistance;
         [SerializeField] private LayerMask _targetLayer;
 
         // === Reference ===
-        private ISearch _searchAssistance;
+        private SearchAssistanceMono _searchAssistance;
 
         // === Internal ===
         [SerializeField] private float _shootIntervalCount = 0f;  // 待機タイマー
@@ -27,16 +28,10 @@ namespace BlackRose
         // ステート登録
         protected override void RegisterStats()
         {
-            _searchAssistance = new SearchAssistance();
-
             var shoot = new ShootForward(_bulletData, _targetLayer, "");
             shoot.onShootComplete += OnShootComplete;
             _stateMachine.AddState("shoot", shoot);
-
-
             _stateMachine.AddState("shootInterval", new Idle());
-            _searchAssistance.AddComp("tag", new FilterByTag(UnitTags.Player));
-            _searchAssistance.AddComp("range", new FilterByXDistance(this, _detectionDistance));
         }
 
         protected override void Update()
@@ -96,6 +91,13 @@ namespace BlackRose
                 _shootIntervalCount = _shootInterval;
                 _shootCount = 0;
             }
+        }
+
+        protected override void Awake()
+        {
+            Direction = Vector2.right;
+            base.Awake();
+            _searchAssistance = GetComponent<SearchAssistanceMono>();
         }
     }
 }//unicode

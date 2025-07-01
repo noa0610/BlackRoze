@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace BlackRose
 {
-    [RequireComponent(typeof(SpriteEffectPlayer))]
+    [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
     {
         // === Reference ===

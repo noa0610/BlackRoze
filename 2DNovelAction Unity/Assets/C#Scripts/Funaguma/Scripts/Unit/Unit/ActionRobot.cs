@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 
 namespace BlackRose
 {
+    [RequireComponent(typeof(UnityEngine.InputSystem.PlayerInput)), Serializable]
     public class ActionRobot : GroundedUnit
     {
         [Flags]
@@ -26,23 +27,18 @@ namespace BlackRose
             onGround = 1 << 8, // 地面にいる状態   
         }
         [Header("Reference")]
-        [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private List<BulletData> _bullets = new List<BulletData>();
         [SerializeField] private LayerMask _targetLayer;
         private Stun _stunState;
+        private Rigidbody2D _rigidbody;
 
         [Header("Option Settings")]
         [SerializeField] private float coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
         [SerializeField] private float[] _chargeShoot = new float[2] { 1.8f, 3.4f }; // チャージ攻撃用の時間配列
         [SerializeField] private bool _canChargeCount = false;
         [SerializeField] private Vector2 _stunKnockback = Vector2.zero;
-
         private float coyoteTimeCounter;
-        private InputActionMap _Player;
-        private Rigidbody2D _rigidbody;
         private float _shootPressTime = 0f; // 攻撃ボタンを押した時間
-        private bool _charge = false;
-        private bool _fullCharge = false;
 
         // StateMachine
         private Dictionary<string, Dictionary<StateKey, StateKey>> _stateMap = new();
@@ -64,9 +60,11 @@ namespace BlackRose
 
         protected override void RegisterStats()
         {
+            // 現在のステート、トリガー、遷移先のステート
             _stateMachine.SetCondition(StateDecision);
             _stateMap.Add(StateKey.idle.ToString(), new Dictionary<StateKey, StateKey>()
             {
+                { StateKey.idle, StateKey.idle },
                 { StateKey.shoot, StateKey.shoot },
                 { StateKey.chargeShoot, StateKey.chargeShoot },
                 { StateKey.fullChargeShoot, StateKey.fullChargeShoot },
@@ -107,6 +105,7 @@ namespace BlackRose
             _stateMachine.AddState(StateKey.move.ToString(), new MoveOnGround(_rigidbody, "Move", statusManager.GetStatusAmount(Status.Speed)));
             _stateMap.Add(StateKey.move.ToString(), new Dictionary<StateKey, StateKey>()
             {
+                { StateKey.move, StateKey.move },
                 { StateKey.idle, StateKey.idle },
                 { StateKey.shoot, StateKey.shoot },
                 { StateKey.chargeShoot, StateKey.chargeShoot },
@@ -153,8 +152,11 @@ namespace BlackRose
                 return StateKey.stun.ToString(); // スタン状態が続いている場合はスタン状態を返す
             if (key == StateKey.none)
                 return key.ToString();
-            return _stateMap[c.Key][_stateKey].ToString();
-
+            if (_stateMap[c.Key].TryGetValue(_stateKey, out var res))
+            {
+                return res.ToString();
+            }
+            return key.ToString();
             //if (_stateFlags.HasFlag(StateFlags.InStun))
             //{
             //    return StateKey.stun.ToString();
@@ -192,17 +194,19 @@ namespace BlackRose
 
             if (_stateMachine.StateMap["jump"] is Jump jump)
                 jump.HadLeapt = false;
+            if (_stateMachine.CurrentState.Key == StateKey.jump.ToString())
+                _stateKey = StateKey.idle;
         }
         protected override void OnUnGrounded()
         {
             coyoteTimeCounter -= Mathf.Max(0, Time.fixedDeltaTime);
         }
-        
+
 
         public override void TakeDamage(float damage)
         {
             base.TakeDamage(damage);
-            _stateKey |= StateKey.stun; // ダメージを受けたらスタン状態にする
+            _stateMachine.ChangeRequest(StateKey.stun.ToString());
         }
 
         // === Private ===
@@ -214,74 +218,73 @@ namespace BlackRose
         }
 
         // === InputAction ===
-        private void InJump(InputAction.CallbackContext _)
+        #region
+        private void OnJump(InputValue value)
         {
             if (canJump)
             {
                 _stateKey = StateKey.jump; // ジャンプ状態にする
                 coyoteTimeCounter = 0f;  // ジャンプしたら猶予リセット
             }
-        }
-
-        private void InCancelJump(InputAction.CallbackContext _)
-        {
-            if (_stateMachine.StateMap[StateKey.jump.ToString()] is Jump jump)
+            if (!value.isPressed && _stateMachine.StateMap[StateKey.jump.ToString()] is Jump jump)
                 jump.CutJump();
         }
-
-        private void InDash(InputAction.CallbackContext _)
+        private void OnDash(InputValue value)
         {
+            if (!value.isPressed)
+            {
+                _stateKey = StateKey.idle; // ダッシュをキャンセルしてアイドル状態に戻す
+                return;
+            }
             if (!IsGrounded) return; // 地面にいない場合は無視
             _stateKey = StateKey.dash; // ダッシュ状態にする
+
         }
-        private void InCancelDash(InputAction.CallbackContext _)
+        private void OnMove(InputValue value)
         {
-            _stateKey = StateKey.idle; // ダッシュをキャンセルしてアイドル状態に戻す
-        }
-        private void InMove(InputAction.CallbackContext ctx)
-        {
-            Direction = ctx.ReadValue<Vector2>();
+            var d = value.Get<Vector2>();
+            if (d == Vector2.zero)
+            {
+                _stateKey = StateKey.idle; // 移動をキャンセルしてアイドル状態に戻す
+                Debug.Log("Canceled Move.");
+                return;
+            }
+            Direction = d.normalized;
             _stateKey = StateKey.move; // 移動状態にする
         }
-
-        private void InCanceledMove(InputAction.CallbackContext _)
+        private void OnAttack(InputValue value)
         {
-            _stateKey = StateKey.idle; // 移動をキャンセルしてアイドル状態に戻す
-            Debug.Log("Canceled Move.");
-        }
-
-        private void InAttack(InputAction.CallbackContext _)
-        {
-            // 入力時に一度通常攻撃を行い、その後チャージを行う
-            _stateKey = StateKey.shoot; // 通常攻撃状態にする
-            _canChargeCount = true; // 攻撃ボタンを押したのでチャージ可能状態にする
-            _bullets[0].originalstatus.direction = Direction; // 攻撃方向を設定
-        }
-
-        private void CanceledAttack(InputAction.CallbackContext _)
-        {
-            _canChargeCount = false; // 攻撃ボタンを離したのでチャージ不可状態にする
-            if (_chargeShoot[0] <= _shootPressTime && _shootPressTime < _chargeShoot[1])
+            if (value.isPressed)
             {
-                Debug.Log("チャージ１");
-                // チャージ攻撃の状態にする
-                _stateKey = StateKey.chargeShoot; // チャージ攻撃状態にする
-                _bullets[1].originalstatus.direction = Direction; // 攻撃方向を設定
-                _charge = true;
+                Debug.Log("Shoot");
+                // 入力時に一度通常攻撃を行い、その後チャージを行う
+                _stateKey = StateKey.shoot; // 通常攻撃状態にする
+                _canChargeCount = true; // 攻撃ボタンを押したのでチャージ可能状態にする
+                _bullets[0].originalstatus.direction = Direction; // 攻撃方向を設定
             }
-            else if (_shootPressTime >= _chargeShoot[1])
+            else
             {
-                Debug.Log("フルチャージ");
-                _stateKey = StateKey.fullChargeShoot; // フルチャージ攻撃状態にする
-                _bullets[2].originalstatus.direction = Direction; // 攻撃方向を設定
-                _fullCharge = true;
+                _canChargeCount = false; // 攻撃ボタンを離したのでチャージ不可状態にする
+                if (_chargeShoot[0] <= _shootPressTime && _shootPressTime < _chargeShoot[1])
+                {
+                    Debug.Log("チャージ１");
+                    // チャージ攻撃の状態にする
+                    _stateKey = StateKey.chargeShoot; // チャージ攻撃状態にする
+                    _bullets[1].originalstatus.direction = Direction; // 攻撃方向を設定
+                }
+                else if (_shootPressTime >= _chargeShoot[1])
+                {
+                    Debug.Log("フルチャージ");
+                    _stateKey = StateKey.fullChargeShoot; // フルチャージ攻撃状態にする
+                    _bullets[2].originalstatus.direction = Direction; // 攻撃方向を設定
+                }
+                _shootPressTime = 0f; // 攻撃ボタンを離したので時間をリセット
             }
-            _shootPressTime = 0f; // 攻撃ボタンを離したので時間をリセット
         }
+        #endregion
         // === Unity LifeCycle ===
         protected override void Awake()
         {
-            _Player = _inputActions.FindActionMap("Player");
             _rigidbody = GetComponent<Rigidbody2D>();
             base.Awake();
         }
@@ -293,33 +296,8 @@ namespace BlackRose
                 .AddTo(this);
             this.UpdateAsObservable()
                 .Where(_ => _canChargeCount)
-                .Subscribe(_ => _shootPressTime += Time.deltaTime) 
+                .Subscribe(_ => _shootPressTime += Time.deltaTime)
                 .AddTo(this);
-        }
-
-        private void OnEnable()
-        {
-            _Player.Enable();
-            _Player.FindAction("Move").performed += InMove;
-            _Player.FindAction("Move").canceled += InCanceledMove;
-            _Player.FindAction("Attack").performed += InAttack;
-            _Player.FindAction("Attack").canceled += CanceledAttack;
-            _Player.FindAction("Jump").performed += InJump;
-            _Player.FindAction("Jump").canceled += InCancelJump;
-            _Player.FindAction("Dash").performed += InDash;
-            _Player.FindAction("Dash").canceled += InCancelDash;
-        }
-        private void OnDisable()
-        {
-            _Player.FindAction("Move").performed -= InMove;
-            _Player.FindAction("Move").canceled -= InCanceledMove;
-            _Player.FindAction("Attack").performed -= InAttack;
-            _Player.FindAction("Attack").canceled -= CanceledAttack;
-            _Player.FindAction("Jump").performed -= InJump;
-            _Player.FindAction("Jump").canceled -= InCancelJump;
-            _Player.FindAction("Dash").performed -= InDash;
-            _Player.FindAction("Dash").canceled -= InCancelDash;
-            _Player.Disable();
         }
     }
 }

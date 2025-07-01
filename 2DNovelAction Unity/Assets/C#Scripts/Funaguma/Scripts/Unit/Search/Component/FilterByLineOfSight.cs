@@ -1,14 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BlackRose
 {
+    [Serializable]
     public class FilterByLineOfSight : IFilterComponent
     {
+        [SerializeField, Tooltip("検出の基準になるトランスフォーム")]
         private Transform _viewpoint;
+        [SerializeField, Tooltip("検出の距離")]
         private float _maxDistance;
+        [SerializeField, Tooltip("衝突を検出可能なレイヤーマスク")]
         private LayerMask _obstructionMask;
-        private List<IUnit> _unitList;
+        private List<IUnit> _unitList = new List<IUnit>();
         private RaycastHit[] _hitBuffer = new RaycastHit[1];
 
         public FilterByLineOfSight(Transform viewpoint, float maxDistance, LayerMask obstructionMask)
@@ -18,7 +23,7 @@ namespace BlackRose
             _obstructionMask = obstructionMask;
             _unitList = new List<IUnit>();
         }
-
+        public FilterByLineOfSight() { }
         public List<IUnit> Execute(List<IUnit> pool)
         {
             _unitList.Clear();

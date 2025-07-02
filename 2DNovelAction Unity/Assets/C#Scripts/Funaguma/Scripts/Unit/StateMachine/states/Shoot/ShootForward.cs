@@ -3,22 +3,22 @@ using UnityEngine;
 
 namespace BlackRose
 {
-
+    [Serializable]
     public class ShootForward : ShootStateBase
     {
+        [SerializeField] private float _createPos = 0.35f;
         public ShootForward(BulletData data, LayerMask targetLayer, string animeTrigger) : base(data, targetLayer, animeTrigger) { }
-        public override bool Enter(IState previousState, IUnit parent)
+        public ShootForward() { }
+        public override void Enter(IState previousIState, IUnit parent)
         {
-            parent.Animator?.SetTrigger(_animeTrigger);
             var b = _data.prefab;
             if (b == null)
             {
                 Debug.Log("Do not set bullet.");
-                return false; // 弾のプレハブが設定されてなかったらエラー扱い
             }
 
             // 弾の生成位置（プレイヤーのちょっと前）
-            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.Direction.x * 0.4f, 0, 0);
+            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.Direction.x * _createPos, 0, 0);
 
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
@@ -26,28 +26,12 @@ namespace BlackRose
 
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_data, _targetLayer);
-            return true;
         }
 
-        public override bool Exit(IState nextState, IUnit parent)
+        public override bool AllowChange(IState nextState, IUnit parent)
         {
-            parent.Animator?.ResetTrigger(_animeTrigger);
-            // 攻撃終了時（今は特に処理なし）
-            return true;
-        }
-
-        public override bool Stay(IUnit parent)
-        {
-            if (_animeTrigger == "")
-            {
-                ActionInvoke(); 
-                return true;
-            }
-            if (parent.Animator == null || parent.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animeTrigger) == false)
-            {
-                ActionInvoke();
-            }
-            return true;
+            if (nextState is Stun) return true;
+            return base.AllowChange(nextState, parent);
         }
     }
 }

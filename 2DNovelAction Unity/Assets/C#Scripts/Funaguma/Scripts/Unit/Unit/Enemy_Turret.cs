@@ -22,7 +22,7 @@ namespace BlackRose
         private int _shootCount;            // 現在までに撃ったカウント
 
         // === StateMachine ===
-        protected override IState DefaultState => new Idle_Rotate(transform, _rotateSpeed);
+        protected override StateComp DefaultState => new Idle_Rotate(transform, _rotateSpeed);
         private StateFlags _stateFlags = StateFlags.None;
 
         // ステート登録

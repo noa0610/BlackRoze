@@ -15,14 +15,14 @@ namespace BlackRose
         [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
-        private IState _defaultState;
+        private StateComp _defaultState;
 
 #if UNITY_EDITOR
         [Header("Debug")]
         [SerializeField] private string _currentState;
 #endif
 
-        protected virtual IState DefaultState => _defaultState ??= new Idle();
+        protected virtual StateComp DefaultState => _defaultState ??= new Idle();
         protected virtual string DefaultStateKey => "idle";
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
@@ -57,7 +57,7 @@ namespace BlackRose
         // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
         protected virtual void Update()
         {
-            _stateMachine.Update();
+            _stateMachine.UpdateMachine();
             effectManager.Update();
             var s = _stateMachine.CurrentState.Key;
             _currentState = s; // インスペクターからの監視用変数

@@ -5,21 +5,23 @@ using UnityEngine;
 namespace BlackRose
 {
     // ===============================
-    // 汎用ステートマシン（StateMachine）
+    // 汎用ステートマシン（IStateMachine）
     // ===============================
     public class StateMachine : IStateMachine
     {
         private IUnit _parent; // ステートマシンを持ってるキャラ（親オブジェクト）
-        private Dictionary<string, IState> _stateMap = new(); // ステートの登録一覧（名前とステート）
-
-        private (string Key, IState State) _currentState; // 現在のステート
-        private string _defaultStateKey; // 条件なしの時に戻るステート（基本ステート）
+        private Dictionary<string, StateComp> _stateMap = new(); // ステートの登録一覧（名前とステート）
+        private Dictionary<string, Dictionary<string, StateComp>> _transmissionGroup;
+        private (string Key, StateComp state) _currentState; // 現在のステート
+        private string _defaultIStateKey; // 条件なしの時に戻るステート（基本ステート）
         private string request = string.Empty; // ステート遷移の予約
 
         public IUnit Parent => _parent;
-        public Dictionary<string, IState> StateMap => _stateMap;
-        public (string Key, IState State) CurrentState => _currentState;
-        public string DefaultStateKey => _defaultStateKey;
+        public Dictionary<string, StateComp> StateMap => _stateMap;
+        public (string Key, StateComp IState) CurrentState => _currentState;
+        public string DefaultStateKey => _defaultIStateKey;
+
+        public Dictionary<string, Dictionary<string, StateComp>> TransmissionGroup => _transmissionGroup;
 
         // 外部で設定する「ステート条件判定用の関数」
         private Func<string> _condition;
@@ -28,25 +30,24 @@ namespace BlackRose
         // コンストラクタ（初期化処理）
         // ===============================
         // parent: このステートマシンを使うキャラ本体
-        // defaultState: 最初に入っておくステート
-        // defaultStateKey: 登録名（デフォルトは "idle"）
-        public StateMachine(IUnit parent, IState defaultState, Func<string> condition, string defaultStateKey = "idle")
+        // defaultIState: 最初に入っておくステート
+        // defaultIStateKey: 登録名（デフォルトは "idle"）
+        public StateMachine(IUnit parent, StateComp defaultState, Func<string> condition, string defaultStateKey = "idle")
         {
             _parent = parent;
-            _defaultStateKey = defaultStateKey;
+            _defaultIStateKey = defaultStateKey;
             SetCondition(condition);
 
             AddState(defaultStateKey, defaultState); // ステートを登録
-            SetStateDirect(defaultStateKey);         // 最初のステートに入る
+            SetIStateDirect(defaultStateKey);         // 最初のステートに入る
         }
-
         // ===============================
         // ステートを決定する関数（条件式から）
         // ===============================
         private string StateDecision()
         {
             // 条件が設定されていれば実行、なければデフォルトに戻る
-            return _condition?.Invoke() ?? _defaultStateKey;
+            return _condition?.Invoke() ?? _defaultIStateKey;
         }
 
         public void SetCondition(Func<string> condition)
@@ -57,10 +58,10 @@ namespace BlackRose
         // ===============================
         // ステート変更を予約（次フレームで反映）
         // ===============================
-        public void ChangeRequest(string toState)
+        public void ChangeRequest(string toIState)
         {
-            if (toState != null)
-                request = toState;
+            if (toIState != null)
+                request = toIState;
         }
 
         // ===============================
@@ -76,64 +77,58 @@ namespace BlackRose
         // ===============================
         // ステートを変更
         // ===============================
-        public void ChangeState(string targetState)
+        public bool ChangeState(string targetIState)
         {
-            if (_currentState.Key == targetState)
-                return;
-            if (_stateMap.TryGetValue(targetState, out var state))
+            if (string.IsNullOrEmpty(targetIState)) return false;
+            if (_currentState.Key == targetIState) return false;
+            var tmp = _currentState.state;
+            if (_stateMap.TryGetValue(targetIState, out var state))
             {
-
-                // 今のステートから出る（Exit）
-                if (!_currentState.State.Exit(state, _parent))
-                {
-                    Debug.LogError("Error in " + _currentState.ToString() + "'s Exit");
-                }
-
-                var tmp = _currentState.State;
-                _currentState = (targetState, state);
-                // 新しいステートに入る（Enter）
-                _currentState.State.Enter(tmp, _parent);
+                if (!tmp.AllowChange(state, _parent)) return false;
+                _currentState.state.Exit(state, _parent);
+                _currentState = (targetIState, state);
+                _currentState.state.Enter(tmp, _parent);
+                return true;
             }
             else
             {
-                // 登録されてないステート名だった場合
-                Debug.LogError("State not found: " + targetState);
+                Debug.LogError("IState not found: " + targetIState);
+                return false;
             }
         }
 
         // ===============================
         // 毎フレーム呼び出して状態更新（Update内で呼ぶ）
         // ===============================
-        public void Update()
+        public void UpdateMachine()
         {
+            ReadRequest();
             // 優先順位：予約があればそれ → なければ条件から決める
-            if (!string.IsNullOrEmpty(request))
-                ChangeState(ReadRequest());
-            else
-                ChangeState(StateDecision());
+            if (string.IsNullOrEmpty(request))
+                request = StateDecision();
 
-            // 現在のステートの処理を実行（Stay）
-            _currentState.State.Stay(_parent);
+            if (!ChangeState(request))
+                _currentState.state.Stay(_parent);
         }
 
         // ===============================
         // ステートの登録（事前にAddして使う）
         // ===============================
-        public void AddState(string newStateKey, IState state)
+        public void AddState(string newIStateKey, StateComp state)
         {
-            _stateMap[newStateKey] = state;
+            _stateMap[newIStateKey] = state;
         }
 
         // ===============================
         // ステートを即時設定（Enterも自動で実行される）
         // ===============================
-        public void SetStateDirect(string targetState)
+        public void SetIStateDirect(string targetIState)
         {
-            var tmp = _currentState.State;
-            if (_stateMap.TryGetValue(targetState, out var state))
+            var tmp = _currentState.state;
+            if (_stateMap.TryGetValue(targetIState, out var state))
             {
-                _currentState = (targetState, state);
-                _currentState.State.Enter(tmp, _parent);
+                _currentState = (targetIState, state);
+                _currentState.state.Enter(tmp, _parent);
             }
         }
 

@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 namespace BlackRose
 {
     [RequireComponent(typeof(UnityEngine.InputSystem.PlayerInput)), Serializable]
-    public class ActionRobot : GroundedUnit
+    public class ActionRobot : GroundedUnit, IUnit
     {
         [Flags]
         private enum StateKey
@@ -226,8 +226,6 @@ namespace BlackRose
                 _stateKey = StateKey.jump; // ジャンプ状態にする
                 coyoteTimeCounter = 0f;  // ジャンプしたら猶予リセット
             }
-            if (!value.isPressed && _stateMachine.StateMap[StateKey.jump.ToString()] is Jump jump)
-                jump.CutJump();
         }
         private void OnDash(InputValue value)
         {

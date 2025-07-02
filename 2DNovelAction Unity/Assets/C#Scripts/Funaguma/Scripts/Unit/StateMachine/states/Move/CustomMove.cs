@@ -1,38 +1,40 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace BlackRose
 {
-    public class CustomMove : IState
+    [SerializeField]
+    public class CustomMove : StateComp
     {
+        [SerializeReference, SubclassSelector]
         private List<IMoveAssist> _assists = new List<IMoveAssist>();
+        [SerializeField]
         private string _animationKey;
 
         public CustomMove(string animationKey)
         {
             _animationKey = animationKey;
         }
+        public CustomMove() { }
         public void AddComp(IMoveAssist comp)
         {
             _assists.Add(comp);
         }
-        public bool Enter(IState previousState, IUnit parent)
+        public override void Enter(IState previousIState, IUnit parent)
         {
             parent.Animator.SetTrigger(_animationKey);
-            return true;
         }
 
-        public bool Exit(IState nextState, IUnit parent)
+        public override void Exit(IState nextIState, IUnit parent)
         {
-            return true;
+            parent.Animator.ResetTrigger(_animationKey);
         }
 
-        public bool Stay(IUnit parent)
+        public override void Stay(IUnit parent)
         {
             float t = Time.deltaTime;
             foreach (var assist in _assists)
                 assist.Go(Time.deltaTime);
-            return true;
         }
     }
 }

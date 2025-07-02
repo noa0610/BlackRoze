@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace BlackRose
 {
-    [RequireComponent(typeof(SpriteEffectPlayer))]
+    [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
     {
         // === Reference ===
@@ -11,7 +12,6 @@ namespace BlackRose
         public StatusEffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected StateFlags _stateFlags; // 現在の状態（移動中・攻撃中など）
         [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
@@ -26,7 +26,6 @@ namespace BlackRose
         protected virtual string DefaultStateKey => "idle";
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
-        public StateFlags StateFlags => _stateFlags; // 状態フラグ取得
         public Transform Transform => transform;
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;

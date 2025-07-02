@@ -7,7 +7,7 @@ namespace BlackRose
     {
         // 弾丸にセットするレイヤー
         protected LayerMask _targetLayer;
-        protected BulletObject _bulletObject;         // 発射する弾のデータ
+        protected BulletData _data;         // 発射する弾のデータ
         protected string _animeTrigger;
         public event Action onShootComplete;
 
@@ -19,15 +19,15 @@ namespace BlackRose
         {
             onShootComplete?.Invoke(); // 発射完了イベントを呼び出す
         }
-        public void SetBullet(BulletObject bullet)
+        public void SetBullet(BulletData bullet)
         {
-            _bulletObject = bullet;
+            _data = bullet;
         }
 
         // === Constractor ===
-        public ShootStateBase(BulletObject bulletObject, LayerMask targetLayer, string animeTrigger)
+        public ShootStateBase(BulletData data, LayerMask targetLayer, string animeTrigger)
         {
-            _bulletObject = bulletObject;
+            _data = data;
             _targetLayer = targetLayer; // レイヤーをセット
             _animeTrigger = animeTrigger;
         }

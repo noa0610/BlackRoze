@@ -3,6 +3,7 @@ using System;
 
 namespace BlackRose
 {
+    [Serializable]
     public abstract class GroundedUnit : UnitBase
     {
         [Header("Ground Check")]
@@ -49,8 +50,13 @@ namespace BlackRose
                 OnUnGrounded();
             }
         }
-
+        /// <summary>
+        /// 一定時間ごとに呼ばれ、着地している場合に呼ばれる
+        /// </summary>
         protected abstract void OnGrounded();
+        /// <summary>
+        /// 一定時間ごとに呼ばれ、着地していない場合に呼ばれる
+        /// </summary>
         protected abstract void OnUnGrounded();
         // デバッグ用にGizmos表示
         private void OnDrawGizmosSelected()
@@ -62,7 +68,7 @@ namespace BlackRose
             }
         }
 
-        public void OnJump()
+        public void AfterJump()
         {
             _disableCheckTime = 0.2f; // ジャンプしたら地面判定を無効にする
         }

@@ -4,10 +4,11 @@ using UnityEngine.Rendering.PostProcessing;
 
 namespace BlackRose
 {
-    public class EnableVignette : MonoBehaviour, IObserver<bool>
+    public class EnableVignette : MonoBehaviour
     {
         [SerializeField] private TriggerSubject _subject;
         [SerializeField] private PostProcessVolume _volume;
+        [SerializeField] private string _tag;
         private Vignette _vignette;
         // Intensity
         private float _defaultAmount;
@@ -17,25 +18,20 @@ namespace BlackRose
 
         // Deta
         private bool _isActive = false;
-        public void OnCompleted()
-        {
-            gameObject.SetActive(false);
-        }
-
-        public void OnError(Exception error)
-        {
-            gameObject.SetActive(false);
-        }
-
-        public void OnNext(bool value)
-        {
-            _isActive = value;
-        }
 
         // === Unity LifeCycle ===
         private void Awake()
         {
-            _subject.Subscribe(this);
+            _subject.OnTrigger += (res, collider) =>
+            {
+                if (collider.CompareTag(_tag))
+                {
+                    if (res)
+                        _isActive = true;
+                    else
+                        _isActive = false;
+                }
+            };
             if (!_volume.profile.TryGetSettings(out _vignette))
             {
                 Debug.LogError("This Volume Didn't set Vignette!");

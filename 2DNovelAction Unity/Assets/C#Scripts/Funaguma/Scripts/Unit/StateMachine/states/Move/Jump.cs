@@ -54,8 +54,6 @@ namespace BlackRose
         // ジャンプ中ずっと毎フレーム呼ばれる
         public virtual bool Stay(IUnit parent)
         {
-            if (!parent.StateFlags.HasFlag(StateFlags.InMove))
-                return true;
             // 横移動入力を取り出し
             float h = parent.Direction.x;
             if (h == 0)

@@ -6,24 +6,11 @@ namespace BlackRose
 
     public class ShootForward : ShootStateBase
     {
-        public BulletObject BulletObject => _bulletObject;
-
+        public ShootForward(BulletData data, LayerMask targetLayer, string animeTrigger) : base(data, targetLayer, animeTrigger) { }
         public override bool Enter(IState previousState, IUnit parent)
         {
             parent.Animator?.SetTrigger(_animeTrigger);
-            return true;
-        }
-
-        public override bool Exit(IState nextState, IUnit parent)
-        {
-            parent.Animator?.SetTrigger(_animeTrigger);
-            // 攻撃終了時（今は特に処理なし）
-            return true;
-        }
-
-        public override bool Stay(IUnit parent)
-        {
-            var b = _bulletObject.bulletData.bullet;
+            var b = _data.prefab;
             if (b == null)
             {
                 Debug.Log("Do not set bullet.");
@@ -31,19 +18,37 @@ namespace BlackRose
             }
 
             // 弾の生成位置（プレイヤーのちょっと前）
-            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.Direction.x * 1.5f, 0, 0);
+            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.Direction.x * 0.4f, 0, 0);
 
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
 
 
             // ステータスをセット（速度、方向、ダメージなど）
-            instantiatedBullet.SetBulletStatus(_bulletObject, _targetLayer);
-            ActionInvoke();
+            instantiatedBullet.SetBulletStatus(_data, _targetLayer);
             return true;
         }
 
-        public ShootForward(BulletObject bulletObject, LayerMask targetLayer, string animeTrigger) : base(bulletObject, targetLayer, animeTrigger) { }
+        public override bool Exit(IState nextState, IUnit parent)
+        {
+            parent.Animator?.ResetTrigger(_animeTrigger);
+            // 攻撃終了時（今は特に処理なし）
+            return true;
+        }
+
+        public override bool Stay(IUnit parent)
+        {
+            if (_animeTrigger == "")
+            {
+                ActionInvoke(); 
+                return true;
+            }
+            if (parent.Animator == null || parent.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animeTrigger) == false)
+            {
+                ActionInvoke();
+            }
+            return true;
+        }
     }
 }
 //unicode

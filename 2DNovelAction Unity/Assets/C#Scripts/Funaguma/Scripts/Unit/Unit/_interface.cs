@@ -24,7 +24,6 @@ namespace BlackRose
         StatusManager StatusManager { get; }
         StatusEffectManager StatusEffectManager { get; }
         SpriteEffectPlayer Player { get; }
-        StateFlags StateFlags { get; }
         Animator Animator { get; set; }
         Transform Transform { get; }
         Vector2 Direction { get; set; } // unitの向きを保持

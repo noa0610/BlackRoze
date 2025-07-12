@@ -6,17 +6,14 @@ namespace BlackRose
 
     /// <summary>
     /// 状態（ステート）ごとのインターフェース。
-    /// 各ステート（行動パターン）にこのインターフェースを実装させる。
-    /// 返り値のboolは処理の成功／失敗を示す。
     /// </summary>
-    // Note : アニメーターと連携する場合は、コンストラクタにAnimatorとEnter時に起動すべきトリガーを渡すなどして、連携すること
     public interface IState
     {
-        void Enter(IState previousIState, IUnit parent);
+        void Enter(IState previousIState, UnitBase parent);
 
-        void Stay(IUnit parent);
+        void Stay(UnitBase parent);
 
-        void Exit(IState nextIState, IUnit parent);
+        void Exit(IState nextIState, UnitBase parent);
 
         /// <summary>
         /// Trueの場合IStateMachineは動作を続行する
@@ -26,13 +23,13 @@ namespace BlackRose
         /// <summary>
         /// falseの場合IStateMachineは遷移をあきらめる
         /// </summary>
-        bool AllowChange(IState nextState, IUnit parent);
+        bool AllowChange(IState nextState, UnitBase parent);
     }
 
     public class StateComp : IState
     {
         public StateComp() { }
-        public virtual bool AllowChange(IState nextState, IUnit parent)
+        public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
             return true;
         }
@@ -42,15 +39,15 @@ namespace BlackRose
             return true;
         }
 
-        public virtual void Enter(IState previousIState, IUnit parent)
+        public virtual void Enter(IState previousIState, UnitBase parent)
         {
         }
 
-        public virtual void Exit(IState nextIState, IUnit parent)
+        public virtual void Exit(IState nextIState, UnitBase parent)
         {
         }
 
-        public virtual void Stay(IUnit parent)
+        public virtual void Stay(UnitBase parent)
         {
         }
     }

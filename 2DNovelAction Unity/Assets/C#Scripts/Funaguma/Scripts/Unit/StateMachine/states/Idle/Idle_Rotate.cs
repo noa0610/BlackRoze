@@ -17,7 +17,7 @@ namespace BlackRose
             _rotateSpeed = rotateSpeed;
         }
         public Idle_Rotate() { }
-        public override void Stay(IUnit parent)
+        public override void Stay(UnitBase parent)
         {
             _transform.Rotate(Vector3.forward, _rotateSpeed * Time.deltaTime);
         }

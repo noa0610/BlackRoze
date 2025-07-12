@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 namespace BlackRose
 {
@@ -10,13 +11,8 @@ namespace BlackRose
         [SerializeField] protected LayerMask _targetLayer;
         [SerializeField] protected BulletData _data;         // 発射する弾のデータ
         [SerializeField] protected string _animeTrigger;
-        [SerializeField] public event Action onShootComplete;
+        [SerializeField] public UnityEvent onShootComplete;
 
-        // === Public ===
-        public void SetBullet(BulletData bullet)
-        {
-            _data = bullet;
-        }
 
         // === Constractor ===
         public ShootStateBase(BulletData data, LayerMask targetLayer, string animeTrigger) 
@@ -27,5 +23,17 @@ namespace BlackRose
         }
 
         public ShootStateBase() { }
+        // === Public ===
+        public void SetBullet(BulletData bullet)
+        {
+            _data = bullet;
+        }
+
+
+        /// <param name="shootInterval">射撃間の待機tick</param>
+        public ShootStateBase SetShootInterval(int shootInterval)
+        {
+            return this;
+        }
     }
 }

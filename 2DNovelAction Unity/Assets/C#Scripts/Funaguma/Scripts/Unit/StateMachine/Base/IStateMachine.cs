@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BlackRose
 {
@@ -7,16 +6,28 @@ namespace BlackRose
     public interface IStateMachine
     {
         Dictionary<string, StateComp> StateMap { get; }  // ステートの一覧（名前と対応するインスタンス）
+        // state, trigger, state
+        Dictionary<(string state, string trigger), string> TransmissionGroup { get; }
+        (string key, StateComp state) CurrentState { get; }                  // 現在のステート
 
-        Dictionary<string, Dictionary<string, StateComp>> TransmissionGroup { get; }
-        (string Key, StateComp IState) CurrentState { get; }                  // 現在のステート
+        bool ChangeState(string trigger);   // 即時ステート変更
+        void LazyChange(string request);    // 次のフレームまで遅延
 
-        string DefaultStateKey { get; }
+        /// <summary>
+        /// 内部でTostring()を行い、stringを引数にとるLazyChangeに引き渡す
+        /// </summary>
+        bool ChangeState(object trigger);
+        /// <summary>
+        /// 内部でTostring()を行い、stringを引数にとるLazyChangeに引き渡す
+        /// </summary>
+        void LazyChange(object request);    
+        void UpdateMachine();               // ステートマシンの更新処理（Stayの呼び出し、LazyChangeの反映）
+        void AddState(string key, StateComp IState);  // ステートの追加
 
-        void SetCondition(Func<string> condition);
-        bool ChangeState(string newIStateKey);         // 即時ステート変更
-        void ChangeRequest(string requestKey);        // ステート変更の予約 or 条件付き変更
-        void UpdateMachine();                                // ステートマシンの更新処理（Stayの呼び出しなど）
-        void AddState(string newIStateKey, StateComp IState);  // ステートの追加
+        /// <summary>
+        /// TransmissionGroupや遷移条件を無視してステートを遷移させる。
+        /// 乱用厳禁。
+        /// </summary>
+        void SetStateDirect(string target);
     }
 }

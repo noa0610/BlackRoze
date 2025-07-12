@@ -22,18 +22,18 @@ namespace BlackRose
 			_inex = inExitStop; // inExitStopの代わりに使用するフラグを設定
 		}
 		public MoveOnGround() { }
-		public override void Enter(IState previousIState, IUnit parent)
+		public override void Enter(IState previousIState, UnitBase parent)
 		{
 			parent.Animator.SetTrigger(_animationTrigger);
 		}
 
-		public override void Exit(IState nextIState, IUnit parent)
+		public override void Exit(IState nextIState, UnitBase parent)
 		{
 			if (_inex)
 				_rigidbody2D.velocity = Vector2.zero; // inExitStopの代わりに使用するフラグがtrueなら速度をゼロにする
 		}
 
-		public override void Stay(IUnit parent)
+		public override void Stay(UnitBase parent)
 		{
 			var s = _statusAmount.ChangedMax;
 			_rigidbody2D.velocity = new Vector2(s * parent.Direction.x, _rigidbody2D.velocity.y);

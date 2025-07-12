@@ -20,17 +20,17 @@ namespace BlackRose
         {
             _assists.Add(comp);
         }
-        public override void Enter(IState previousIState, IUnit parent)
+        public override void Enter(IState previousIState, UnitBase parent)
         {
             parent.Animator.SetTrigger(_animationKey);
         }
 
-        public override void Exit(IState nextIState, IUnit parent)
+        public override void Exit(IState nextIState, UnitBase parent)
         {
             parent.Animator.ResetTrigger(_animationKey);
         }
 
-        public override void Stay(IUnit parent)
+        public override void Stay(UnitBase parent)
         {
             float t = Time.deltaTime;
             foreach (var assist in _assists)

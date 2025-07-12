@@ -21,11 +21,11 @@ namespace BlackRose
 			_rigidbody2D = rigidbody2D;
 		}
 		public DashOnGround() { }
-		public override void Enter(IState previousIState, IUnit parent)
+		public override void Enter(IState previousIState, UnitBase parent)
 		{
 			_afterImagePlayer.SetActive(true);
 		}
-		public override void Stay(IUnit parent)
+		public override void Stay(UnitBase parent)
 		{
 			if (parent is not GroundedUnit grounded) return;
 			if (!grounded.IsGrounded) return; // 地面にいない場合はDashを行わない
@@ -33,7 +33,7 @@ namespace BlackRose
 			Vector2 dashDirection = parent.Direction * _dashSpeed.ChangedMax;
 			_rigidbody2D.velocity = dashDirection + _rigidbody2D.velocity * new Vector2(0, 1);
 		}
-		public override void Exit(IState nextIState, IUnit parent)
+		public override void Exit(IState nextIState, UnitBase parent)
 		{
 			if (nextIState is Jump jumpIState && parent is GroundedUnit grounded)
 			{

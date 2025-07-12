@@ -31,7 +31,7 @@ namespace BlackRose
         }
         public Jump() { }
         // 前のIStateから切り替わった瞬間に呼ばれる
-        public override void Enter(IState previousIState, IUnit parent)
+        public override void Enter(IState previousIState, UnitBase parent)
         {
             if (!_hasLeapt)
             {
@@ -46,7 +46,7 @@ namespace BlackRose
         }
 
         // ジャンプ中ずっと毎フレーム呼ばれる
-        public override void Stay(IUnit parent)
+        public override void Stay(UnitBase parent)
         {
             // 横移動入力を取り出し
             float h = parent.Direction.x;
@@ -59,7 +59,7 @@ namespace BlackRose
             _rb.velocity = vel;
         }
 
-        public override void Exit(IState nextIState, IUnit parent)
+        public override void Exit(IState nextIState, UnitBase parent)
         {
             if (_rb.velocity.y > 0f)
             {

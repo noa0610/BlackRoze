@@ -14,7 +14,7 @@ namespace BlackRose
         void LazyChange(string request);    // 次のフレームまで遅延
 
         /// <summary>
-        /// 内部でTostring()を行い、stringを引数にとるLazyChangeに引き渡す
+        /// 内部でTostring()を行い、stringを引数にとるCurrentStateに引き渡す
         /// </summary>
         bool ChangeState(object trigger);
         /// <summary>
@@ -23,6 +23,7 @@ namespace BlackRose
         void LazyChange(object request);    
         void UpdateMachine();               // ステートマシンの更新処理（Stayの呼び出し、LazyChangeの反映）
         void AddState(string key, StateComp IState);  // ステートの追加
+        void AddState(object key, StateComp IState);  // ステートの追加
 
         /// <summary>
         /// TransmissionGroupや遷移条件を無視してステートを遷移させる。

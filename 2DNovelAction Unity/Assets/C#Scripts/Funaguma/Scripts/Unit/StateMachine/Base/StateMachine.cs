@@ -83,7 +83,10 @@ namespace BlackRose
         {
             _stateMap[key] = state;
         }
-
+        public void AddState(object key, StateComp state)
+        {
+            AddState(key.ToString(), state);
+        }
         // ===============================
         // Exit、AllowChangeを無視して遷移を行う
         // ===============================

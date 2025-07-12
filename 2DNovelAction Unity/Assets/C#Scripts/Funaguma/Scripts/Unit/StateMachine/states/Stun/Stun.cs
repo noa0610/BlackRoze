@@ -24,11 +24,11 @@ namespace BlackRose
         public override void Enter(IState previousIState, UnitBase parent)
         {
             _stunTimer = _stunTime; // Initialize the stun timer
-            _thrower.Create((parent as UnitBase).gameObject, "Stun!", Color.white);
+            _thrower.Create(parent.gameObject, "Stun!", Color.white);
             parent.Animator.SetFloat("StunTime", _stunTime);
             _rigidbody2D.velocity = Vector2.zero;
             _rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force
-            parent.Player.AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, 1.5f);
+            parent.GetComponent<SpriteEffectPlayer>().AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, 1.5f);
             parent.StatusEffectManager.AddEffect(StatusEffectHolder.instance.Stun.EffectFactory());
         }
         public override void Stay(UnitBase parent)

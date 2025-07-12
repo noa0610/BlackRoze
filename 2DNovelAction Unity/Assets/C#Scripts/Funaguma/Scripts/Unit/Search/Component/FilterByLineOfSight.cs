@@ -31,7 +31,7 @@ namespace BlackRose
             float maxDistSqr = _maxDistance * _maxDistance;
             foreach (var unit in pool)
             {
-                Vector3 dir = unit.Transform.position - _viewpoint.position;
+                Vector3 dir = unit.transform.position - _viewpoint.position;
                 float distSqr = dir.sqrMagnitude;
 
                 // 距離外ならスキップ

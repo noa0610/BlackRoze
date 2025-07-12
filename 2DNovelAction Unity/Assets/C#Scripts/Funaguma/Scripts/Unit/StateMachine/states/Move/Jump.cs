@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BlackRose
 {
     [Serializable]
-    public class Jump : StateComp
+    public class Jump : StateWithAnime
     {
         [SerializeField] protected Rigidbody2D _rb;
         [SerializeField] protected bool _hasLeapt = false;

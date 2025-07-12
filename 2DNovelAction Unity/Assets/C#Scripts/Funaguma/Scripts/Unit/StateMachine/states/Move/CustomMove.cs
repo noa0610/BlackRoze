@@ -4,30 +4,14 @@ using UnityEngine;
 namespace BlackRose
 {
     [SerializeField]
-    public class CustomMove : StateComp
+    public class CustomMove : StateWithAnime
     {
         [SerializeReference, SubclassSelector]
         private List<IMoveAssist> _assists = new List<IMoveAssist>();
-        [SerializeField]
-        private string _animationKey;
 
-        public CustomMove(string animationKey)
-        {
-            _animationKey = animationKey;
-        }
-        public CustomMove() { }
         public void AddComp(IMoveAssist comp)
         {
             _assists.Add(comp);
-        }
-        public override void Enter(IState previousIState, UnitBase parent)
-        {
-            parent.Animator.SetTrigger(_animationKey);
-        }
-
-        public override void Exit(IState nextIState, UnitBase parent)
-        {
-            parent.Animator.ResetTrigger(_animationKey);
         }
 
         public override void Stay(UnitBase parent)

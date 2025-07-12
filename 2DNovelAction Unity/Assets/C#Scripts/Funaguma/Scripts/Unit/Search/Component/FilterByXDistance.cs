@@ -19,14 +19,14 @@ namespace BlackRose
         public FilterByXDistance() { }
         public List<UnitBase> Execute(List<UnitBase> units)
         {
-            float myX = _parent.Transform.position.x;
+            float myX = _parent.transform.position.x;
             List<UnitBase> result = new List<UnitBase>();
             foreach (var unit in units)
             {
                 if (unit == _parent)
                     continue;
 
-                float targetX = unit.Transform.position.x;
+                float targetX = unit.transform.position.x;
                 float distance = Mathf.Abs(targetX - myX);
                 bool flag = distance <= _detectionDistance;
 

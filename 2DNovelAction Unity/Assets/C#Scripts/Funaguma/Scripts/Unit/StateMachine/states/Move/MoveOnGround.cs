@@ -14,10 +14,9 @@ namespace BlackRose
 		[SerializeField] private StatusAmount _statusAmount;
 		[SerializeField] private bool _inex = false; // inExitStopの代わりに使用するフラグ
 
-		public MoveOnGround(Rigidbody2D rigidbody2D, string animationTrigger, StatusAmount status, bool inExitStop = false)
+		public MoveOnGround(Rigidbody2D rigidbody2D, StatusAmount status, bool inExitStop = false)
 		{
 			_rigidbody2D = rigidbody2D;
-			_animationTrigger = animationTrigger;
 			_statusAmount = status;
 			_inex = inExitStop; // inExitStopの代わりに使用するフラグを設定
 		}

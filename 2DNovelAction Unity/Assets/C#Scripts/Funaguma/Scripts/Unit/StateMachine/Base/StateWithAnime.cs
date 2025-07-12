@@ -3,17 +3,43 @@ namespace BlackRose
 {
     public class StateWithAnime : StateComp
     {
-        [SerializeField] protected string _animeTriggerName;
-        [SerializeField] protected bool _waitForAnimeEnd = false;
+        [SerializeField] public string animeTriggerName;
+        /// <summary>
+        /// アニメーションが完了するまで遷移をブロックするかどうか
+        /// </summary>
+        [SerializeField] public bool waitForAnimeEnd = false;
+        /// <summary>
+        /// キャンセル可能になるアニメーション進行度
+        /// </summary>
+        [SerializeField] public float cancelableProgress = 0.7f;
 
+        public float GetNormalized(UnitBase parent) => parent.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
         public override void Enter(IState previousIState, UnitBase parent)
         {
-            parent.Animator.SetTrigger(_animeTriggerName);
+            parent.Animator.SetTrigger(animeTriggerName);
         }
         public override bool AllowChange(IState nextState, UnitBase parent)
         {
-            if (!_waitForAnimeEnd) return true;
-            return parent.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1;
+            if (!waitForAnimeEnd) return true;
+            return GetNormalized(parent) >= cancelableProgress;
+        }
+    }
+    public static class StateExtension
+    {
+        public static T SetAnimeTrigger<T>(this T state, string trigger) where T : StateWithAnime
+        {
+            state.animeTriggerName = trigger;
+            return state;
+        }
+        public static T SetNeedWait<T>(this T state, bool isNeed) where T : StateWithAnime
+        {
+            state.waitForAnimeEnd = isNeed;
+            return state;
+        }
+        public static T SetCancelableProgress<T>(this T state, float progress) where T : StateWithAnime
+        {
+            state.cancelableProgress = progress;
+            return state;
         }
     }
 }

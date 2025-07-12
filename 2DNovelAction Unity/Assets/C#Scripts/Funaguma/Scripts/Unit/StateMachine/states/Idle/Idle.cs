@@ -1,5 +1,5 @@
 ﻿using System;
-using UnityEngine;
+
 namespace BlackRose
 {
     // =======================
@@ -8,6 +8,5 @@ namespace BlackRose
     [Serializable]
     public class Idle : StateWithAnime
     {
-        public Idle() { }
     }
 }

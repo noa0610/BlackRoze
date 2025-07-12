@@ -6,7 +6,7 @@ namespace BlackRose
 {
     // 概要:
     // SearchAssistance クラスは、複数のフィルター処理（IFilterComponent）を組み合わせて順次実行し、
-    // ユニット（IUnit）のリストに対して段階的な絞り込み（検索）を行う補助ツールです。
+    // ユニット（UnitBase）のリストに対して段階的な絞り込み（検索）を行う補助ツールです。
     // 各フィルターにはキー（string）と優先度（priority）を設定でき、
     // 優先度の昇順に処理が実行されます。
     // 
@@ -19,22 +19,15 @@ namespace BlackRose
     // 例として、複数の検索条件を持つユニット選定システム（AIやターゲット選別等）などに応用可能です。
     // 
     // 注意:
-    // - IFilterComponentとIUnitの具体的な実装に依存します。
+    // - IFilterComponentとUnitBaseの具体的な実装に依存します。
     // - フィルターの結果が空になった時点で処理を打ち切ります。
     // - UnityEngine.Debug.Logを用いて処理ログを出力しています。
 
     public class SearchAssistance : ISearch
     {
-        private class SearchCompInfo
-        {
-            public string Key;
-            public IFilterComponent Comp;
-            public int Priority; // プライオリティが低いほど、検索において優先される
-        }
-
         private List<SearchCompInfo> _comps = new();
 
-        public void AddComp(string key, IFilterComponent comp, int priority = 0)
+        public void AddComp(string key, SearchCompInfo info)
         {
             var existing = _comps.FirstOrDefault(c => c.Key == key);
             if (existing != null)
@@ -48,13 +41,14 @@ namespace BlackRose
             }
         }
 
-        public void RemoveComp(string key)
+        public void RemoveComp(string key, SearchCompInfo info)
         {
             _comps.RemoveAll(c => c.Key == key);
         }
 
-        public List<IUnit> Execute(List<IUnit> pools)
+        public bool Execute(string key, List<UnitBase> pool, out List<UnitBase> res)
         {
+            res = new List<UnitBase>();
             foreach (var compInfo in _comps.OrderBy(c => c.Priority))
             {
                 pools = compInfo.Comp.Execute(pools);

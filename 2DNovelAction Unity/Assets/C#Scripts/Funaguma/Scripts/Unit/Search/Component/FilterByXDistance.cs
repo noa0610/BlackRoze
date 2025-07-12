@@ -8,19 +8,19 @@ namespace BlackRose
     public class FilterByXDistance : IFilterComponent
     {
         [SerializeField, SerializeReference]
-        private IUnit _parent;
+        private UnitBase _parent;
         [SerializeField]
         private float _detectionDistance;
-        public FilterByXDistance(IUnit parent, float detectionDistance)
+        public FilterByXDistance(UnitBase parent, float detectionDistance)
         {
             _parent = parent;
             _detectionDistance = detectionDistance;
         }
         public FilterByXDistance() { }
-        public List<IUnit> Execute(List<IUnit> units)
+        public List<UnitBase> Execute(List<UnitBase> units)
         {
             float myX = _parent.Transform.position.x;
-            List<IUnit> result = new List<IUnit>();
+            List<UnitBase> result = new List<UnitBase>();
             foreach (var unit in units)
             {
                 if (unit == _parent)

@@ -46,6 +46,7 @@ namespace BlackRose
             if (collision.transform.TryGetComponent<UnitBase>(out var target))
             {
                 Debug.Log("Hit to Target. Name : " + target.UnitStatusData.unitName); // ログ出力（当たった！）
+                if (target.IsInvincible) return;
                 UnitManager.instance.AddDamage(target, null, _status.damage);
             }
             Destroy(gameObject); // 弾を破壊（寿命）

@@ -13,22 +13,5 @@ namespace BlackRose
         // 一時停止からゲームプレイを再開する処理
         void GamePlay_Continue();
     }
-
-    // 概要:
-    // IUnit は、ゲーム内の「ユニット（キャラクター、エネミー、NPCなど）」に共通する機能・情報を提供するためのインターフェースです。
-    // ステータス（HPなど）や Transform を通じて、検索処理や描画・移動などの操作に使われることを想定しています。
-    public interface IUnit
-    {
-        // ユニットのステータス（HP、攻撃力、移動速度など）を保持
-        UnitStatusData UnitStatusData { get; }
-        StatusManager StatusManager { get; }
-        StatusEffectManager StatusEffectManager { get; }
-        SpriteEffectPlayer Player { get; }
-        Animator Animator { get; set; }
-        Transform Transform { get; }
-        Vector2 Direction { get; set; } // unitの向きを保持
-
-        void TakeDamage(float damage);
-    }
 }
 // unicode

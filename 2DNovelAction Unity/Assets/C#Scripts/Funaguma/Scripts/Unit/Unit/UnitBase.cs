@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BlackRose
 {
     [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
-    public abstract class UnitBase : MonoBehaviour, IUnit, IStopableObject
+    public abstract class UnitBase : MonoBehaviour, IStopableObject
     {
         // === Reference ===
         public SpriteEffectPlayer player;
@@ -15,15 +15,11 @@ namespace BlackRose
         [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
-        private StateComp _defaultState;
 
 #if UNITY_EDITOR
         [Header("Debug")]
         [SerializeField] private string _currentState;
 #endif
-
-        protected virtual StateComp DefaultState => _defaultState ??= new Idle();
-        protected virtual string DefaultStateKey => "idle";
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public Transform Transform => transform;
@@ -42,12 +38,12 @@ namespace BlackRose
                 _animator = value;
             }
         }
-
+        public bool IsInvincible { get; set; }
         // 子クラスで行いたい処理に合わせてBase.Awake()の位置は調整すること
         protected virtual void Awake()
         {
             UnitManager.instance.AddUnit(this);
-            _stateMachine = new StateMachine(this, DefaultState, StateDecision, DefaultStateKey);
+            _stateMachine = new StateMachine(this);
             statusManager = new StatusManager();
             effectManager = new(this);
             RegisterStatus();
@@ -59,8 +55,10 @@ namespace BlackRose
         {
             _stateMachine.UpdateMachine();
             effectManager.Update();
-            var s = _stateMachine.CurrentState.Key;
+# if UNITY_EDITOR
+            var s = _stateMachine.CurrentState.key;
             _currentState = s; // インスペクターからの監視用変数
+# endif
         }
 
         protected virtual void RegisterStatus()
@@ -75,7 +73,6 @@ namespace BlackRose
             statusManager.DeadCallBack += DeadCallBack;
         }
         protected abstract void RegisterStats();
-        protected abstract string StateDecision();
         // ====== [一時停止関連のインターフェース実装（未実装）] ======
 
         public virtual void GamePlay_Pose()
@@ -91,6 +88,7 @@ namespace BlackRose
 
         public virtual void TakeDamage(float damage)
         {
+            IsInvincible = true;
             statusManager?.TakeDamage(damage);
         }
 

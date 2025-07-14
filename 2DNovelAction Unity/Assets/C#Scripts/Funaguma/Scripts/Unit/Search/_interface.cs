@@ -1,33 +1,29 @@
-// ŠT—v:
-// ‚±‚Ì–¼‘O‹óŠÔiTestj‚Å‚ÍAƒ†ƒjƒbƒg‚Ìi‚èž‚ÝEŒŸõ‹@\‚ð\’z‚·‚é‚½‚ß‚ÌƒCƒ“ƒ^[ƒtƒF[ƒXŒQ‚ð’è‹`‚µ‚Ä‚¢‚Ü‚·B
-// _“î‚ÈƒtƒBƒ‹ƒ^[\¬‚âAŒŸõˆ—‚ÌŠg’£«‚ð–Ú“I‚Æ‚µ‚½ÝŒv‚Å‚·B
-
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace BlackRose
 {
     // ISearch:
-    // ƒtƒBƒ‹ƒ^[‚ð’Ç‰ÁEíœ‚µAƒ†ƒjƒbƒg‚ÌƒŠƒXƒg‚É‘Î‚µ‚ÄŒŸõˆ—‚ðŽÀs‚·‚é‚½‚ß‚ÌƒCƒ“ƒ^[ƒtƒF[ƒXB
-    // ŽÀ‘•‘¤‚Í•¡”‚ÌƒtƒBƒ‹ƒ^[iIFilterComponentj‚ðŠÇ—‚µA’iŠK“I‚Éƒ†ƒjƒbƒgƒŠƒXƒg‚ðˆ—‚µ‚Ü‚·B
+    // ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã‚’è¿½åŠ ãƒ»å‰Šé™¤ã—ã€ãƒ¦ãƒ‹ãƒƒãƒˆã®ãƒªã‚¹ãƒˆã«å¯¾ã—ã¦æ¤œç´¢å‡¦ç†ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã€‚
+    // å®Ÿè£…å´ã¯è¤‡æ•°ã®ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ï¼ˆIFilterComponentï¼‰ã‚’ç®¡ç†ã—ã€æ®µéšŽçš„ã«ãƒ¦ãƒ‹ãƒƒãƒˆãƒªã‚¹ãƒˆã‚’å‡¦ç†ã—ã¾ã™ã€‚
     public interface ISearch
     {
-        // ƒtƒBƒ‹ƒ^[‚Ì’Ç‰ÁBƒL[‚Æ—Dæ“x‚ðŽw’è‰Â”\i“¯ƒL[‚È‚çã‘‚«‘z’èjB
-        void AddComp(string key, IFilterComponent comp, int priority = 0);
+        // ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã®è¿½åŠ ã€‚
+        void AddComp(string key, SearchCompInfo info);
 
-        // ƒtƒBƒ‹ƒ^[‚ÌíœBŽw’èƒL[‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg‚ðœ‹ŽB
-        void RemoveComp(string id);
+        // ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã®å‰Šé™¤ã€‚æŒ‡å®šã‚­ãƒ¼ã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’é™¤åŽ»ã€‚
+        void RemoveComp(string key, SearchCompInfo info);
 
-        // ŒŸõˆ—‚ðŽÀsBƒtƒBƒ‹ƒ^[‡‚Éƒ†ƒjƒbƒg‚ðˆ—‚µAŒ‹‰Ê‚ð•Ô‹pB
-        List<IUnit> Execute(List<IUnit> pool);
+        // æ¤œç´¢å‡¦ç†ã‚’å®Ÿè¡Œã€‚ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼é †ã«ãƒ¦ãƒ‹ãƒƒãƒˆã‚’å‡¦ç†ã—ã€çµæžœã‚’è¿”å´ã€‚
+        bool Execute(string key, List<UnitBase> pool, out List<UnitBase> res);
     }
 
     // IFilterComponent:
-    // ”CˆÓ‚Ìƒ†ƒjƒbƒgƒŠƒXƒg‚É‘Î‚µ‚ÄA“Á’è‚ÌðŒ‚ÅƒtƒBƒ‹ƒ^ƒŠƒ“ƒO‚ðs‚¤ƒRƒ“ƒ|[ƒlƒ“ƒg—p‚ÌƒCƒ“ƒ^[ƒtƒF[ƒXB
-    // ŽÀ‘•‚É‚æ‚èAUŒ‚—Í‚âHPAƒ^ƒO‚È‚Ç‚ÉŠî‚Ã‚­ðŒˆ—‚ª‰Â”\B
-    // –½–¼‹K‘¥FFilterBy››
+    // ä»»æ„ã®ãƒ¦ãƒ‹ãƒƒãƒˆãƒªã‚¹ãƒˆã«å¯¾ã—ã¦ã€ç‰¹å®šã®æ¡ä»¶ã§ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°ã‚’è¡Œã†ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆç”¨ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã€‚
+    // å®Ÿè£…ã«ã‚ˆã‚Šã€æ”»æ’ƒåŠ›ã‚„HPã€ã‚¿ã‚°ãªã©ã«åŸºã¥ãæ¡ä»¶å‡¦ç†ãŒå¯èƒ½ã€‚
+    // å‘½åè¦å‰‡ï¼šFilterByâ—‹â—‹
     public interface IFilterComponent
     {
-        List<IUnit> Execute(List<IUnit> pool);
+        List<UnitBase> Execute(List<UnitBase> pool);
     }
 }
 // unicode

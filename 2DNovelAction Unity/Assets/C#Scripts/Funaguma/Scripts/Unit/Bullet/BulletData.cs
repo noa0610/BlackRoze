@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BlackRose
 {
@@ -6,7 +6,7 @@ namespace BlackRose
     public class BulletData : ScriptableObject
     {
         public string bulletName;
-        public Bullet bullet;
+        public Bullet prefab;
         public BulletStatus originalstatus;
     }
 }

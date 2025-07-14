@@ -1,16 +1,16 @@
-using HighElixir.Utilities;
+﻿using HighElixir.Utilities;
 using System.Collections.Generic;
 
 namespace BlackRose
 {
     public class UnitManager : SingletonBehavior<UnitManager>
     {
-        private List<IUnit> _unitList = new List<IUnit>();
-        public void AddUnit(IUnit unit)
+        private List<UnitBase> _unitList = new List<UnitBase>();
+        public void AddUnit(UnitBase unit)
         {
             _unitList.Add(unit);
         }
-        public void RemoveUnit(IUnit unit)
+        public void RemoveUnit(UnitBase unit)
         {
             _unitList.Remove(unit);
         }
@@ -19,14 +19,28 @@ namespace BlackRose
             _unitList.Clear();
         }
 
-        public List<IUnit> GetUnitList()
+        public List<UnitBase> GetUnitList()
         {
             return _unitList;
         }
 
-        public void AddDamage(IUnit target, IUnit from, float damage)
+        public void AddDamage(UnitBase target, UnitBase from, float damage)
         {
             target.TakeDamage(damage);
+        }
+
+        public void Pause(bool pause)
+        {
+            foreach (var unit in _unitList)
+            {
+                if (unit is IPausable pausable)
+                {
+                    if (pause)
+                        pausable.Pause();
+                    else
+                        pausable.Play();
+                }
+            }
         }
     }
 }

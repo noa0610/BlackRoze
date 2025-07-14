@@ -3,7 +3,7 @@ namespace BlackRose
 {
     public class StatusAmount
     {
-        public readonly float defaultAmount;
+        public float defaultAmount;
         /// <summary>
         /// 現在の値に作用する為、HPなどの頻繁に変動する値以外では基本的に不要
         /// </summary>

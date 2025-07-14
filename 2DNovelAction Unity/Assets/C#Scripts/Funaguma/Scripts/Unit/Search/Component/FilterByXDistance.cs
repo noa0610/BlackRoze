@@ -1,27 +1,32 @@
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace BlackRose
 {
+    [Serializable]
     public class FilterByXDistance : IFilterComponent
     {
-        private IUnit _parent;
+        [SerializeField, SerializeReference]
+        private UnitBase _parent;
+        [SerializeField]
         private float _detectionDistance;
-        public FilterByXDistance(IUnit parent, float detectionDistance)
+        public FilterByXDistance(UnitBase parent, float detectionDistance)
         {
             _parent = parent;
             _detectionDistance = detectionDistance;
         }
-        public List<IUnit> Execute(List<IUnit> units)
+        public FilterByXDistance() { }
+        public List<UnitBase> Execute(List<UnitBase> units)
         {
-            float myX = _parent.Transform.position.x;
-            List<IUnit> result = new List<IUnit>();
+            float myX = _parent.transform.position.x;
+            List<UnitBase> result = new List<UnitBase>();
             foreach (var unit in units)
             {
                 if (unit == _parent)
                     continue;
 
-                float targetX = unit.Transform.position.x;
+                float targetX = unit.transform.position.x;
                 float distance = Mathf.Abs(targetX - myX);
                 bool flag = distance <= _detectionDistance;
 

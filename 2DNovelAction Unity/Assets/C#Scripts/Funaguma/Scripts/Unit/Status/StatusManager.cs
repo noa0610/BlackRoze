@@ -79,6 +79,13 @@ namespace BlackRose
                 Debug.LogError(status.ToString() + "が存在しないよ！");
         }
 
+        public void UpdateBaseStatus(Status status, float amount)
+        {
+            if (_statusAmounts.ContainsKey(status))
+                _statusAmounts[status].defaultAmount = amount;
+            else
+                Debug.LogError(status.ToString() + "が存在しないよ！");
+        }
         public List<Status> GetStatusList()
         {
             return _statusAmounts.Keys.ToList();

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BlackRose
 {
     [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
-    public abstract class UnitBase : MonoBehaviour, IStopableObject
+    public abstract class UnitBase : MonoBehaviour, IPausable
     {
         // === Reference ===
         public SpriteEffectPlayer player;
@@ -15,6 +15,7 @@ namespace BlackRose
         [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
+        [SerializeField]protected bool _isPlaying = true;
 
 #if UNITY_EDITOR
         [Header("Debug")]
@@ -39,27 +40,8 @@ namespace BlackRose
         }
         public bool IsInvincible { get; set; }
 
-        // 子クラスで行いたい処理に合わせてBase.Awake()の位置は調整すること
-        protected virtual void Awake()
-        {
-            UnitManager.instance.AddUnit(this);
-            _stateMachine = new StateMachine(this);
-            statusManager = new StatusManager();
-            effectManager = new(this);
-            RegisterStatus();
-            RegisterStats();
-        }
-
-        // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
-        protected virtual void Update()
-        {
-            _stateMachine.UpdateMachine();
-            effectManager.Update();
-# if UNITY_EDITOR
-            var s = _stateMachine.CurrentState.key;
-            _currentState = s; // インスペクターからの監視用変数
-# endif
-        }
+        // 初期状態のステート
+        protected virtual string StartState => "idle";
 
         protected virtual void RegisterStatus()
         {
@@ -73,16 +55,6 @@ namespace BlackRose
             statusManager.DeadCallBack += DeadCallBack;
         }
         protected abstract void RegisterStats();
-        // ====== [一時停止関連のインターフェース実装（未実装）] ======
-
-        public virtual void GamePlay_Pose()
-        {
-            // ここにゲーム一時停止処理を書く予定
-        }
-        public virtual void GamePlay_Continue()
-        {
-            // 停止からの再開処理を書く場所
-        }
 
         // ===== ステータス操作 =====
 
@@ -97,6 +69,39 @@ namespace BlackRose
             gameObject.SetActive(false);
             Debug.Log($"{_status.name}が死亡した");
         }
+
+        public virtual void Pause()
+        {
+            _isPlaying = false;
+        }
+
+        public virtual void Play()
+        {
+            _isPlaying = true;
+        }
+        
+        // 子クラスで行いたい処理に合わせてBase.Awake()の位置は調整すること
+        protected virtual void Awake()
+        {
+            UnitManager.instance.AddUnit(this);
+            _stateMachine = new StateMachine(this);
+            statusManager = new StatusManager();
+            effectManager = new(this);
+            RegisterStatus();
+            RegisterStats();
+            _stateMachine.Awake(StartState);
+        }
+
+        // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
+        protected virtual void Update()
+        {
+            if (!_isPlaying) return;
+            _stateMachine.UpdateMachine();
+            effectManager.Update();
+# if UNITY_EDITOR
+            var s = _stateMachine.CurrentState.key;
+            _currentState = s; // インスペクターからの監視用変数
+# endif
+        }
     }
 }
-//unicode

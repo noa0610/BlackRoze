@@ -1,4 +1,5 @@
-﻿namespace BlackRose
+﻿using UniRx;
+namespace BlackRose
 {
     public partial class ActionRobot
     {
@@ -33,6 +34,8 @@
             stuned,
             finishedStun,
         }
+
+        private Jump _jump;
         protected override void RegisterStats()
         {
             // === 各ステートのトリガー一覧定義 ===
@@ -45,8 +48,8 @@
         (Triggers.dashInput, StateKey.dash),
         (Triggers.jumpInput, StateKey.jump),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.falling, StateKey.fall),          
-        (Triggers.death, StateKey.dead),            
+        (Triggers.falling, StateKey.fall),
+        (Triggers.death, StateKey.dead),
             };
             var shootTriggers = new (Triggers, StateKey)[]
             {
@@ -55,58 +58,59 @@
         (Triggers.chargeShoot, StateKey.chargeShoot),
         (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.death, StateKey.dead),           
+        (Triggers.death, StateKey.dead),
             };
             var chargeShootTriggers = new (Triggers, StateKey)[]
             {
         (Triggers.shootComplete, StateKey.idle),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.death, StateKey.dead),           
+        (Triggers.death, StateKey.dead),
             };
             var fullChargeShootTriggers = new (Triggers, StateKey)[]
             {
         (Triggers.shootComplete, StateKey.idle),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.death, StateKey.dead),            
+        (Triggers.death, StateKey.dead),
             };
             var moveTriggers = new (Triggers, StateKey)[]
             {
         (Triggers.moveInput, StateKey.move),
-        (Triggers.cancelMove, StateKey.idle),       
+        (Triggers.cancelMove, StateKey.idle),
         (Triggers.shootInput, StateKey.shoot),
         (Triggers.chargeShoot, StateKey.chargeShoot),
         (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
         (Triggers.dashInput, StateKey.dash),
         (Triggers.jumpInput, StateKey.jump),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.death, StateKey.dead),            
+        (Triggers.death, StateKey.dead),
             };
             var dashTriggers = new (Triggers, StateKey)[]
             {
-        (Triggers.cancelMove, StateKey.idle),       
+        (Triggers.cancelMove, StateKey.idle),
         (Triggers.shootInput, StateKey.shoot),
         (Triggers.chargeShoot, StateKey.chargeShoot),
         (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
         (Triggers.jumpInput, StateKey.jump),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.death, StateKey.dead),            
+        (Triggers.death, StateKey.dead),
             };
             var jumpTriggers = new (Triggers, StateKey)[]
             {
-        (Triggers.falling, StateKey.fall),         
+        (Triggers.falling, StateKey.fall),
+        (Triggers.landing, StateKey.idle),
         (Triggers.stuned, StateKey.stun),
-        (Triggers.death, StateKey.dead),            
+        (Triggers.death, StateKey.dead),
             };
             var fallTriggers = new (Triggers, StateKey)[]
             {
-        (Triggers.landing, StateKey.idle),          
-        (Triggers.death, StateKey.dead),           
+        (Triggers.landing, StateKey.idle),
+        (Triggers.death, StateKey.dead),
             };
             var stunTriggers = new (Triggers, StateKey)[]
             {
-        (Triggers.stuned, StateKey.stun),          
+        (Triggers.stuned, StateKey.stun),
         (Triggers.finishedStun, StateKey.idle),
-        (Triggers.death, StateKey.dead),            
+        (Triggers.death, StateKey.dead),
             };
             var deadTriggers = new (Triggers, StateKey)[]
             {
@@ -122,31 +126,40 @@
                 .AddTransmissions(StateKey.move, moveTriggers)
                 .AddTransmissions(StateKey.dash, dashTriggers)
                 .AddTransmissions(StateKey.jump, jumpTriggers)
-                .AddTransmissions(StateKey.fall, fallTriggers)              
-                .AddTransmissions(StateKey.dead, deadTriggers);           
+                .AddTransmissions(StateKey.fall, fallTriggers)
+                .AddTransmissions(StateKey.dead, deadTriggers);
 
             // === ステートコンポーネント登録 ===
             // idle
             _stateMachine.AddState(
                 StateKey.idle.ToString(),
                 new Idle() // 何も動かさないデフォルトステート
-            );                                                                              
+            );
 
             // shoot
             var normal = new ShootForward(_bullets[0], _targetLayer)
                 .SetAnimeTrigger("Attack");
             _stateMachine.AddState(StateKey.shoot.ToString(), normal);
-
+            normal.onShootComplete.AsObservable().Subscribe(_ =>
+            {
+                _stateMachine.ChangeState(Triggers.shootComplete);
+            });
             // chargeShoot
             var charge = new ShootForward(_bullets[1], _targetLayer)
                 .SetAnimeTrigger("Attack");
             _stateMachine.AddState(StateKey.chargeShoot.ToString(), charge);
-
+            charge.onShootComplete.AsObservable().Subscribe(_ =>
+            {
+                _stateMachine.ChangeState(Triggers.shootComplete);
+            });
             // fullChargeShoot
             var full = new ShootForward(_bullets[2], _targetLayer)
                 .SetAnimeTrigger("Attack");
             _stateMachine.AddState(StateKey.fullChargeShoot.ToString(), full);
-
+            full.onShootComplete.AsObservable().Subscribe(_ =>
+            {
+                _stateMachine.ChangeState(Triggers.shootComplete);
+            });
             // move
             _stateMachine.AddState(
                 StateKey.move.ToString(),
@@ -167,13 +180,11 @@
             );
 
             // jump
+            _jump = new Jump(_rigidbody, statusManager.GetStatusAmount(Status.SpeedInAir));
             _stateMachine.AddState(
                 StateKey.jump.ToString(),
-                new Jump(
-                    _rigidbody,
-                    statusManager.GetStatusAmount(Status.SpeedInAir)
-                )
-            );
+                _jump
+                );
 
             // fall
             _stateMachine.AddState(

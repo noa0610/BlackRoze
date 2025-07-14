@@ -1,9 +1,8 @@
-﻿using Unity.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BlackRose
 {
-    public class Bullet : MonoBehaviour, IStopableObject
+    public class Bullet : MonoBehaviour
     {
         [SerializeField, Tooltip("常に衝突可能なレイヤー")] private LayerMask _canHitLayer;
         protected LayerMask _targetLayer;
@@ -51,22 +50,5 @@ namespace BlackRose
             }
             Destroy(gameObject); // 弾を破壊（寿命）
         }
-        // 以下、一時停止／再開など（未実装）
-
-        public void Dispose()
-        {
-            // 弾の終了処理（今は空）
-        }
-
-        public void GamePlay_Continue()
-        {
-            // 一時停止解除時に呼ばれる予定（今は空）
-        }
-
-        public void GamePlay_Pose()
-        {
-            // ゲーム一時停止時に呼ばれる予定（今は空）
-        }
     }
 }
-//unicode

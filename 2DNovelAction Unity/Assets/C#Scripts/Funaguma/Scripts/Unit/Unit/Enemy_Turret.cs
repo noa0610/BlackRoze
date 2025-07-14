@@ -29,7 +29,7 @@ namespace BlackRose
         [SerializeField] private float _shootInterval = 100f;
         // 1サイクルあたりの連射数
         [SerializeField] private int _shootFireCount;
-        
+
         // 弾丸が検知できるレイヤー
         [SerializeField] private LayerMask _targetLayer;
 
@@ -54,7 +54,7 @@ namespace BlackRose
 
             var idleTrigger = new[]
             {
-                (Triggers.ShootReady, States.shoot), 
+                (Triggers.ShootReady, States.shoot),
                 (Triggers.ShootReserve, States.shootInterval),
                 (Triggers.Died, States.dead)
             };
@@ -120,6 +120,7 @@ namespace BlackRose
 
         protected override void Update()
         {
+            if (!_isPlaying) return;
             // ■ インターバルカウントダウン ■
             if (_shootIntervalCount > 0f)
                 _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);

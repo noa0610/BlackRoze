@@ -9,7 +9,7 @@ namespace BlackRose
     {
         private UnitBase _parent;
         private Dictionary<string, StateComp> _stateMap = new(); // ステートの登録一覧（名前とステート）
-        private Dictionary<(string state, string trigger), string> _transmissionGroup;
+        private Dictionary<(string state, string trigger), string> _transmissionGroup = new();
         private (string key, StateComp state) _currentState; // 現在のステート
         private string _request = string.Empty; // ステート遷移の予約
         private Queue<string> _requests = new();
@@ -36,7 +36,7 @@ namespace BlackRose
                 if (_currentState.state.AllowChange(to, _parent))
                 {
                     var from = _currentState.state;
-                        from.Exit(to, _parent);
+                    from.Exit(to, _parent);
                     _currentState = (key, to);
                     to.Enter(from, _parent);
                     return true;
@@ -74,6 +74,23 @@ namespace BlackRose
                 if (ChangeState(trig)) return;
             }
             _currentState.state.Stay(_parent);
+        }
+
+        public void Awake(string startStateKey = "idle")
+        {
+            if (_stateMap.ContainsKey(startStateKey))
+                SetStateDirect(startStateKey);
+            else
+            {
+                startStateKey = char.ToUpper(startStateKey[0]) + startStateKey.Substring(1);
+                if (_stateMap.ContainsKey(startStateKey))
+                    SetStateDirect(startStateKey);
+                else
+                {
+                    throw new System.ArgumentException();
+                }
+            }
+
         }
 
         // ===============================

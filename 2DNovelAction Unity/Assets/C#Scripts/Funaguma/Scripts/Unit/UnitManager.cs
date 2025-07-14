@@ -28,5 +28,19 @@ namespace BlackRose
         {
             target.TakeDamage(damage);
         }
+
+        public void Pause(bool pause)
+        {
+            foreach (var unit in _unitList)
+            {
+                if (unit is IPausable pausable)
+                {
+                    if (pause)
+                        pausable.Pause();
+                    else
+                        pausable.Play();
+                }
+            }
+        }
     }
 }

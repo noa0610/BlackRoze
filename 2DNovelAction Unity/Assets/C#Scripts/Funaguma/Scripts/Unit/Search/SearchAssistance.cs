@@ -32,12 +32,12 @@ namespace BlackRose
             var existing = _comps.FirstOrDefault(c => c.Key == key);
             if (existing != null)
             {
-                existing.Comp = comp;
-                existing.Priority = priority;
+                existing.Comp = info.Comp;
+                existing.Priority = info.Priority;
             }
             else
             {
-                _comps.Add(new SearchCompInfo { Key = key, Comp = comp, Priority = priority });
+                _comps.Add(new SearchCompInfo { Key = key, Comp = info.Comp, Priority = info.Priority });
             }
         }
 
@@ -51,10 +51,14 @@ namespace BlackRose
             res = new List<UnitBase>();
             foreach (var compInfo in _comps.OrderBy(c => c.Priority))
             {
-                pools = compInfo.Comp.Execute(pools);
-                if (pools.Count <= 0) break;
+                pool = compInfo.Comp.Execute(pool);
+                if (pool.Count <= 0)
+                {
+                    return false;
+                }
             }
-            return pools;
+            res = new(pool);
+            return true;
         }
     }
 }

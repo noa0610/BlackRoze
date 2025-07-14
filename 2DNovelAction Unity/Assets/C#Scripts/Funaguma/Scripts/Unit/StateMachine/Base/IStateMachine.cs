@@ -30,5 +30,10 @@ namespace BlackRose
         /// 乱用厳禁。
         /// </summary>
         void SetStateDirect(string target);
+
+        /// <summary>
+        /// ステートマシンを起動する
+        /// </summary>
+        void Awake(string startStateKey = "idle");
     }
 }

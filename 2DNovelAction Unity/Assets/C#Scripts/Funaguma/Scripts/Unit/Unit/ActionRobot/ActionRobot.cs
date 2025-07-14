@@ -45,17 +45,17 @@ namespace BlackRose
         protected override void OnGrounded()
         {
             coyoteTimeCounter = coyoteTime;
-
-            if (_stateMachine.StateMap[StateKey.jump.ToString()] is Jump jump)
-                jump.HadLeapt = false;
-            if (_stateMachine.CurrentState.key == StateKey.jump.ToString())
-                _stateMachine.ChangeState(Triggers.landing.ToString());
+            _jump.HadLeapt = false;
+            _stateMachine.ChangeState(Triggers.landing);
         }
         protected override void OnUnGrounded()
         {
             coyoteTimeCounter -= Mathf.Max(0, Time.fixedDeltaTime);
         }
-
+        protected override void OnFall()
+        {
+            _stateMachine.ChangeState(Triggers.falling);
+        }
 
         public override void TakeDamage(float damage)
         {
@@ -64,6 +64,16 @@ namespace BlackRose
             _stateMachine.ChangeState(Triggers.stuned.ToString());
         }
 
+        public override void Pause()
+        {
+            base.Pause();
+            GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Disable();
+        }
+        public override void Play()
+        {
+            base.Play();
+            GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Disable();
+        }
         // === Private ===
 
         // === InputAction ===
@@ -74,6 +84,10 @@ namespace BlackRose
             {
                 _stateMachine.ChangeState(Triggers.jumpInput);
                 coyoteTimeCounter = 0f;  // ジャンプしたら猶予リセット
+            }
+            if (!value.isPressed)
+            {
+                _jump.Cut();
             }
         }
         private void OnDash(InputValue value)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine;
 
 namespace BlackRose
@@ -8,14 +9,13 @@ namespace BlackRose
     {
         [SerializeField] private float _createPos = 0.35f;
         [SerializeField] private int _fireCount = 3;
-        [SerializeField] private float _allowShootCancel = 0.4f;
         private int _count = 0;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootForward() { }
         public override void Enter(IState preview, UnitBase parent)
         {
             _count++;
-            Shoot(parent);
+            _ = Shoot(parent);
         }
 
         public override void Exit(IState next, UnitBase parent)
@@ -24,12 +24,12 @@ namespace BlackRose
         }
         public override bool AllowChange(IState nextState, UnitBase parent)
         {
-            if (nextState is Stun) return true;
+            if (base.AllowChange(nextState, parent)) return true;
             if (nextState is ShootForward && _count <= _fireCount && GetNormalized(parent) >= _allowShootCancel) return true;
-            return base.AllowChange(nextState, parent);
+            return false;
         }
 
-        protected override void Shoot(UnitBase unit)
+        protected async override UniTask Shoot(UnitBase unit)
         {
             var b = _data.prefab;
             if (b == null)
@@ -42,7 +42,7 @@ namespace BlackRose
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_data, _targetLayer);
-            base.Shoot(unit);
+            await base.Shoot(unit);
         }
 
         public ShootForward SetMaxCount(int maxCount)

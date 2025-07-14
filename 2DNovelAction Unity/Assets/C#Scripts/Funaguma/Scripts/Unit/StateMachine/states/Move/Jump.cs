@@ -58,8 +58,7 @@ namespace BlackRose
             vel.x += h * addSpeed * Time.deltaTime;
             _rb.velocity = vel;
         }
-
-        public override void Exit(IState nextIState, UnitBase parent)
+        public void Cut()
         {
             if (_rb.velocity.y > 0f)
             {

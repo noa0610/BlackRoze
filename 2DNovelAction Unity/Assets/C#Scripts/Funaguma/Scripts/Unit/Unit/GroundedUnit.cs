@@ -3,7 +3,7 @@ using System;
 
 namespace BlackRose
 {
-    [Serializable]
+    [Serializable, RequireComponent(typeof(Rigidbody2D))]
     public abstract class GroundedUnit : UnitBase
     {
         [Header("Ground Check")]
@@ -58,6 +58,11 @@ namespace BlackRose
         /// 一定時間ごとに呼ばれ、着地していない場合に呼ばれる
         /// </summary>
         protected abstract void OnUnGrounded();
+
+        protected virtual void OnFall()
+        {
+        }
+
         // デバッグ用にGizmos表示
         private void OnDrawGizmosSelected()
         {

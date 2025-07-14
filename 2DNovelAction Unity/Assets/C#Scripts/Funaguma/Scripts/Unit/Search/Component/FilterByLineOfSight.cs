@@ -13,7 +13,7 @@ namespace BlackRose
         private float _maxDistance;
         [SerializeField, Tooltip("衝突を検出可能なレイヤーマスク")]
         private LayerMask _obstructionMask;
-        private List<IUnit> _unitList = new List<IUnit>();
+        private List<UnitBase> _unitList = new List<UnitBase>();
         private RaycastHit[] _hitBuffer = new RaycastHit[1];
 
         public FilterByLineOfSight(Transform viewpoint, float maxDistance, LayerMask obstructionMask)
@@ -21,17 +21,17 @@ namespace BlackRose
             _viewpoint = viewpoint;
             _maxDistance = maxDistance;
             _obstructionMask = obstructionMask;
-            _unitList = new List<IUnit>();
+            _unitList = new List<UnitBase>();
         }
         public FilterByLineOfSight() { }
-        public List<IUnit> Execute(List<IUnit> pool)
+        public List<UnitBase> Execute(List<UnitBase> pool)
         {
             _unitList.Clear();
 
             float maxDistSqr = _maxDistance * _maxDistance;
             foreach (var unit in pool)
             {
-                Vector3 dir = unit.Transform.position - _viewpoint.position;
+                Vector3 dir = unit.transform.position - _viewpoint.position;
                 float distSqr = dir.sqrMagnitude;
 
                 // 距離外ならスキップ

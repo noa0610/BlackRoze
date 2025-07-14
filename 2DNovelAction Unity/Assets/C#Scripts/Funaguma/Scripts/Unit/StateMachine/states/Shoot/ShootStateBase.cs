@@ -1,35 +1,46 @@
 ﻿using UnityEngine;
 using System;
+using UnityEngine.Events;
+using Cysharp.Threading.Tasks;
 
 namespace BlackRose
 {
-    public abstract class ShootStateBase : IState
+    [Serializable]
+    public class ShootStateBase : StateWithAnime
     {
         // 弾丸にセットするレイヤー
-        protected LayerMask _targetLayer;
-        protected BulletData _data;         // 発射する弾のデータ
-        protected string _animeTrigger;
-        public event Action onShootComplete;
+        [SerializeField] protected LayerMask _targetLayer;
+        [SerializeField] protected BulletData _data;         // 発射する弾のデータ
+        [SerializeField] public UnityEvent onShootComplete = new();
+        [SerializeField] protected float _allowShootCancel = 0.4f;
 
-        // === Public ===
-        public abstract bool Enter(IState previousState, IUnit parent);
-        public abstract bool Exit(IState nextState, IUnit parent);
-        public abstract bool Stay(IUnit parent);
-        public void ActionInvoke()
+        // === Constractor ===
+        public ShootStateBase(BulletData data, LayerMask targetLayer)
         {
-            onShootComplete?.Invoke(); // 発射完了イベントを呼び出す
+            _data = data;
+            _targetLayer = targetLayer; // レイヤーをセット
+        }
+        public ShootStateBase() { }
+        // === Public ===
+        public bool IsCancel(UnitBase parent)
+        {
+            return GetNormalized(parent) >= _allowShootCancel;
         }
         public void SetBullet(BulletData bullet)
         {
             _data = bullet;
         }
-
-        // === Constractor ===
-        public ShootStateBase(BulletData data, LayerMask targetLayer, string animeTrigger)
+        public override bool AllowChange(IState nextState, UnitBase parent)
         {
-            _data = data;
-            _targetLayer = targetLayer; // レイヤーをセット
-            _animeTrigger = animeTrigger;
+            if (base.AllowChange(nextState, parent)) return true;
+            if (nextState is Stun) return true;
+            if (IsCancel(parent) && nextState is MoveOnGround) return true;
+            return false;
+        }
+        protected async virtual UniTask Shoot(UnitBase parent)
+        {
+            await UniTask.WaitUntil(() => GetNormalized(parent) > 1.0f);
+            onShootComplete?.Invoke();
         }
     }
 }

@@ -1,33 +1,25 @@
+ï»¿using System;
 using UnityEngine;
 
 namespace BlackRose
 {
     // =======================
-    // Idlei‘Ò‹@jó‘Ô
+    // Idleï¼ˆå¾…æ©Ÿï¼‰çŠ¶æ…‹
     // =======================
-    public class Idle_Rotate : IState
+    [Serializable]
+    public class Idle_Rotate : Idle
     {
-        private Transform _transform;
-        private float _rotateSpeed;
+        [SerializeField] private Transform _transform;
+        [SerializeField] private float _rotateSpeed;
         public Idle_Rotate(Transform transform, float rotateSpeed)
         {
             _transform = transform;
             _rotateSpeed = rotateSpeed;
         }
-        public bool Enter(IState previousState, IUnit parent)
-        {
-            return true;
-        }
-
-        public bool Exit(IState nextState, IUnit parent)
-        {
-            return true;
-        }
-
-        public bool Stay(IUnit parent)
+        public Idle_Rotate() { }
+        public override void Stay(UnitBase parent)
         {
             _transform.Rotate(Vector3.forward, _rotateSpeed * Time.deltaTime);
-            return true;
         }
     }
 }

@@ -43,14 +43,14 @@ namespace BlackRose
             _heavyMode.Register();
         }
 
-        protected override string StateDecision()
-        {
-            if (Translation.TryGetValue(_stateMachine.CurrentState.Key, out var to))
-            {
-                if (to.TryGetValue(_trigger, out var res)) return res;
-            }
-            return _stateMachine.DefaultStateKey;
-        }
+        //protected override string StateDecision()
+        //{
+        //    if (Translation.TryGetValue(_stateMachine.CurrentState.Key, out var to))
+        //    {
+        //        if (to.TryGetValue(_trigger, out var res)) return res;
+        //    }
+        //    return _stateMachine.DefaultStateKey;
+        //}
 
         protected override void Awake()
         {

@@ -15,7 +15,7 @@ namespace BlackRose
             _tag = tag;
         }
         public FilterByTag() { }
-        public List<IUnit> Execute(List<IUnit> pool)
+        public List<UnitBase> Execute(List<UnitBase> pool)
         {
             return pool.Where(u => u.UnitStatusData.tags.HasFlag(_tag)).ToList();
         }

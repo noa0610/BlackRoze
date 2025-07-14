@@ -19,9 +19,9 @@ namespace BlackRose
             _range = range;
         }
         public FilterByRange() { }
-        public List<IUnit> Execute(List<IUnit> pool)
+        public List<UnitBase> Execute(List<UnitBase> pool)
         {
-            return pool.Where(u => Vector3.Distance(u.Transform.position, _center.position) <= _range).ToList();
+            return pool.Where(u => Vector3.Distance(u.transform.position, _center.position) <= _range).ToList();
         }
     }
 }

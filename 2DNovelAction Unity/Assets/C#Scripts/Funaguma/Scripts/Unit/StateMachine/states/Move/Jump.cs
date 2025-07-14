@@ -1,13 +1,15 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace BlackRose
 {
-    public class Jump : IState
+    [Serializable]
+    public class Jump : StateWithAnime
     {
-        protected Rigidbody2D _rb;
-        protected bool _hasLeapt = false;
-        protected float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
-        protected StatusAmount _statusAmount;
+        [SerializeField] protected Rigidbody2D _rb;
+        [SerializeField] protected bool _hasLeapt = false;
+        [SerializeField] protected float _cutMultiplier = 0.5f;  // カット時に垂直速度を何割にするか
+        protected StatusAmount _moveOnAir;
 
         public bool HadLeapt
         {
@@ -25,54 +27,38 @@ namespace BlackRose
         public Jump(Rigidbody2D rb, StatusAmount amount)
         {
             _rb = rb;
-            _statusAmount = amount;
+            _moveOnAir = amount;
         }
-
-        // 前のStateから切り替わった瞬間に呼ばれる
-        public virtual bool Enter(IState previousState, IUnit parent)
+        public Jump() { }
+        // 前のIStateから切り替わった瞬間に呼ばれる
+        public override void Enter(IState previousIState, UnitBase parent)
         {
             if (!_hasLeapt)
             {
-                if(!parent.StatusManager.TryGetStatus(Status.JumpPower, out var amount))
+                if (!parent.StatusManager.TryGetStatus(Status.JumpPower, out var amount))
                 {
                     Debug.LogError("JumpPowerが登録されてないよ！");
-                    return false;
                 }
                 // 一度だけ上方向にインパルス
                 _rb.AddForce(Vector2.up * amount.ChangedMax, ForceMode2D.Impulse);
                 _hasLeapt = true;
             }
-            return true;
-        }
-
-        // 他のStateへ行くときに呼ばれる
-        public virtual bool Exit(IState nextState, IUnit parent)
-        {
-            return true;
         }
 
         // ジャンプ中ずっと毎フレーム呼ばれる
-        public virtual bool Stay(IUnit parent)
+        public override void Stay(UnitBase parent)
         {
             // 横移動入力を取り出し
             float h = parent.Direction.x;
-            if (h == 0)
-                return true;
-
-
-
+            if (h == 0) return;
+            if (_moveOnAir == null) _moveOnAir = parent.StatusManager.GetStatusAmount(Status.SpeedInAir);
             // 現在の上方向速度はキープしつつ、横速度だけ書き換え
             Vector2 vel = _rb.velocity;
-            float addSpeed = _statusAmount.ChangedMax;
+            float addSpeed = _moveOnAir.ChangedMax;
             vel.x += h * addSpeed * Time.deltaTime;
-
             _rb.velocity = vel;
-
-            return true;
         }
-
-        // ボタン離したときに呼ぶと、上向き速度をカットして短ジャンにできる
-        public void CutJump()
+        public void Cut()
         {
             if (_rb.velocity.y > 0f)
             {

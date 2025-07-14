@@ -1,53 +1,54 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine;
 
 namespace BlackRose
 {
-
+    [Serializable]
     public class ShootForward : ShootStateBase
     {
-        public ShootForward(BulletData data, LayerMask targetLayer, string animeTrigger) : base(data, targetLayer, animeTrigger) { }
-        public override bool Enter(IState previousState, IUnit parent)
+        [SerializeField] private float _createPos = 0.35f;
+        [SerializeField] private int _fireCount = 3;
+        private int _count = 0;
+        public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
+        public ShootForward() { }
+        public override void Enter(IState preview, UnitBase parent)
         {
-            parent.Animator?.SetTrigger(_animeTrigger);
+            _count++;
+            _ = Shoot(parent);
+        }
+
+        public override void Exit(IState next, UnitBase parent)
+        {
+            if (!(next is ShootForward)) _count = 0;
+        }
+        public override bool AllowChange(IState nextState, UnitBase parent)
+        {
+            if (base.AllowChange(nextState, parent)) return true;
+            if (nextState is ShootForward && _count <= _fireCount && GetNormalized(parent) >= _allowShootCancel) return true;
+            return false;
+        }
+
+        protected async override UniTask Shoot(UnitBase unit)
+        {
             var b = _data.prefab;
             if (b == null)
             {
                 Debug.Log("Do not set bullet.");
-                return false; // 弾のプレハブが設定されてなかったらエラー扱い
             }
-
             // 弾の生成位置（プレイヤーのちょっと前）
-            Vector3 spawnPos = parent.Transform.position + new Vector3(parent.Direction.x * 0.4f, 0, 0);
-
+            Vector3 spawnPos = unit.Transform.position + new Vector3(unit.Direction.x * _createPos, 0, 0);
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
-
-
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_data, _targetLayer);
-            return true;
+            await base.Shoot(unit);
         }
 
-        public override bool Exit(IState nextState, IUnit parent)
+        public ShootForward SetMaxCount(int maxCount)
         {
-            parent.Animator?.ResetTrigger(_animeTrigger);
-            // 攻撃終了時（今は特に処理なし）
-            return true;
-        }
-
-        public override bool Stay(IUnit parent)
-        {
-            if (_animeTrigger == "")
-            {
-                ActionInvoke(); 
-                return true;
-            }
-            if (parent.Animator == null || parent.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animeTrigger) == false)
-            {
-                ActionInvoke();
-            }
-            return true;
+            _fireCount = maxCount;
+            return this;
         }
     }
 }

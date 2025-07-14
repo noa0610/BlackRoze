@@ -5,50 +5,45 @@ using UnityEngine;
 
 namespace BlackRose
 {
-    public class SearchAssistanceMono : MonoBehaviour
+    public class SearchAssistanceMono : MonoBehaviour, ISearch
     {
-        [Serializable]
-        public class SearchCompInfo
-        {
-            public string Key;
-            [SerializeReference, SubclassSelector]
-            public IFilterComponent Comp;
-            public int Priority; // プライオリティが低いほど、検索において優先される
-        }
-        [SerializeField] private List<SearchCompInfo> _comps = new();
+        [SerializeField] private List<SearchCompInfo> _infos = new List<SearchCompInfo>();
 
-        public void AddComp(string key, IFilterComponent comp, int priority = 0)
+        public void AddComp(string key, SearchCompInfo info)
         {
-            var existing = _comps.FirstOrDefault(c => c.Key == key);
+            var existing = _infos.FirstOrDefault(c => c.Key == key);
             if (existing != null)
             {
-                existing.Comp = comp;
-                existing.Priority = priority;
+                existing.Comp = info.Comp;
+                existing.Priority = info.Priority;
             }
             else
             {
-                _comps.Add(new SearchCompInfo { Key = key, Comp = comp, Priority = priority });
+                _infos.Add(new SearchCompInfo { Key = key, Comp = info.Comp, Priority = info.Priority });
             }
         }
 
-        public void RemoveComp(string key)
+        public void RemoveComp(string key, SearchCompInfo info)
         {
-            _comps.RemoveAll(c => c.Key == key);
+            _infos.RemoveAll(c => c.Key == key);
         }
 
-        public List<IUnit> Execute(List<IUnit> pools)
+        public bool Execute(string key, List<UnitBase> pools, out List<UnitBase> res)
         {
-            foreach (var compInfo in _comps.OrderBy(c => c.Priority))
+            res = new List<UnitBase>();
+            foreach (var compInfo in _infos.OrderBy(c => c.Priority))
             {
                 pools = compInfo.Comp.Execute(pools);
                 if (pools.Count <= 0) break;
             }
-            return pools;
+            if (pools.Count <= 0) return false;
+            res = pools;
+            return true;
         }
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            _comps.OrderBy(x => x.Priority);
+            _infos.OrderBy(x => x.Priority);
         }
 #endif
     }

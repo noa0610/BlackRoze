@@ -1,4 +1,5 @@
 ﻿using System;
+using UniRx;
 using UnityEngine;
 
 namespace BlackRose
@@ -6,11 +7,30 @@ namespace BlackRose
     [Serializable]
     public class Enemy_Turret : UnitBase
     {
+        private enum States
+        {
+            none = 0,
+            idle,
+            shoot,
+            shootInterval,
+            dead,
+        }
+        private enum Triggers
+        {
+            None,
+            MissingPlayer,
+            ShootReserve,
+            ShootReady,
+            Died,
+        }
         // === Data ===
         [SerializeField] private BulletData _bulletData;
-        [SerializeField] private float _rotateSpeed;
+        // バーストが終わった後の待機時間
         [SerializeField] private float _shootInterval = 100f;
-        [SerializeField] private int _shootFireCount;       // 1サイクルあたりの連射数
+        // 1サイクルあたりの連射数
+        [SerializeField] private int _shootFireCount;
+
+        // 弾丸が検知できるレイヤー
         [SerializeField] private LayerMask _targetLayer;
 
         // === Reference ===
@@ -21,63 +41,61 @@ namespace BlackRose
         [SerializeField] private float _trishootInterval; // インターバルカウント
         private int _shootCount;            // 現在までに撃ったカウント
 
-        // === StateMachine ===
-        protected override IState DefaultState => new Idle_Rotate(transform, _rotateSpeed);
-        private StateFlags _stateFlags = StateFlags.None;
 
         // ステート登録
         protected override void RegisterStats()
         {
-            var shoot = new ShootForward(_bulletData, _targetLayer, "");
-            shoot.onShootComplete += OnShootComplete;
-            _stateMachine.AddState("shoot", shoot);
-            _stateMachine.AddState("shootInterval", new Idle());
-        }
+            var shoot = new ShootForward(_bulletData, _targetLayer);
+            shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete());
+            _stateMachine.AddState(States.idle, new Idle());
+            _stateMachine.AddState(States.shoot, shoot);
+            _stateMachine.AddState(States.shootInterval, new Idle());
+            _stateMachine.AddState(States.dead, new Idle());
 
-        protected override void Update()
-        {
-            // ■ インターバルカウントダウン ■
-            if (_shootIntervalCount > 0f)
-                _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
-            if (_trishootInterval > 0f)
-                _trishootInterval = Mathf.Max(0f, _trishootInterval - Time.deltaTime);
-
-            SearchPlayer();           // プレイヤー検出＆セットアップ
-            base.Update();
+            var idleTrigger = new[]
+            {
+                (Triggers.ShootReady, States.shoot),
+                (Triggers.ShootReserve, States.shootInterval),
+                (Triggers.Died, States.dead)
+            };
+            var shootTrigger = new[]
+            {
+                (Triggers.ShootReady, States.shoot),
+                (Triggers.ShootReserve, States.shootInterval),
+                (Triggers.Died, States.dead),
+                (Triggers.MissingPlayer, States.idle)
+            };
+            var reserveTrigger = new[]
+            {
+                (Triggers.ShootReady, States.shoot),
+                (Triggers.MissingPlayer, States.idle),
+                (Triggers.Died, States.dead)
+            };
         }
 
         private void SearchPlayer()
         {
-            _stateFlags &= ~StateFlags.InShoot;
             var list = UnitManager.instance.GetUnitList();
-            var result = _searchAssistance.Execute(list);
-            if (result != null && result.Count > 0)
+            if (_searchAssistance.Execute("", list, out var units))
             {
-                _stateFlags |= StateFlags.InShoot;
+                if (_shootInterval >= 0f || _trishootInterval >= 0f)
+                {
+                    _stateMachine.ChangeState(Triggers.ShootReserve);
+                    return;
+                }
                 // 最短距離のプレイヤーを狙う
-                result.Sort((a, b) =>
+                units.Sort((a, b) =>
                 {
                     var diffA = a.Transform.position - transform.position;
                     var diffB = b.Transform.position - transform.position;
                     return diffA.sqrMagnitude
                         .CompareTo(diffB.sqrMagnitude);
                 });
-                _bulletData.originalstatus.direction = (result[0].Transform.position - transform.position).normalized;
+                _bulletData.originalstatus.direction = (units[0].Transform.position - transform.position).normalized;
+                _stateMachine.ChangeState(Triggers.ShootReady);
             }
-        }
-        // ステート遷移判定
-        protected override string StateDecision()
-        {
-            // 1) インターバル中は必ずshootInterval
-            if (_shootIntervalCount > 0f || _trishootInterval > 0f)
-                return "shootInterval";
-
-            // 2) プレイヤー見つかってて、インターバル終了ならshoot
-            if (_stateFlags.HasFlag(StateFlags.InShoot))
-                return "shoot";
-
-            // 3) それ以外は回転待機(idle)
-            return "idle";
+            else
+                _stateMachine.ChangeState(Triggers.MissingPlayer);
         }
 
         // ShootForward が１発撃ち終わるたびに呼ばれる
@@ -98,6 +116,19 @@ namespace BlackRose
             Direction = Vector2.right;
             base.Awake();
             _searchAssistance = GetComponent<SearchAssistanceMono>();
+        }
+
+        protected override void Update()
+        {
+            if (!_isPlaying) return;
+            // ■ インターバルカウントダウン ■
+            if (_shootIntervalCount > 0f)
+                _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
+            if (_trishootInterval > 0f)
+                _trishootInterval = Mathf.Max(0f, _trishootInterval - Time.deltaTime);
+
+            SearchPlayer();           // プレイヤー検出＆セットアップ
+            base.Update();
         }
     }
 }//unicode

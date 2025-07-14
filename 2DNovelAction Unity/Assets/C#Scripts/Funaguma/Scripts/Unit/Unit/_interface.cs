@@ -1,34 +1,14 @@
-﻿using UnityEngine;
-
-namespace BlackRose
+﻿namespace BlackRose
 {
-    // 概要:
-    // IStopableObject は、ゲームプレイ中のオブジェクトに「一時停止」や「再開」の処理を提供するためのインターフェースです。
-    // 主に、ゲームの一時停止機能や、リソースの管理（Dispose）などで利用されます。
-    public interface IStopableObject
+    public interface IPlayable
     {
-        // ゲームプレイを一時停止する処理
-        void GamePlay_Pose();
-
-        // 一時停止からゲームプレイを再開する処理
-        void GamePlay_Continue();
+        void InputReject();
+        void AllowedInput();
     }
-
-    // 概要:
-    // IUnit は、ゲーム内の「ユニット（キャラクター、エネミー、NPCなど）」に共通する機能・情報を提供するためのインターフェースです。
-    // ステータス（HPなど）や Transform を通じて、検索処理や描画・移動などの操作に使われることを想定しています。
-    public interface IUnit
+    public interface IPausable
     {
-        // ユニットのステータス（HP、攻撃力、移動速度など）を保持
-        UnitStatusData UnitStatusData { get; }
-        StatusManager StatusManager { get; }
-        StatusEffectManager StatusEffectManager { get; }
-        SpriteEffectPlayer Player { get; }
-        Animator Animator { get; set; }
-        Transform Transform { get; }
-        Vector2 Direction { get; set; } // unitの向きを保持
-
-        void TakeDamage(float damage);
+        void Pause();
+        void Play();
     }
 }
 // unicode

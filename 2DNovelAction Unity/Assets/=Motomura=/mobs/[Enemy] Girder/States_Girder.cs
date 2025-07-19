@@ -59,37 +59,45 @@ namespace BlackRose
         };
 
 
-        //     _stateMachine
-        //         .AddTransmissions(States.idle, idleTrigger)
-        //         .AddTransmissions(States.shoot, shootTrigger)
-        //         .AddTransmissions(States.shootInterval, reserveTrigger);
+            _stateMachine
+                .AddTransmissions(States.shield_Idle, shield_IdleTrigger)
+                .AddTransmissions(States.WaitingForAnAttack, WaitingForAnAttackTrigger)
+                .AddTransmissions(States.Attack, AttackTrigger)
+                .AddTransmissions(States.Stan, StanTrigger)
+                .AddTransmissions(States.ShieldTackle, ShoulderGrenadeTrigger)
+                .AddTransmissions(States.ShoulderGrenade, ShoulderGrenadeTrigger);
 
-        //     // 待機
-        //     _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+            // 待機
+            _stateMachine.AddState(States.shield_Idle, new Idle().SetAnimeTrigger("shield_Idle").SetCancelableProgress(0));
+            _stateMachine.AddState(States.WaitingForAnAttack, new Idle_LazyChange(Triggers.Interval.ToString(),_AttackInterval).SetAnimeTrigger("shield_Idle").SetCancelableProgress(0));
+            _stateMachine.AddState(States.Attack, new Idle().SetAnimeTrigger("Attack").SetCancelableProgress(0));
+            _stateMachine.AddState(States.Stan, new Idle_LazyChange(Triggers.AfterTransition.ToString(),_AfterTransitionInterval).SetAnimeTrigger("Stan").SetCancelableProgress(0));
+            _stateMachine.AddState(States.ShieldTackle, new Idle().SetAnimeTrigger("ShieldTackle").SetCancelableProgress(0));
+            _stateMachine.AddState(States.ShoulderGrenade, new Idle().SetAnimeTrigger("ShoulderGrenade").SetCancelableProgress(0));
 
-        //     // 発射
-        //     var shoot = new ShootForward(_bulletData, targetLayer);
-        //     shoot.onShootComplete.AsObservable().Subscribe( => OnShootComplete());
-        //     shoot.SetBullet(_bulletData);
-        //     _stateMachine.AddState(States.shoot, shoot);
+            //     // 発射
+            //     var shoot = new ShootForward(_bulletData, targetLayer);
+            //     shoot.onShootComplete.AsObservable().Subscribe( => OnShootComplete());
+            //     shoot.SetBullet(_bulletData);
+            //     _stateMachine.AddState(States.shoot, shoot);
 
-        //     // 発射クールタイム
-        //     _stateMachine.AddState(States.shootInterval, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+            //     // 発射クールタイム
+            //     _stateMachine.AddState(States.shootInterval, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
 
-        //     // 死亡
-        //     _stateMachine.AddState(States.dead, new Idle());
-        // }
+            //     // 死亡
+                _stateMachine.AddState(States.Dead, new Idle());
+            // }
 
-        // protected override void RegisterData()
-        // {
-        //     _bulletData = new BulletData
-        //     {
-        //         bulletPrefab = Resources.Load<GameObject>("Prefabs/Bullets/EnemyBullet_SmallInsect"),
-        //         speed = 10f,
-        //         damage = 1,
-        //         lifeTime = 3f,
-        //         targetLayer = LayerMask.GetMask("Player")
-        //     };
+            // protected override void RegisterData()
+            // {
+            //     _bulletData = new BulletData
+            //     {
+            //         bulletPrefab = Resources.Load<GameObject>("Prefabs/Bullets/EnemyBullet_SmallInsect"),
+            //         speed = 10f,
+            //         damage = 1,
+            //         lifeTime = 3f,
+            //         targetLayer = LayerMask.GetMask("Player")
+            //     };
         }
     }
 }

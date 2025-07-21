@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 namespace BlackRose
 {
     public class StateWithAnime : StateComp
@@ -13,10 +14,16 @@ namespace BlackRose
         /// </summary>
         [SerializeField] public float cancelableProgress = 0.7f;
 
+        public UnityEvent OnAnimeationCompleted { get; set; } = new();
+
         public float GetNormalized(UnitBase parent) => parent.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
         public override void Enter(IState previousIState, UnitBase parent)
         {
             parent.Animator.SetTrigger(animeTriggerName);
+        }
+        public override void Stay(UnitBase parent)
+        {
+            if (GetNormalized(parent) >= 1f)OnAnimeationCompleted?.Invoke();
         }
         public override bool AllowChange(IState nextState, UnitBase parent)
         {

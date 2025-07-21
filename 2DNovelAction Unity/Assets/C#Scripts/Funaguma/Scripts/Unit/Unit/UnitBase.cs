@@ -66,7 +66,6 @@ namespace BlackRose
 
         protected virtual void DeadCallBack()
         {
-            gameObject.SetActive(false);
             Debug.Log($"{_status.name}が死亡した");
         }
 

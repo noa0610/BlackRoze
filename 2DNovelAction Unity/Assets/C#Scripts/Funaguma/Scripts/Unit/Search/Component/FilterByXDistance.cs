@@ -7,7 +7,7 @@ namespace BlackRose
     [Serializable]
     public class FilterByXDistance : IFilterComponent
     {
-        [SerializeField, SerializeReference]
+        [SerializeReference, SubclassSelector]
         private UnitBase _parent;
         [SerializeField]
         private float _detectionDistance;

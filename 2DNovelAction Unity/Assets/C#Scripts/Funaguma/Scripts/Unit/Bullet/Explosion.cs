@@ -37,11 +37,8 @@ namespace BlackRose
                 {
                     // 爆発の中心から対象オブジェクトへの方向ベクトルを正規化
                     var direction = (Collision.transform.position - particle.transform.position).normalized;
-
-
                     // ノックバックの力を計算
                     var force = direction * _knockBack;
-
                     // Rigidbody2D に力を加える
                     rigidbody.AddForce(force, ForceMode2D.Impulse);
                     if (Collision.transform.TryGetComponent<UnitBase>(out var unit))

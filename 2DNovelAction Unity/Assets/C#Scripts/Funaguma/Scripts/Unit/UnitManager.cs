@@ -1,5 +1,6 @@
 ﻿using HighElixir.Utilities;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BlackRose
 {
@@ -29,8 +30,11 @@ namespace BlackRose
             target.TakeDamage(damage);
         }
 
-        public void Pause(bool pause)
+        public void Pause(bool pause, bool isTimeStop = true)
         {
+            UnitBase._isPlaying = !pause;
+            if (isTimeStop)
+                Time.timeScale = pause ? 0f : 1f;
             foreach (var unit in _unitList)
             {
                 if (unit is IPausable pausable)

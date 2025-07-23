@@ -8,13 +8,11 @@ namespace BlackRose
     public class ShootForward : ShootStateBase
     {
         [SerializeField] private float _createPos = 0.35f;
-        [SerializeField] private int _fireCount = 3;
         private int _count = 0;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootForward() { }
         public override void Enter(IState preview, UnitBase parent)
         {
-            _count++;
             _ = Shoot(parent);
         }
 
@@ -25,7 +23,6 @@ namespace BlackRose
         public override bool AllowChange(IState nextState, UnitBase parent)
         {
             if (base.AllowChange(nextState, parent)) return true;
-            if (nextState is ShootForward && _count <= _fireCount && GetNormalized(parent) >= _allowShootCancel) return true;
             return false;
         }
 
@@ -43,12 +40,6 @@ namespace BlackRose
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_data, _targetLayer);
             await base.Shoot(unit);
-        }
-
-        public ShootForward SetMaxCount(int maxCount)
-        {
-            _fireCount = maxCount;
-            return this;
         }
     }
 }

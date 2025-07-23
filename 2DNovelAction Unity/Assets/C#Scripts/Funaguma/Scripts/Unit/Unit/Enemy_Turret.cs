@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlackRose.UI;
+using System;
 using UnityEngine;
 
 namespace BlackRose
@@ -23,8 +24,9 @@ namespace BlackRose
         private SearchAssistanceMono _searchAssistance;
 
         // === Internal ===
-        [SerializeField] private float _shootIntervalCount = 0f;  // 待機タイマー
+        private float _shootIntervalCount = 0f;  // 待機タイマー
         private int _shootCount;            // 現在までに撃ったカウント
+        private float _trishootIntervalCount = 0f; // 3点バースト用のインターバルタイマー
 
         private void SearchPlayer()
         {
@@ -49,8 +51,10 @@ namespace BlackRose
         // ShootForward が１発撃ち終わるたびに呼ばれる
         private void OnShootComplete()
         {
+            Debug.Log("OnShootComplete called.");
             _stateMachine.ChangeState(Triggers.ShootComplete);
             _shootCount++;
+            _trishootIntervalCount = _trishootInterval;
             if (_shootCount >= _shootFireCount)
             {
                 // n発撃ったらインターバルスタート
@@ -64,17 +68,28 @@ namespace BlackRose
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
             base.Awake();
+            HPUI.instance.Get(this); // HPUIに登録
         }
 
         protected override void Update()
         {
             if (!_isPlaying) return;
             // ■ インターバルカウントダウン ■
-            _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
-            if (_shootCount <= 0f && _stateMachine.CurrentState.key == States.inVigilance.ToString())
+            if (_shootIntervalCount <= 0f && _stateMachine.CurrentState.key == States.inVigilance.ToString())
             {
                 Direction = _looking.Direction;
                 _stateMachine.ChangeState(Triggers.ShootReady);
+            }
+            else if (_trishootIntervalCount <= 0f && _stateMachine.CurrentState.key == States.shootInterval.ToString())
+            {
+                // 3点バーストのインターバルが終わったら、次の弾を撃つ
+                _trishootIntervalCount = _trishootInterval;
+                _stateMachine.ChangeState(Triggers.ShootReady);
+            }
+            else
+            {
+                _trishootIntervalCount = Mathf.Max(0f, _trishootIntervalCount - Time.deltaTime);
+                _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
             }
             base.Update();
         }

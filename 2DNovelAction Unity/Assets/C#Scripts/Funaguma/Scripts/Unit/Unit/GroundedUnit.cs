@@ -16,6 +16,7 @@ namespace BlackRose
         public Action OnAirToGround { get; set; } = null; // 地面に着地したときのコールバック
         private void FixedUpdate()
         {
+            if (!_isPlaying) return; // ゲームが一時停止中は処理を行わない
             GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
         }
 

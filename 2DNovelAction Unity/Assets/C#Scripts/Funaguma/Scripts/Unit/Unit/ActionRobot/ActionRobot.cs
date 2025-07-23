@@ -66,13 +66,13 @@ namespace BlackRose
 
         public override void Pause()
         {
-            base.Pause();
             GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Disable();
+            Debug.Log("Input actions disabled for pause.");
         }
         public override void Play()
         {
-            base.Play();
-            GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Disable();
+            GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Enable();
+            Debug.Log("Input actions enabled for play.");
         }
         // === Private ===
 
@@ -116,11 +116,11 @@ namespace BlackRose
         {
             if (value.isPressed)
             {
+                _bullets[0].originalstatus.direction = Direction; // 攻撃方向を設定
                 Debug.Log("Shoot");
                 // 入力時に一度通常攻撃を行い、その後チャージを行う
                 _stateMachine.ChangeState(Triggers.shootInput);
                 _canChargeCount = true; // 攻撃ボタンを押したのでチャージ可能状態にする
-                _bullets[0].originalstatus.direction = Direction; // 攻撃方向を設定
             }
             else
             {

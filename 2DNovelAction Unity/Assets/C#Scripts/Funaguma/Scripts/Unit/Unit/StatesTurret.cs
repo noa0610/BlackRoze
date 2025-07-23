@@ -65,7 +65,8 @@ namespace BlackRose
              .AddTransmissions(States.shootInterval, intervalTriger);
 
             // 待機
-            _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+            //_stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+            _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0));
 
             // 発射
             var shoot = new ShootForward(_bulletData, _targetLayer);
@@ -77,7 +78,8 @@ namespace BlackRose
             var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval).SetAnimeTrigger("idle");
             _stateMachine .AddState(States.shootInterval, interval);
             // 警戒
-            _looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);
+            //_looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);
+            _looking = new Idle_Looking(_turret).SetCancelableProgress(0);
             _stateMachine.AddState(States.inVigilance, _looking);
 
             // 死亡

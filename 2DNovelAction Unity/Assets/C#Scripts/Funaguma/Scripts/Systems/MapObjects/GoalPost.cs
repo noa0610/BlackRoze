@@ -15,7 +15,7 @@ namespace BlackRose
         {
             if (_allowGoal && !SceneLoaderAsync.IsLoading)
             {
-                UnitManager.instance.Pause(true);
+                UnitManager.instance.Pause(true, false);
                 await UniTask.WaitForSeconds(_waitTime);
                 _loader.StartSceneLoad(_toSceneName);
             }

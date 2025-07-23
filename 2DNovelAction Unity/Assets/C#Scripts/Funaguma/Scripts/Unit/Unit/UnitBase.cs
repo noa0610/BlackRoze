@@ -15,7 +15,7 @@ namespace BlackRose
         [SerializeField] protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
-        [SerializeField]protected bool _isPlaying = true;
+        [SerializeField] public static bool _isPlaying = true;
 
 #if UNITY_EDITOR
         [Header("Debug")]
@@ -71,14 +71,12 @@ namespace BlackRose
 
         public virtual void Pause()
         {
-            _isPlaying = false;
         }
 
         public virtual void Play()
         {
-            _isPlaying = true;
         }
-        
+
         // 子クラスで行いたい処理に合わせてBase.Awake()の位置は調整すること
         protected virtual void Awake()
         {

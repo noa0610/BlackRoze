@@ -24,7 +24,7 @@ namespace BlackRose
         // === Public ===
         public bool IsCancel(UnitBase parent)
         {
-            return GetNormalized(parent) >= _allowShootCancel;
+            return !HasTrigger(parent) || GetNormalized(parent) >= _allowShootCancel;
         }
         public void SetBullet(BulletData bullet)
         {
@@ -39,7 +39,7 @@ namespace BlackRose
         }
         protected async virtual UniTask Shoot(UnitBase parent)
         {
-            await UniTask.WaitUntil(() => GetNormalized(parent) > 1.0f);
+            await UniTask.WaitUntil(() => IsCancel(parent));
             onShootComplete?.Invoke();
         }
     }

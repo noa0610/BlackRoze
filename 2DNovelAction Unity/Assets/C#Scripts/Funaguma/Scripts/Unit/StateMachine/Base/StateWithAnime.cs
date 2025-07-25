@@ -45,6 +45,11 @@ namespace BlackRose
         {
             if (_hasTrigger == null)
             {
+                if (string.IsNullOrEmpty(animeTriggerName))
+                {
+                    _hasTrigger = false; // トリガー名が空の場合は存在しない
+                    return false;
+                }
                 _hasTrigger = parent.Animator
                     .parameters
                     .Any(p => p.type == AnimatorControllerParameterType.Trigger

@@ -15,7 +15,6 @@ public class PercentManager : MonoBehaviour
     [SerializeField] public static string NextSceneName; // 次のシーン名を指定
     [SerializeField] private float _fadeDuration = 1f; // フェード時間
     [SerializeField] private float StockTime = 2f; // フェードイン時間
-    public string A ;
 
     private float timer = 0f;
     private bool IsIE = false; 
@@ -23,7 +22,7 @@ public class PercentManager : MonoBehaviour
 
     void Start()
     {//初期化
-        Debug.Log(NextSceneName);
+        Debug.Log("次の遷移先" + $"「{ NextSceneName}」");
         _percent = 0;
         _LOADbarImage.fillAmount = 0f;
         _ActiveText.text = "0%";

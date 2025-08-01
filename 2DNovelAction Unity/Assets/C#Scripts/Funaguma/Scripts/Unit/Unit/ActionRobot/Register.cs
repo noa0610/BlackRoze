@@ -198,7 +198,8 @@ namespace BlackRose
             // stun
             _stunState = new Stun(_rigidbody)
                 .SetDuration(0.7f)
-                .SetKnockback(_stunKnockback);
+                .SetKnockback(_stunKnockback)
+                .SetThrower(_thrower);
             _stateMachine.AddState(StateKey.stun.ToString(), _stunState);
 
             // dead

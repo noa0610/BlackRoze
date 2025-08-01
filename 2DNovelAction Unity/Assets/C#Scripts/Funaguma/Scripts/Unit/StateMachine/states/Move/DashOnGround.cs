@@ -38,14 +38,18 @@ namespace BlackRose
 			if (nextIState is Jump jumpIState && parent is GroundedUnit grounded)
 			{
 				_onDashJump = true; // DashからJumpに移行する場合はフラグを立てる
-				grounded.OnAirToGround += () =>
-				{
-					_onDashJump = false;
-					_afterImagePlayer.SetActive(false); // AfterImageを非表示にする
-				};
-				// 着地時のコールバックを登録
-			}
-			if (!_onDashJump)
+                Action onLanding = null;
+                onLanding = () =>
+                {
+                    _onDashJump = false;
+                    _afterImagePlayer.SetActive(false);
+                    grounded.OnAirToGround -= onLanding; // ちゃんと同じ参照を解除する
+                };
+                grounded.OnAirToGround += onLanding;
+
+                // 着地時のコールバックを登録
+            }
+            if (!_onDashJump)
 				_afterImagePlayer.SetActive(false); // Dash終了時にAfterImageの再生を停止
 		}
 	}

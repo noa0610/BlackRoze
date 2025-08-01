@@ -26,8 +26,14 @@ namespace BlackRose
         {
             if (_target != null)
             {
-                _rotationTarget.transform.LookAt(_target.transform);
-                Direction = QuaternionToVector2_ViaEuler(_rotationTarget.transform.rotation);
+                // 1) ターゲットまでの方向ベクトル（2D）
+                Vector3 toTarget = _target.transform.position - _rotationTarget.transform.position;
+                // 2) Atan2でY/Xの角度をラジアン→度数に変換
+                float angle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+                // 3) Z軸まわりにグイッと回転
+                _rotationTarget.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+                // 4) Direction も更新（例：正規化したベクトルを再計算）
+                Direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
             }
         }
 

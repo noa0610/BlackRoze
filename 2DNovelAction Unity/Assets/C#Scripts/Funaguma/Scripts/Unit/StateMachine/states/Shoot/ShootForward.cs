@@ -8,7 +8,6 @@ namespace BlackRose
     public class ShootForward : ShootStateBase
     {
         [SerializeField] private float _createPos = 0.35f;
-        private int _count = 0;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootForward() { }
         public override void Enter(IState preview, UnitBase parent)
@@ -16,10 +15,6 @@ namespace BlackRose
             _ = Shoot(parent);
         }
 
-        public override void Exit(IState next, UnitBase parent)
-        {
-            if (!(next is ShootForward)) _count = 0;
-        }
         public override bool AllowChange(IState nextState, UnitBase parent)
         {
             if (base.AllowChange(nextState, parent)) return true;

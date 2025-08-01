@@ -1,5 +1,8 @@
 ﻿using BlackRose.UI;
 using System;
+using System.Linq;
+using UniRx;
+using UniRx.Triggers;
 using UnityEngine;
 
 namespace BlackRose
@@ -51,6 +54,7 @@ namespace BlackRose
         // ShootForward が１発撃ち終わるたびに呼ばれる
         private void OnShootComplete()
         {
+            // _stateMachine.CurrentState.key == States.shoot.ToString() &&
             Debug.Log("OnShootComplete called.");
             _stateMachine.ChangeState(Triggers.ShootComplete);
             _shootCount++;
@@ -67,36 +71,43 @@ namespace BlackRose
         protected override void Awake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
+            statusManager.DeadCallBack += () =>
+            {
+                _stateMachine.ChangeState(Triggers.Died);
+            };
             base.Awake();
-            HPUI.instance.Get(this); // HPUIに登録
-        }
+            HPUI.instance.Get(this); // HPUIに登録  
 
-        protected override void Update()
-        {
-            if (!_isPlaying) return;
-            // ■ インターバルカウントダウン ■
-            if (_shootIntervalCount <= 0f && _stateMachine.CurrentState.key == States.inVigilance.ToString())
-            {
-                Direction = _looking.Direction;
-                _stateMachine.ChangeState(Triggers.ShootReady);
-            }
-            else if (_trishootIntervalCount <= 0f && _stateMachine.CurrentState.key == States.shootInterval.ToString())
-            {
-                // 3点バーストのインターバルが終わったら、次の弾を撃つ
-                _trishootIntervalCount = _trishootInterval;
-                _stateMachine.ChangeState(Triggers.ShootReady);
-            }
-            else
-            {
-                _trishootIntervalCount = Mathf.Max(0f, _trishootIntervalCount - Time.deltaTime);
-                _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
-            }
-            base.Update();
+            this.UpdateAsObservable().Where(_ => _isPlaying).Subscribe(_ =>
+                {
+                    _trishootIntervalCount = Mathf.Max(0f, _trishootIntervalCount - Time.deltaTime);
+                    _shootIntervalCount = Mathf.Max(0f, _shootIntervalCount - Time.deltaTime);
+                    Direction = _looking.Direction;
+                    // ■ インターバルカウントダウン ■  
+                    if (_shootIntervalCount <= 0f && _stateMachine.CurrentState.key == States.inVigilance.ToString())
+                    {
+                        _stateMachine.ChangeState(Triggers.ShootReady);
+                    }
+                    else if (_trishootIntervalCount <= 0f && _stateMachine.CurrentState.key == States.shootInterval.ToString())
+                    {
+                        // 3点バーストのインターバルが終わったら、次の弾を撃つ  
+                        _trishootIntervalCount = _trishootInterval;
+                        _stateMachine.ChangeState(Triggers.ShootReady);
+                    }
+                }).AddTo(this); // 発射完了時の処理を登録  
         }
         protected virtual void FixedUpdate()
         {
             if (!_isPlaying) return;
             SearchPlayer();           // プレイヤー検出＆セットアップ
+        }
+        private void OnDestroy()
+        {
+            HPUI.instance.Release(this); // HPUIから削除
+            statusManager.DeadCallBack -= () =>
+            {
+                _stateMachine.ChangeState(Triggers.Died);
+            };
         }
     }
 }

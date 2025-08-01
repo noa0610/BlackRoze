@@ -35,6 +35,8 @@ namespace BlackRose
         {
             if (_stunTimer > 0f)
                 _stunTimer = Mathf.Max(0f, _stunTimer - Time.deltaTime); // Decrease the stun timer
+            else
+                Debug.Log("AAAa");
         }
 
         public override bool AllowChange(IState nextState, UnitBase parent)

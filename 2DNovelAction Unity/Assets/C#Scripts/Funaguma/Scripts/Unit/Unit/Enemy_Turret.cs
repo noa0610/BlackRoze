@@ -1,4 +1,5 @@
 ﻿using BlackRose.UI;
+using BlackRose.Core.Models;
 using System;
 using System.Linq;
 using UniRx;
@@ -70,12 +71,12 @@ namespace BlackRose
 
         protected override void Awake()
         {
+            base.Awake();
             _searchAssistance = GetComponent<SearchAssistanceMono>();
             statusManager.DeadCallBack += () =>
             {
                 _stateMachine.ChangeState(Triggers.Died);
             };
-            base.Awake();
             HPUI.instance.Get(this); // HPUIに登録  
 
             this.UpdateAsObservable().Where(_ => _isPlaying).Subscribe(_ =>

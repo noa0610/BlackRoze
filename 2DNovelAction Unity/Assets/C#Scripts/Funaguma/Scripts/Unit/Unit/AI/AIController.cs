@@ -11,10 +11,6 @@ namespace BlackRose
             Right,
             Heavy
         }
-        // 現在のステート、トリガー、次のステート
-        // string => State, string => Trigger, string => State
-        private Dictionary<string, Dictionary<string, string>> _translation = new();
-        private string _trigger;
 
         // モードごとの登録処理
         [SerializeField] private UnitStatusData _normalStatus;
@@ -24,8 +20,6 @@ namespace BlackRose
         private IAIState _rightMode;
         private IAIState _heavyMode;
         private IAIState _currentMode;
-        public Dictionary<string, Dictionary<string, string>> Translation => _translation;
-        public string Trigger => _trigger;
         protected override void OnGrounded()
         {
             throw new System.NotImplementedException();
@@ -43,14 +37,6 @@ namespace BlackRose
             _heavyMode.Register();
         }
 
-        //protected override string StateDecision()
-        //{
-        //    if (Translation.TryGetValue(_stateMachine.CurrentState.Key, out var to))
-        //    {
-        //        if (to.TryGetValue(_trigger, out var res)) return res;
-        //    }
-        //    return _stateMachine.DefaultStateKey;
-        //}
 
         protected override void Awake()
         {

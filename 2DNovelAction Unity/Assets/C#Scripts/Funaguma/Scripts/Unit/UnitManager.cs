@@ -1,8 +1,9 @@
-﻿using HighElixir.Utilities;
+﻿
+using HighElixir.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models
 {
     public class UnitManager : SingletonBehavior<UnitManager>
     {

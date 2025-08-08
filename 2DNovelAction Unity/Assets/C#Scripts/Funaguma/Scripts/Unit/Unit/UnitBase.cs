@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BlackRose.Core.Models.States;
+using System;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models
 {
     [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IPausable

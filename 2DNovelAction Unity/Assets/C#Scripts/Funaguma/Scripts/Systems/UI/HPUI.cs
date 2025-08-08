@@ -1,4 +1,5 @@
-﻿using HighElixir.Pool;
+﻿using BlackRose.Core.Models;
+using HighElixir.Pool;
 using HighElixir.Utilities;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace BlackRose.UI
         {
             if (_owners.ContainsKey(owner)) return;
             var i = _pool.Get();
-            var amount = owner.StatusManager.GetStatusAmount(Status.HP);
+            var amount = owner.StatusManager.ReadValue(Status.HP);
             var dis =
                 i.UpdateAsObservable()
                  .Where(_ => i.isActiveAndEnabled)
@@ -46,8 +47,9 @@ namespace BlackRose.UI
                      i.rectTransform.anchoredPosition = localPos + _delta;
 
                      // HP比率更新
-                     var amount = owner.StatusManager.GetStatusAmount(Status.HP);
-                     i.fillAmount = amount.currentAmount / amount.ChangedMax;
+                     var current = owner.StatusManager.ReadValue(Status.HP);
+                     var max = owner.StatusManager.ReadValue(Status.MaxHP);
+                     i.fillAmount = current / max;
                  }).AddTo(this);
             _owners[owner] = (i, dis);
         }
@@ -60,7 +62,7 @@ namespace BlackRose.UI
         protected override void Awake()
         {
             base.Awake();
-            _pool = new Pool<Image>(_prefab, _size, _containar, true);
+            _pool = new Pool<Image>(_prefab, _size, _containar);
         }
     }
 }

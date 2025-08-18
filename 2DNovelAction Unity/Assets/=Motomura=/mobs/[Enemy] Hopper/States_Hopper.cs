@@ -14,7 +14,7 @@ namespace BlackRose
         }
         public enum Triggers
         {
-            none,
+            None,
             FoundPlayer,// プレイヤーを見つけた
             MissingPlayer,// プレイヤーを見失った
             Landing,// 着地した

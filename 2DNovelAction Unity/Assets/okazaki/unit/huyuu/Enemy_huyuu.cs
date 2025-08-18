@@ -3,8 +3,12 @@ using UnityEngine;
 
 namespace BlackRose
 {
+    [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_huyuu : UnitBase
     {
+        [SerializeField] private SuicideBombing  _suicideBombing;
+        [SerializeField] private Rigidbody2D _RB2;
+        private UnitBase _player;
         public enum States
         {
             none,
@@ -49,22 +53,74 @@ namespace BlackRose
                 .AddTransmissions(States.explosion, explosionTrigger);
             // 死んだときに何もしないならDeadの設定はいらない
 
-            // // 待機
-            // _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+            // 待機
+            var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
+            _stateMachine.AddState(States.idle, idle);
 
-            // // 爆発
-            // // var  = new ShootForward(_bulletData, targetLayer);
-            // // shoot.onShootComplete.AsObservable().Subscribe( => OnShootComplete());
-            // // shoot.SetBullet(_bulletData);
-            // // _stateMachine.AddState(States.shoot, shoot);
+            // 移動
+            var s = statusManager.GetStatusAmount(Status.Speed);
+            var move = new MoveOnGround(_RB2, s, true).SetAnimeTrigger("move").SetCancelableProgress(0);
+            _stateMachine.AddState(States.move, move);
 
-            // // 発射クールタイム
-            // _stateMachine.AddState(States.shootInterval, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+            //爆発
+            _suicideBombing.SetAnimeTrigger("explosion").SetCancelableProgress(0);
+            _suicideBombing .OnExplode.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Died);
+            });
+            _stateMachine.AddState(States.explosion, _suicideBombing);
+            // 死亡
+            var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
+            died.OnAnimeationCompleted.AddListener(() =>
+            {
+                Debug.Log("Enemy_huyuu: 死亡アニメーションが完了しました。");
+                UnitManager.instance.RemoveUnit(this);
+                Destroy(gameObject);
+            });
+            _stateMachine.AddState(States.dead, died);
+        }
+        // 実装
+        private SearchAssistanceMono _searchAssistance;
+        private void SearchPlayer()
+        {
+            var list = UnitManager.instance.GetUnitList();
+            if (_stateMachine.CurrentState.key == States.move.ToString() && _searchAssistance.Execute("red", list, out var ui))
+            {
+                _stateMachine.ChangeState(Triggers.AttackRange);
+            }
+            if (_stateMachine.CurrentState.key == States.idle.ToString() && _searchAssistance.Execute("yellow", list, out var units))
+            {
+                // 最短距離のプレイヤーを狙う
+                units.Sort((a, b) =>
+                {
+                    var diffA = a.Transform.position - transform.position;
+                    var diffB = b.Transform.position - transform.position;
+                    return diffA.sqrMagnitude
+                        .CompareTo(diffB.sqrMagnitude);
+                });
+                _player = units[0];
+                _stateMachine.ChangeState(Triggers.FoundPlayer);
+            }
+            else if (!_searchAssistance.Execute("green", list, out _))
+                _stateMachine.ChangeState(Triggers.MissingPlayer);
 
-            // // 死亡
-            // _stateMachine.AddState(States.dead, new Idle());
+        }
+        protected override void Awake()
+        {
+            _searchAssistance = GetComponent<SearchAssistanceMono>();
+            base.Awake();
+        }
+        private void FixedUpdate()
+        {
+            if (_isPlaying)
+            {
+                SearchPlayer();
+                if(_player != null)
+                {
+                    Direction = (_player.Transform.position - transform.position).normalized;
+                }
+            } 
         }
     }
-
 }
 

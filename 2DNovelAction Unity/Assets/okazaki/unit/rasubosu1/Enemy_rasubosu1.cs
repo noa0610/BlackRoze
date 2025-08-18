@@ -6,6 +6,9 @@ namespace BlackRose
     [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_rasubosu1 : UnitBase
     {
+        [SerializeField] private Rigidbody2D _rb;
+    [SerializeField] private Transform[] firePoints;
+    [SerializeField] private GameObject bulletPrefab;
         public enum States
         {
             none,
@@ -98,7 +101,9 @@ namespace BlackRose
             var armpunch = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.armpunch, armpunch);
             // 拡散ビーム砲
-            var diffusebeamgun = new Idle().SetAnimeTrigger("diffusebeamgun").SetCancelableProgress(0);
+            var diffusebeamgun = new Attack(_rb, firePoints, bulletPrefab)
+            .SetAnimeTrigger("diffusebeamgun")
+            .SetCancelableProgress(0);
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
             // ファイアウォール
             var firewall = new Idle().SetAnimeTrigger("firewall").SetCancelableProgress(0);
@@ -132,7 +137,7 @@ namespace BlackRose
         {
             if (_isPlaying) SearchPlayer();
         }
-        private void Attackjudgement()
+        public void Attackjudgement()
         {
             int attackIndex = Random.Range(0, 4); // 0〜3 の間でランダム
 

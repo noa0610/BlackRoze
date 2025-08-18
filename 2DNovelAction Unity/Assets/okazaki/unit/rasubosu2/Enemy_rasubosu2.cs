@@ -50,7 +50,7 @@ namespace BlackRose
             // トランスミッショングループを作成
             var idleTrigger = new[]                                // 待機ステートのトリガー
             {
-                (Triggers.Event1, States.attackidle),              // イベント1発生で攻撃待機へ
+                (Triggers.Event1, States.warpidle),              // イベント1発生で攻撃待機へ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
             };
             var warpidleTrigger = new[]                            // ワープ待機ステートのトリガー
@@ -76,12 +76,12 @@ namespace BlackRose
             };
             var pointermissileTrigger = new[]                      //ポインターミサイルステートのトリガー        
             {
-                (Triggers.Attack1end, States.attackidle),          //ポインターミサイル終了で攻撃待機へ       
+                (Triggers.Attack1end, States.warpidle),          //ポインターミサイル終了で攻撃待機へ       
                 (Triggers.Died, States.dead),                      // 死亡で死へ
             };
             var crosswaveTrigger = new[]                           //ステートのトリガー           
             {
-                (Triggers.Attack2end, States.attackidle),          // クロスウェーブ終了で攻撃待機へ
+                (Triggers.Attack2end, States.warpidle),          // クロスウェーブ終了で攻撃待機へ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
             };
             var warpShotTrigger = new[]                            // ワープショットステートのトリガー
@@ -191,9 +191,6 @@ namespace BlackRose
                     Attack3();
                     break;
                 case 3:
-                    Attack4();
-                    break;
-                case 4:
                     Attack5();
                     break;
             }

@@ -1,82 +1,156 @@
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace BlackRose
 {
-    public class Enemy_Shooter : UnitBase
-    {
-        public enum States//状態
+        [RequireComponent(typeof(SearchAssistanceMono))]
+        public class Enemy_Shooter : GroundedUnit
         {
-            none,
-            move, // 移動
-            idle,// 待機
-            shootReady,//攻撃待機
-            KnockBack,//ノックバック
-            dead,// 死亡
-            shoot,// 攻撃
-        }
-        private enum Triggers//状態を遷移するためのトリガー
-        {
-            None,
-            MissingPlayer, // プレイヤーを見失った
-            FoundPlayer,   // プレイヤーを発見した
-            Canshoot,      // ショットのクールタイムが明けた
-            shoot,         // ショットを打った
-            Damage,        //ダメージを受けた
-            Died,          // 死亡した（HPが０になった）
-            time,          //一定時間が経過した
-        }
-        protected override void RegisterStats()
-        {
-            // トランスミッショングループを作成
-            var idleTrigger = new[]
-            {
+                [SerializeField] private BulletData _bulletData;
+                [SerializeField] private Rigidbody2D _rb2;
+
+                public enum States
+                {
+                        none,
+                        idle,
+                        move,
+                        shootReady,
+                        shoot,
+                        knockBack,
+                        dead
+                }
+
+                private enum Triggers
+                {
+                        None,
+                        MissingPlayer,
+                        FoundPlayer,
+                        AttackRange,
+                        shootCoolDown,
+                        shoot,
+                        Died,
+                        time,
+                        Damage,
+                }
+
+                private SearchAssistanceMono _searchAssistance;
+
+                // shootReady 用タイマー
+                private float shootReadyTimer = 0f;
+                private float shootReadyDuration = 1.0f; // クールダウン秒数
+
+                protected override void Awake()
+                {
+                        _searchAssistance = GetComponent<SearchAssistanceMono>();
+                        base.Awake();
+                }
+
+                protected override void OnGrounded() { }
+                protected override void OnUnGrounded() { }
+
+                protected override void RegisterStats()
+                {
+                        // トランジション設定
+                        var idleTrigger = new[]
+                        {
                 (Triggers.FoundPlayer, States.shootReady),
                 (Triggers.MissingPlayer, States.move),
-                (Triggers.Damage, States.KnockBack)
+                (Triggers.Damage, States.knockBack)
             };
-            var moveTrigger = new[]
-            {
+                        var moveTrigger = new[]
+                        {
                 (Triggers.FoundPlayer, States.shootReady),
-                (Triggers.Damage, States.KnockBack)
+                (Triggers.Damage, States.knockBack)
             };
-            var shootReadyTrigger = new[]
-            {
-                (Triggers.Canshoot, States.shoot),
-                (Triggers.Damage, States.KnockBack)
-            };
-            var shootTrigger = new[]
-            {
+                        var shootTrigger = new[]
+                        {
                 (Triggers.shoot, States.idle),
-                (Triggers.Damage, States.KnockBack)
+                (Triggers.Damage, States.knockBack)
             };
-            var knockBackTrigger = new[]
-            {
+                        var shootReadyTrigger = new[]
+                        {
+                (Triggers.shootCoolDown, States.shoot),
+                (Triggers.Damage, States.knockBack)
+            };
+                        var knockBackTrigger = new[]
+                        {
                 (Triggers.time, States.idle),
                 (Triggers.Died, States.dead)
             };
 
-            // ステートマシンにStatesの移動先の追加
-            _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.move, moveTrigger)
-                .AddTransmissions(States.shoot, shootTrigger)
-                .AddTransmissions(States.shootReady, shootReadyTrigger)
-                .AddTransmissions(States.KnockBack, knockBackTrigger);
-            // 死んだときに何もしないならDeadの設定はいらない
-            _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));//格ゲーのコマンドキャンセル的なものに近く、ある程度アイメーションが進めば途中でも条件が合えばステートを移行する的なものだったはず(0.0f~1.0fの間で指定)
-            // 発射クールタイム
-            _stateMachine.AddState(States.shootInterval, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-            // 爆発
-            // var  = new ShootForward(_bulletData, targetLayer);//shootForwardクラスのインスタンスを生成し変数shootに格納(_bulletDataやtargetLayerはinstanceに必要な引数)
-            // shoot.onShootComplete.AsObservable().Subscribe( => OnShootComplete());//shootを打ち終わったことを受け取り、subscribe（）内のメソッドを呼び出す処理
-            // shoot.SetBullet(_bulletData);//shootのインスタンスの際に_bulletDataを渡す処理（追加設定や再設定がいる場合に改めて情報を渡すため
-            _stateMachine.AddState(States.shoot, shoot);//ステートマシーンに新しいステートを登録するための処理
+                        _stateMachine
+                            .AddTransmissions(States.idle, idleTrigger)
+                            .AddTransmissions(States.move, moveTrigger)
+                            .AddTransmissions(States.shoot, shootTrigger)
+                            .AddTransmissions(States.shootReady, shootReadyTrigger)
+                            .AddTransmissions(States.knockBack, knockBackTrigger);
 
+                        // ステート設定
+                        _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
+                        _stateMachine.AddState(States.move, new MoveOnGround());
 
+                        var shootReady = new Idle().SetAnimeTrigger("shootReady").SetCancelableProgress(0);
+                        _stateMachine.AddState(States.shootReady, shootReady);
 
-            // 死亡
-            _stateMachine.AddState(States.dead, new Idle());
+                        var attack = new ShootForward();
+                        attack.SetBullet(_bulletData);
+                        attack.SetAnimeTrigger("shoot");
+                        attack.SetCancelableProgress(0);
+                        _stateMachine.AddState(States.shoot, attack);
+
+                        _stateMachine.AddState(States.knockBack, new Stun().SetAnimeTrigger("knockBack").SetCancelableProgress(0));
+                        _stateMachine.AddState(States.dead, new Idle());
+                }
+
+                private void SearchPlayer()
+                {
+                        var list = UnitManager.instance.GetUnitList();
+                        List<UnitBase> units;
+                        Debug.Log($"CurrentState.key = {_stateMachine.CurrentState.key}");
+                        bool foundRed = _searchAssistance.Execute("red", list, out units);
+                        bool foundYellow = _searchAssistance.Execute("yellow", list, out units);
+
+                        if (_stateMachine.CurrentState.key == States.idle.ToString())
+                        {
+                                if (foundRed || foundYellow)
+                                {
+                                        units.Sort((a, b) =>
+                                        {
+                                                var diffA = a.Transform.position - transform.position;
+                                                var diffB = b.Transform.position - transform.position;
+                                                return diffA.sqrMagnitude.CompareTo(diffB.sqrMagnitude);
+                                        });
+
+                                        if (units.Count > 0)
+                                        {
+                                                Direction = (units[0].transform.position - transform.position).normalized;
+                                                _stateMachine.ChangeState(Triggers.FoundPlayer);
+                                        }
+                                }
+                                else
+                                {
+                                        _stateMachine.ChangeState(Triggers.MissingPlayer);
+                                }
+                        }
+                }
+
+                private void FixedUpdate()
+                {
+                        if (!_isPlaying) return;
+
+                        SearchPlayer();
+
+                        // shootReady から shoot への移行処理
+                        if (_stateMachine.CurrentState.key == States.shootReady.ToString())
+                        {
+                                shootReadyTimer += Time.fixedDeltaTime;
+                                if (shootReadyTimer >= shootReadyDuration)
+                                {
+                                        _stateMachine.ChangeState(Triggers.shootCoolDown);
+                                        shootReadyTimer = 0f;
+                                }
+                        }
+                }
         }
-    }
 }

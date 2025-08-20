@@ -7,7 +7,7 @@ namespace BlackRose
 	// Move（移動）状態
 	// =======================
 	[Serializable]
-	public class MoveOnGround : StateComp
+	public class MoveOnGround : StateWithAnime
 	{
 		[SerializeField] private Rigidbody2D _rigidbody2D;
 		[SerializeField] private string _animationTrigger;

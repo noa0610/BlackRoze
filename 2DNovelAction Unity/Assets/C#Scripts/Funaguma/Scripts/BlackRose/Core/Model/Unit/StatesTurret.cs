@@ -55,7 +55,7 @@ namespace BlackRose.Core.Models.Units
             };
 
             // States.shootInterval
-            var intervalTriger = new[]
+            var intervalTrigger = new[]
             {
                 (Triggers.ShootReady, States.shoot),
                 (Triggers.Died, States.dead)
@@ -64,7 +64,7 @@ namespace BlackRose.Core.Models.Units
              .AddTransmissions(States.idle, idleTrigger)
              .AddTransmissions(States.shoot, shootTrigger)
              .AddTransmissions(States.inVigilance, vigilanceTrigger)
-             .AddTransmissions(States.shootInterval, intervalTriger);
+             .AddTransmissions(States.shootInterval, intervalTrigger);
 
             // 待機
             //_stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));

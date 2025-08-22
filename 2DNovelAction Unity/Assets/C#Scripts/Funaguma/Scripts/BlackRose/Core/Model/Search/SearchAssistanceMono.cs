@@ -7,19 +7,21 @@ using UnityEngine;
 namespace BlackRose.Core.Models.SearchSystems
 {
     /// <summary>
-    /// ユニットの検索に使う
-    /// 候補になるユニットリストは<see cref="UnitManager.GetUnitList">UnitManager.GetUnitList()</see>等で取得する
-    /// <summary>
-    /// <br />使い方の例
+    /// ユニットの検索に使う。
+    /// 候補になるユニットリストは <see cref="UnitManager.GetUnitList"/> 等で取得する。
+    /// </summary>
+    /// <example>
+    /// 使い方:
     /// <code>
     /// if (searchAssistance.Execute("myProfile", unitList, out var resultUnits))
     /// {
-    ///     var target = resultUnits.<see cref="BlackRose.Core.Models.Helper.UnitHelper.GetUnitNearest(List{UnitBase}, Vector3)">GetUnitNearest</see>(transform.position);
+    ///     var target = BlackRose.Core.Models.Helper.UnitHelper
+    ///                   .GetUnitNearest(resultUnits, transform.position);
     ///     任意のメソッド.SetTarget(target);
     /// }
     /// </code>
-    /// </summary>
-    /// </summary>
+    /// </example>
+
     public class SearchAssistanceMono : MonoBehaviour, ISearch
     {
         [Serializable]
@@ -36,24 +38,33 @@ namespace BlackRose.Core.Models.SearchSystems
             }
         }
         [SerializeField] private List<SearchProfile> _profiles = new();
+        private Dictionary<string, SearchProfile> _profileMap;
 
         public void AddComp(string key, SearchCompInfo info)
         {
             if (TryGetProfile(key, out var profile))
             {
-                profile.AddComp(info);
-                profile.comps = profile.comps.OrderBy(x => x.Priority).ToList();
+                if (profile.AddComp(info))
+                {
+                    // ここでのみ確実にソート
+                    profile.comps.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+                }
             }
             else
             {
                 var profile1 = new SearchProfile
                 {
                     profileName = key,
-                    comps = new List<SearchCompInfo> { new SearchCompInfo { id = key, Comp = info.Comp, Priority = info.Priority } }
+                    comps = new List<SearchCompInfo>
+            {
+                // ★ 修正: id = info.id
+                new SearchCompInfo { id = info.id, Comp = info.Comp, Priority = info.Priority }
+            }
                 };
                 _profiles.Add(profile1);
             }
         }
+
 
         public void RemoveComp(string profileName, string id)
         {
@@ -75,47 +86,77 @@ namespace BlackRose.Core.Models.SearchSystems
             }
         }
 
-        public bool Execute(string key, List<UnitBase> pools, out List<UnitBase> res)
+        public bool Execute(string key, List<UnitBase> candidates, out List<UnitBase> res)
         {
-            res = new List<UnitBase>();
+            res = null;
+
+            // デフォルトキー決定を安全化
             if (string.IsNullOrEmpty(key))
-                key = _profiles[0].profileName; // デフォルトのプロファイルキーを使用
-            if (TryGetProfile(key, out var profile) && profile.comps.Count > 0)
             {
-                foreach (var compInfo in profile.comps.OrderBy(c => c.Priority))
+                if (_profiles.Count == 0)
                 {
-                    pools = compInfo.Comp.Execute(pools);
-                    if (pools.Count <= 0) break;
+                    Debug.LogWarning("No profiles available.");
+                    return false;
                 }
-                if (pools.Count <= 0) return false;
-                res = pools;
-                return true;
+                key = _profiles[0].profileName;
             }
-            else
+
+            if (!TryGetProfile(key, out var profile) || profile.comps == null || profile.comps.Count == 0)
             {
                 Debug.LogWarning($"No profile found for key: {key} or no components defined.");
                 return false;
             }
+
+            // 実行時に OrderBy せず、既にソートされている前提で for ループ
+            var pool = candidates;
+            for (int i = 0; i < profile.comps.Count; i++)
+            {
+                var comp = profile.comps[i];
+                pool = comp.Comp.Execute(pool);
+                if (pool == null || pool.Count == 0) return false;
+            }
+
+            res = pool;
+            return true;
         }
+
         private bool TryGetProfile(string key, out SearchProfile profile)
         {
             profile = _profiles.FirstOrDefault(c => c.profileName == key);
             return profile != null;
         }
+        private void RebuildMap()
+        {
+            _profileMap = new Dictionary<string, SearchProfile>(_profiles.Count);
+            foreach (var p in _profiles)
+            {
+                if (string.IsNullOrEmpty(p.profileName)) continue;
+                // 後勝ち/先勝ちは設計に合わせて
+                _profileMap[p.profileName] = p;
+
+                // ついでに comps を整列
+                if (p.comps != null && p.comps.Count > 1)
+                    p.comps.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            }
+        }
 #if UNITY_EDITOR
         private void OnValidate()
         {
+            // Null/空警告 & 並び替え
             foreach (var profile in _profiles)
             {
+                if (profile == null) continue;
+
                 if (profile.comps == null || profile.comps.Count == 0)
                 {
                     Debug.LogWarning($"Profile '{profile.profileName}' has no components defined.", this);
+                    continue;
                 }
-                else
-                    profile.comps = profile.comps.OrderBy(x => x.Priority).ToList();
-
             }
+            // マップ再構築
+            RebuildMap();
         }
 #endif
+
     }
 }

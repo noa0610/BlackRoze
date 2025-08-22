@@ -6,6 +6,20 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.SearchSystems
 {
+    /// <summary>
+    /// ユニットの検索に使う
+    /// 候補になるユニットリストは<see cref="UnitManager.GetUnitList">UnitManager.GetUnitList()</see>等で取得する
+    /// <summary>
+    /// <br />使い方の例
+    /// <code>
+    /// if (searchAssistance.Execute("myProfile", unitList, out var resultUnits))
+    /// {
+    ///     var target = resultUnits.<see cref="BlackRose.Core.Models.Helper.UnitHelper.GetUnitNearest(List{UnitBase}, Vector3)">GetUnitNearest</see>(transform.position);
+    ///     任意のメソッド.SetTarget(target);
+    /// }
+    /// </code>
+    /// </summary>
+    /// </summary>
     public class SearchAssistanceMono : MonoBehaviour, ISearch
     {
         [Serializable]

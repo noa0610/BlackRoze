@@ -1,7 +1,8 @@
-using Unity.VisualScripting;
 using UnityEngine;
-
-namespace BlackRose
+using BlackRose.Core.Models.SearchSystems;
+using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.States;
+namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_rasubosu1 : UnitBase
@@ -87,7 +88,7 @@ namespace BlackRose
             _stateMachine.AddState(States.idle, idle);
             // 死亡
             var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimeationCompleted.AddListener(() =>
+            died.OnAnimationCompleted.AddListener(() =>
             {
                 UnitManager.instance.RemoveUnit(this);
                 Destroy(gameObject);

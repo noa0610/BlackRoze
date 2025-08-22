@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-
-namespace BlackRose
+using BlackRose.Core.Models.Units;
+namespace BlackRose.Core.Models.States
 {
     public class PositionJump : StateWithAnime
     {

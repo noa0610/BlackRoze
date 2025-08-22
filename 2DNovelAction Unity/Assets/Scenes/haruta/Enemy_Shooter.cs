@@ -88,7 +88,9 @@ namespace BlackRose
 
                         // ステート設定
                         _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-                        _stateMachine.AddState(States.move, new MoveOnGround());
+                        var s = statusManager.GetStatusAmount(Status.Speed);
+                        var move = new MoveOnGround(_rb2, s, true).SetAnimeTrigger("move").SetCancelableProgress(0);
+                        _stateMachine.AddState(States.move, move);
 
                         var shootReady = new Idle().SetAnimeTrigger("shootReady").SetCancelableProgress(0);
                         _stateMachine.AddState(States.shootReady, shootReady);
@@ -106,33 +108,25 @@ namespace BlackRose
                 private void SearchPlayer()
                 {
                         var list = UnitManager.instance.GetUnitList();
-                        List<UnitBase> units;
-                        Debug.Log($"CurrentState.key = {_stateMachine.CurrentState.key}");
-                        bool foundRed = _searchAssistance.Execute("red", list, out units);
-                        bool foundYellow = _searchAssistance.Execute("yellow", list, out units);
-
-                        if (_stateMachine.CurrentState.key == States.idle.ToString())
+                        if (_stateMachine.CurrentState.key == States.move.ToString() && _searchAssistance.Execute("red", list, out var ui))
                         {
-                                if (foundRed || foundYellow)
-                                {
-                                        units.Sort((a, b) =>
-                                        {
-                                                var diffA = a.Transform.position - transform.position;
-                                                var diffB = b.Transform.position - transform.position;
-                                                return diffA.sqrMagnitude.CompareTo(diffB.sqrMagnitude);
-                                        });
-
-                                        if (units.Count > 0)
-                                        {
-                                                Direction = (units[0].transform.position - transform.position).normalized;
-                                                _stateMachine.ChangeState(Triggers.FoundPlayer);
-                                        }
-                                }
-                                else
-                                {
-                                        _stateMachine.ChangeState(Triggers.MissingPlayer);
-                                }
+                                _stateMachine.ChangeState(Triggers.FoundPlayer);
                         }
+                        if (_stateMachine.CurrentState.key == States.idle.ToString() && _searchAssistance.Execute("yellow", list, out var units))
+                        {
+                                units.Sort((a, b) =>
+                                {
+                                        var diffA = a.Transform.position - transform.position;
+                                        var diffB = b.Transform.position - transform.position;
+                                        return diffA.sqrMagnitude
+                            .CompareTo(diffB.sqrMagnitude);
+                                });
+                                //         // _player = units[0];エラー発生中のためコメントアウト
+                                _stateMachine.ChangeState(Triggers.FoundPlayer);
+                        }
+                        else
+                                _stateMachine.ChangeState(Triggers.MissingPlayer);
+
                 }
 
                 private void FixedUpdate()
@@ -141,16 +135,7 @@ namespace BlackRose
 
                         SearchPlayer();
 
-                        // shootReady から shoot への移行処理
-                        if (_stateMachine.CurrentState.key == States.shootReady.ToString())
-                        {
-                                shootReadyTimer += Time.fixedDeltaTime;
-                                if (shootReadyTimer >= shootReadyDuration)
-                                {
-                                        _stateMachine.ChangeState(Triggers.shootCoolDown);
-                                        shootReadyTimer = 0f;
-                                }
-                        }
+                        Debug.Log(_stateMachine.CurrentState.key);
                 }
         }
 }

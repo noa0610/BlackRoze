@@ -2502,12 +2502,12 @@ GameObject:
   - component: {fileID: 76644709}
   - component: {fileID: 76644713}
   m_Layer: 0
-  m_Name: shooter_DEMO
+  m_Name: shooter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!50 &76644705
 Rigidbody2D:
   serializedVersion: 4
@@ -2641,7 +2641,7 @@ Transform:
   m_GameObject: {fileID: 76644704}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.07, y: -2.64, z: 0}
+  m_LocalPosition: {x: -2, y: -2.24, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2692,7 +2692,7 @@ MonoBehaviour:
     m_Bits: 512
   _disableCheckTime: 0.2
   _bulletData: {fileID: 11400000, guid: be329650ceb71e34f8870e87207a066f, type: 2}
-  _rb2: {fileID: 0}
+  _rb2: {fileID: 76644705}
 --- !u!114 &76644711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2720,38 +2720,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7c4a7d0490642438b3fb877e41b2e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _infos:
-  - Key: idle
-    Comp:
-      rid: 427927987362988036
-    Priority: 0
-  - Key: move
-    Comp:
-      rid: 427927987362988036
-    Priority: 1
-  - Key: shootReady
-    Comp:
-      rid: 427927987362988036
-    Priority: 2
-  - Key: shoot
-    Comp:
-      rid: 427927987362988036
-    Priority: 3
-  - Key: knockBack
-    Comp:
-      rid: 427927987362988036
-    Priority: 4
-  - Key: dead
-    Comp:
-      rid: 427927987362988036
-    Priority: 5
+  _profiles:
+  - key: red
+    comps:
+    - Key: 1
+      Comp:
+        rid: 427928193676869632
+      Priority: 0
+    - Key: 2
+      Comp:
+        rid: 427928191696633859
+      Priority: 0
+  - key: yellow
+    comps:
+    - Key: 3
+      Comp:
+        rid: 427928191696633861
+      Priority: 0
+    - Key: 4
+      Comp:
+        rid: 427928191696633859
+      Priority: 0
   references:
     version: 2
     RefIds:
-    - rid: 427927987362988036
+    - rid: 427928191696633859
       type: {class: FilterByTag, ns: BlackRose, asm: Assembly-CSharp}
       data:
-        _tag: 0
+        _tag: 1
+    - rid: 427928191696633861
+      type: {class: FilterByLineOfSight, ns: BlackRose, asm: Assembly-CSharp}
+      data:
+        _viewpoint: {fileID: 76644708}
+        _maxDistance: 1.5
+        _obstructionMask:
+          serializedVersion: 2
+          m_Bits: 1024
+    - rid: 427928193676869632
+      type: {class: FilterByRange, ns: BlackRose, asm: Assembly-CSharp}
+      data:
+        _center: {fileID: 76644708}
+        _range: 2
 --- !u!114 &76644713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3145,7 +3154,7 @@ Transform:
   m_GameObject: {fileID: 741214543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.076, y: 2.553, z: 0}
+  m_LocalPosition: {x: 4.8, y: 2.93, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -3262,7 +3271,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1679655907
 MonoBehaviour:
   m_ObjectHideFlags: 0

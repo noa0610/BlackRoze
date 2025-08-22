@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using BlackRose.Core.Models.Units;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {

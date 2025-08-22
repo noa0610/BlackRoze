@@ -1,7 +1,7 @@
 ﻿using HighElixir.UI;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     public partial class Stun
     {

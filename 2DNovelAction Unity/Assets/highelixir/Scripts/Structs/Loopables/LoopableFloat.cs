@@ -10,7 +10,7 @@ namespace HighElixir
 
         // -1 ならば負方向、+1 ならば正方向、0 ならば変化なし
         private float _direction = 0;
-        private Action<float> _onLoop;
+        private Action<float, float> _onLoop;
 
         public float Value
         {
@@ -38,7 +38,7 @@ namespace HighElixir
 
                 if (Math.Abs(value - oldValue) >= rangeSize)
                 {
-                    _onLoop?.Invoke(Direction);
+                    _onLoop?.Invoke(oldValue, newValue);
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace HighElixir
                 Value = Value;
             return this;
         }
-        public IDisposable Subscribe(Action<float> onLoop)
+        public IDisposable Subscribe(Action<float, float> onLoop)
         {
             _onLoop += onLoop;
             return Disposable.Create(() => _onLoop -= onLoop);

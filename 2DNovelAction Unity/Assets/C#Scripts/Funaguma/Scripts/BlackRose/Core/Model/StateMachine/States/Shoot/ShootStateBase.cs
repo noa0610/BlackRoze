@@ -2,6 +2,8 @@
 using System;
 using UnityEngine.Events;
 using Cysharp.Threading.Tasks;
+using BlackRose.Core.Models.Units;
+using BlackRose.Datas.Definitions;
 
 namespace BlackRose.Core.Models.States
 {

@@ -10,7 +10,7 @@ namespace HighElixir
 
         // -1 ならば負方向、+1 ならば正方向、0 ならば変化なし
         private int _direction = 0;
-        private Action<int> _onLoop;
+        private Action<int, int> _onLoop;
         public int Direction
         {
             get => _direction;
@@ -45,7 +45,7 @@ namespace HighElixir
                 // ループ発動条件：入力と出力の差が rangeSize を超えていたら
                 if (Math.Abs(value - oldValue) >= rangeSize)
                 {
-                    _onLoop?.Invoke(Direction);
+                    _onLoop?.Invoke(oldValue, newValue);
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace HighElixir
                 Value = minValue;
             return this;
         }
-        public IDisposable Subscribe(Action<int> onLoop)
+        public IDisposable Subscribe(Action<int, int> onLoop)
         {
             _onLoop += onLoop;
             return Disposable.Create(() => _onLoop -= onLoop);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlackRose.Core.Models.Units;
+using System;
 
 namespace BlackRose.Core.Models.States
 {

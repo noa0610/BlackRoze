@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using AIE2D;
 using System;
+using BlackRose.Core.Models.Units;
 
 namespace BlackRose.Core.Models.States
 {

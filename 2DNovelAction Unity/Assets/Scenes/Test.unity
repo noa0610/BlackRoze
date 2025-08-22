@@ -620,13 +620,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30b3401d4ea84034281a170eb5f9973a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiCanvas: {fileID: 1578326380}
-  _camera: {fileID: 1840164400}
-  _prefab: {fileID: 6042084296573365738, guid: 171f5fb5720089f4a8ee30688ca8d605, type: 3}
-  _poolSize: 15
-  _container: {fileID: 277168430}
-  _endPosDelta: {x: 0, y: 50, z: 0}
-  _duration: 1
 --- !u!224 &277168430
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3455,10 +3448,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7c4a7d0490642438b3fb877e41b2e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _profiles: []
+  _profiles:
+  - profileName: default
+    comps:
+    - id: tag
+      Comp:
+        rid: 3227059431296466945
+      Priority: 0
+    - id: range
+      Comp:
+        rid: 3227059431296466946
+      Priority: 0
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 3227059431296466945
+      type: {class: FilterByTag, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _tag: 1
+    - rid: 3227059431296466946
+      type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _center: {fileID: 1865804498}
+        _range: 5
 --- !u!1 &1959780016
 GameObject:
   m_ObjectHideFlags: 0

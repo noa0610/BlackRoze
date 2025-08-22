@@ -1,9 +1,10 @@
-﻿using HighElixir.UI;
+﻿using BlackRose.Core.Model.EffectManager;
+using BlackRose.Core.Models.Units;
+using HighElixir.UI;
 using System;
-using System.Linq.Expressions;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     [Serializable]
     public partial class Stun : Idle
@@ -24,7 +25,8 @@ namespace BlackRose
         public override void Enter(IState previousIState, UnitBase parent)
         {
             _stunTimer = _stunTime; // Initialize the stun timer
-            _thrower.Create(parent.gameObject, "Stun!", Color.white);
+            if (_thrower != null)
+                _thrower.Create(parent.gameObject, "Stun!", Color.white);
             parent.Animator.SetFloat("StunTime", _stunTime);
             _rigidbody2D.velocity = Vector2.zero;
             _rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force

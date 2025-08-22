@@ -1,8 +1,10 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using BlackRose.Core.Models.Units;
+using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     [Serializable]
     public class ShootForward : ShootStateBase

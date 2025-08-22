@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using BlackRose.Core.Models.Units;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 namespace BlackRose.Core.Models.States

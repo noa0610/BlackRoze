@@ -93,7 +93,7 @@ namespace HighElixir.UI.Countable
             _value = new HedgeableInt(_defaultAmount)
                 .SetMin(min)
                 .SetMax(max);
-            var d = _value.Subscribe(x => _text.text = x.ToString()).AddTo(this);
+            var d = _value.Subscribe((x, y) => _text.text = y.ToString()).AddTo(this);
             _text.text = _value.ToString();
             this.OnDestroyAsObservable().Subscribe(_ =>
             {

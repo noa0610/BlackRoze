@@ -1,6 +1,7 @@
-﻿using System;
+﻿using BlackRose.Core.Models.States;
+using System;
 
-namespace BlackRose.Core.Models
+namespace BlackRose.Core.Models.Helper
 {
     public static class StateMachineHelper
     {

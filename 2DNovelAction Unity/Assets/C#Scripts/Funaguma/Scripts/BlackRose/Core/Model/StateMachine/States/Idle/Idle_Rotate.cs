@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BlackRose.Core.Models.Units;
+using System;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     // =======================
     // Idle（待機）状態

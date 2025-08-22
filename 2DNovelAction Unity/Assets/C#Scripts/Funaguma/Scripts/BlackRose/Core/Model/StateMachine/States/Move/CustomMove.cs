@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using BlackRose.Core.Models.Units;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     [SerializeField]
     public class CustomMove : StateWithAnime

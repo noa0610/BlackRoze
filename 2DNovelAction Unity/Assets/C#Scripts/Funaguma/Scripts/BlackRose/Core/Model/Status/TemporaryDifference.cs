@@ -24,9 +24,8 @@ namespace BlackRose.Core.Models
         public void Add(Status status, float delta = 0, float ratio = 0)
         {
                 _status = status;
-            if (_manager.TryGetStatus(status, out var model))
+            if (_manager.TryGetStatus(status, out var info))
             {
-                var info = model.info;
                 info.TemporaryChanged += delta;
                 info.TemporaryRatio += ratio;
                 _ratio = ratio;

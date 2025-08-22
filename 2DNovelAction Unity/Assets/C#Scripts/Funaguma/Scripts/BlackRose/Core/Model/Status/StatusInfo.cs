@@ -6,7 +6,7 @@ namespace BlackRose.Core.Models
 {
     public class StatusInfo
     {
-        private readonly float _defaultAmount;
+        private float _defaultAmount;
         private HedgeableFloat _currentAmount;
 
         private bool _enableDynamicParams; // _temporaryChanged,_temporaryRatioを使用して値を計算するかどうか
@@ -104,6 +104,11 @@ namespace BlackRose.Core.Models
         public void SetMax(float max)
         {
             _currentAmount.SetMax(max);
+        }
+        public void SetDefault(float defaultAmount)
+        {
+            _defaultAmount = defaultAmount;
+            _dirty = true; // デフォルト値が変更されたので、ChangedMaxを再計算する必要がある
         }
         public override string ToString()
         {

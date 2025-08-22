@@ -97,11 +97,11 @@ namespace BlackRose.Core.Models.Units
                         var shootReady = new Idle().SetAnimeTrigger("shootReady").SetCancelableProgress(0);
                         _stateMachine.AddState(States.shootReady, shootReady);
 
-                        var attack = new ShootForward();
-                        attack.SetBullet(_bulletData);
-                        attack.SetAnimeTrigger("shoot");
-                        attack.SetCancelableProgress(0);
-                        _stateMachine.AddState(States.shoot, attack);
+                        var shoot = new ShootForward();
+                        shoot.SetBullet(_bulletData);
+                        shoot.SetAnimeTrigger("shoot");
+                       shoot.SetCancelableProgress(0);
+                        _stateMachine.AddState(States.shoot, shoot);
 
                         _stateMachine.AddState(States.knockBack, new Stun().SetAnimeTrigger("knockBack").SetCancelableProgress(0));
                         _stateMachine.AddState(States.dead, new Idle());

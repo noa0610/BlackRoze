@@ -2534,7 +2534,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &76644706
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2641,7 +2641,7 @@ Transform:
   m_GameObject: {fileID: 76644704}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2, y: -2.24, z: 0}
+  m_LocalPosition: {x: -2.88, y: -2.82, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2683,7 +2683,6 @@ MonoBehaviour:
   player: {fileID: 741214545}
   _status: {fileID: 11400000, guid: f0ba26b995ecfff4492a637efe9b1fc8, type: 2}
   _animator: {fileID: 76644709}
-  _isPlaying: 1
   _currentState: 
   _groundCheck: {fileID: 1284699879}
   _groundCheckRadius: 0.1
@@ -2721,46 +2720,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _profiles:
-  - key: red
+  - profileName: red
     comps:
-    - Key: 1
+    - id: foundPlayer
       Comp:
-        rid: 427928193676869632
-      Priority: 0
-    - Key: 2
-      Comp:
-        rid: 427928191696633859
-      Priority: 0
-  - key: yellow
-    comps:
-    - Key: 3
-      Comp:
-        rid: 427928191696633861
-      Priority: 0
-    - Key: 4
-      Comp:
-        rid: 427928191696633859
+        rid: 427928238442676227
       Priority: 0
   references:
     version: 2
     RefIds:
-    - rid: 427928191696633859
-      type: {class: FilterByTag, ns: BlackRose, asm: Assembly-CSharp}
-      data:
-        _tag: 1
-    - rid: 427928191696633861
-      type: {class: FilterByLineOfSight, ns: BlackRose, asm: Assembly-CSharp}
+    - rid: 427928238442676227
+      type: {class: FilterByLineOfSight, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
       data:
         _viewpoint: {fileID: 76644708}
-        _maxDistance: 1.5
+        _maxDistance: 1
         _obstructionMask:
           serializedVersion: 2
           m_Bits: 1024
-    - rid: 427928193676869632
-      type: {class: FilterByRange, ns: BlackRose, asm: Assembly-CSharp}
-      data:
-        _center: {fileID: 76644708}
-        _range: 2
 --- !u!114 &76644713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2992,24 +2968,52 @@ MonoBehaviour:
   _animator: {fileID: 741214550}
   _isPlaying: 1
   _currentState: 
+  <Direction>k__BackingField: {x: 1, y: 0}
+  <IsInvincible>k__BackingField: 0
   _groundCheck: {fileID: 1284699879}
   _groundCheckRadius: 0.1
   _groundLayer:
-    serializedVersion: 2
     m_Bits: 0
   _disableCheckTime: 0.2
+  <IsGrounded>k__BackingField: 0
   _bullets: []
   _targetLayer:
-    serializedVersion: 2
     m_Bits: 0
   _thrower: {fileID: 0}
+  _stunState:
+    animeTriggerName: 
+    waitForAnimeEnd: 0
+    cancelableProgress: 0.7
+    <OnAnimeationCompleted>k__BackingField:
+      m_PersistentCalls:
+        m_Calls: []
+      m_CallsDirty: 1
+    _stunTime: 0
+    _stunTimer: 0
+    _rigidbody2D: {fileID: 0}
+    _knockbackDirection: {x: 0.78, y: 0.9}
+    _thrower: {fileID: 0}
+  _rigidbody: {fileID: 0}
   coyoteTime: 0.2
   _chargeShoot:
   - 1.8
   - 3.4
   _canChargeCount: 0
   _stunKnockback: {x: 0, y: 0}
+  coyoteTimeCounter: 0
+  _shootPressTime: 0
   _forceEnableJump: 0
+  _jump:
+    animeTriggerName: 
+    waitForAnimeEnd: 0
+    cancelableProgress: 0.7
+    <OnAnimeationCompleted>k__BackingField:
+      m_PersistentCalls:
+        m_Calls: []
+      m_CallsDirty: 1
+    _rb: {fileID: 0}
+    _hasLeapt: 0
+    _cutMultiplier: 0.5
 --- !u!95 &741214550
 Animator:
   serializedVersion: 5
@@ -3092,7 +3096,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!212 &741214553
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3154,7 +3158,7 @@ Transform:
   m_GameObject: {fileID: 741214543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.8, y: 2.93, z: 0}
+  m_LocalPosition: {x: 3.52, y: -2.24, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children:

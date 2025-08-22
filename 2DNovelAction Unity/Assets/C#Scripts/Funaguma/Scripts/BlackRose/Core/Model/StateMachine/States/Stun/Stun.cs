@@ -1,4 +1,4 @@
-﻿using BlackRose.Core.Model.EffectManager;
+﻿using BlackRose.Core.Models.EffectManager;
 using BlackRose.Core.Models.Units;
 using HighElixir.UI;
 using System;

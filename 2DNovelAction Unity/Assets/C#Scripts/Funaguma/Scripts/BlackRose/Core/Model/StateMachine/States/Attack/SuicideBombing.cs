@@ -1,9 +1,10 @@
+﻿using BlackRose.Core.Models.Units;
 using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     [Serializable]
     public class SuicideBombing : StateWithAnime

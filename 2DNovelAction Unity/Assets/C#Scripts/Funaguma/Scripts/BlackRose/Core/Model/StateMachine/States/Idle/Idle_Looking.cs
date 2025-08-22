@@ -34,7 +34,7 @@ namespace BlackRose.Core.Models.States
                 // 3) Z軸まわりにグイッと回転
                 _rotationTarget.transform.rotation = Quaternion.Euler(0f, 0f, angle);
                 // 4) Direction も更新（例：正規化したベクトルを再計算）
-                Direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+                Direction = QuaternionToVector2_ViaEuler(_rotationTarget.transform.rotation).normalized;
             }
         }
 

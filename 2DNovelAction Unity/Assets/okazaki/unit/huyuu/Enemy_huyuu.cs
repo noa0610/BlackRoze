@@ -1,7 +1,11 @@
 using Unity.VisualScripting;
 using UnityEngine;
+using BlackRose.Core.Models.SearchSystems;
+using BlackRose.Datas.Definitions;
+using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.States;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_huyuu : UnitBase
@@ -58,8 +62,8 @@ namespace BlackRose
             _stateMachine.AddState(States.idle, idle);
 
             // 移動
-            var s = statusManager.GetStatusAmount(Status.Speed);
-            var move = new MoveOnGround(_RB2, s, true).SetAnimeTrigger("move").SetCancelableProgress(0);
+            var s = statusManager.GetStatus(Status.Speed);
+            var move = new MoveOnGround(_RB2, true).SetAnimeTrigger("move").SetCancelableProgress(0);
             _stateMachine.AddState(States.move, move);
 
             //爆発
@@ -71,7 +75,7 @@ namespace BlackRose
             _stateMachine.AddState(States.explosion, _suicideBombing);
             // 死亡
             var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimeationCompleted.AddListener(() =>
+            died.OnAnimationCompleted.AddListener(() =>
             {
                 Debug.Log("Enemy_huyuu: 死亡アニメーションが完了しました。");
                 UnitManager.instance.RemoveUnit(this);

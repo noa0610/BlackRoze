@@ -1,8 +1,10 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using System.Collections.Generic;
+using BlackRose.Core.Models.SearchSystems;
+using BlackRose.Datas.Definitions;
+using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.States;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.Units
 {
         [RequireComponent(typeof(SearchAssistanceMono))]
         public class Enemy_Shooter : GroundedUnit
@@ -88,8 +90,8 @@ namespace BlackRose
 
                         // ステート設定
                         _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-                        var s = statusManager.GetStatusAmount(Status.Speed);
-                        var move = new MoveOnGround(_rb2, s, true).SetAnimeTrigger("move").SetCancelableProgress(0);
+                        var s = statusManager.GetStatus(Status.Speed);
+                        var move = new MoveOnGround(_rb2, true).SetAnimeTrigger("move").SetCancelableProgress(0);
                         _stateMachine.AddState(States.move, move);
 
                         var shootReady = new Idle().SetAnimeTrigger("shootReady").SetCancelableProgress(0);

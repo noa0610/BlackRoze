@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
+using BlackRose.Core.Models.Units;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     [Serializable]
     public class Attack : StateWithAnime

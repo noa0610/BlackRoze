@@ -99,17 +99,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6ab31a9f5286f746995ca98751215a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bulletObject:
-    bulletData: {fileID: 0}
-    currentstatus:
-      hp: 0
-      time: 0
-      damage: 0
-      speed: 0
-      direction: {x: 0, y: 0}
   _canHitLayer:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 513
 --- !u!58 &-6154703371997583296
 CircleCollider2D:
   m_ObjectHideFlags: 0

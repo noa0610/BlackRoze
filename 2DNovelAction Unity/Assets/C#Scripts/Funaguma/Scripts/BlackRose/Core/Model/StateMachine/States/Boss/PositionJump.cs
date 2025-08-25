@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BlackRose.Core.Models.Units;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using BlackRose.Core.Models.Units;
+
 namespace BlackRose.Core.Models.States
 {
     public class PositionJump : StateWithAnime
@@ -43,9 +44,9 @@ namespace BlackRose.Core.Models.States
             _rb.velocity = launchVelocity;
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
-            base.Stay(parent);
+            base.Stay(parent, deltaTime);
             if (_rb == null) return;
             // 目標位置に到達したかチェック
             if (Vector2.Distance(_rb.position, TargetPosition) < 0.1f)

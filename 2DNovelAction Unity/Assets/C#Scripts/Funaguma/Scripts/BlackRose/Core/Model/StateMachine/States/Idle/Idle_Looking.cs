@@ -10,6 +10,8 @@ namespace BlackRose.Core.Models.States
     {
         private GameObject _rotationTarget;
         private GameObject _target; // 回転したい相手
+        private float _angularVel;         // 角速度の一時値（SmoothDamp用）
+        public float turnSmoothTime = 0.08f;
 
         public Vector2 Direction { get; private set; } = new(1, 0);
         /// <param name="target">回転させたいもの</param>
@@ -23,28 +25,29 @@ namespace BlackRose.Core.Models.States
             _target = target;
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
-            if (_target != null)
-            {
-                // 1) ターゲットまでの方向ベクトル（2D）
-                Vector3 toTarget = _target.transform.position - _rotationTarget.transform.position;
-                // 2) Atan2でY/Xの角度をラジアン→度数に変換
-                float angle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
-                // 3) Z軸まわりにグイッと回転
-                _rotationTarget.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-                // 4) Direction も更新（例：正規化したベクトルを再計算）
-                Direction = QuaternionToVector2_ViaEuler(_rotationTarget.transform.rotation).normalized;
-            }
+            if (_rotationTarget == null || _target == null) return;
+
+            var toTarget = _target.transform.position - _rotationTarget.transform.position;
+            float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+
+            float current = _rotationTarget.transform.eulerAngles.z;
+            float smoothed = Mathf.SmoothDampAngle(current, targetAngle, ref _angularVel, turnSmoothTime);
+
+            _rotationTarget.transform.rotation = Quaternion.Euler(0f, 0f, smoothed);
+            Direction = new Vector2(toTarget.x, toTarget.y).normalized;
         }
 
-        public static Vector2 QuaternionToVector2_ViaEuler(Quaternion q)
+        // 指定した角度以内にターゲットがいるか
+        public bool IsLookingTarget(float ditectionAngle)
         {
-            // Z回転角をラジアンに変換
-            float rad = q.eulerAngles.z * Mathf.Deg2Rad;
-            // cos→X成分、sin→Y成分
-            return new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+            if (_rotationTarget == null || _target == null) return false;
+            var toTarget = _target.transform.position - _rotationTarget.transform.position;
+            float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+            float current = _rotationTarget.transform.eulerAngles.z;
+            float angleDiff = Mathf.DeltaAngle(current, targetAngle);
+            return Mathf.Abs(angleDiff) <= ditectionAngle;
         }
-
     }
 }

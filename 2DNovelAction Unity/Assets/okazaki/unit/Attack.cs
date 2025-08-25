@@ -1,3 +1,4 @@
+﻿using BlackRose.Core.Models.Units;
 using System;
 using UnityEngine;
 using BlackRose.Core.Models.Units;
@@ -29,7 +30,7 @@ namespace BlackRose.Core.Models.States
             currentFirePointIndex = 0;
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             cooldownTimer -= Time.deltaTime;
 

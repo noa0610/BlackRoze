@@ -15,9 +15,8 @@ namespace BlackRose
 
         public bool IsGrounded { get; private set; }
         public Action OnAirToGround { get; set; } = null; // 地面に着地したときのコールバック
-        private void FixedUpdate()
+        protected override void AfterFixedUpdate()
         {
-            if (!_isPlaying) return; // ゲームが一時停止中は処理を行わない
             GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
         }
 
@@ -46,6 +45,12 @@ namespace BlackRose
                 IsGrounded = true;
                 OnGrounded(); // 地面にいる場合の処理
             }
+            else if (TryGetComponent<Rigidbody2D>(out var rb) && rb.velocity.y < 0)
+            {
+                OnFall(); // 落下中の処理
+                IsGrounded = false;
+                OnUnGrounded(); // 地面にいない場合の処理
+            }
             else
             {
                 IsGrounded = false;
@@ -55,11 +60,11 @@ namespace BlackRose
         /// <summary>
         /// 一定時間ごとに呼ばれ、着地している場合に呼ばれる
         /// </summary>
-        protected abstract void OnGrounded();
+        protected virtual void OnGrounded() { }
         /// <summary>
         /// 一定時間ごとに呼ばれ、着地していない場合に呼ばれる
         /// </summary>
-        protected abstract void OnUnGrounded();
+        protected virtual void OnUnGrounded() { }
 
         protected virtual void OnFall()
         {

@@ -22,7 +22,7 @@ namespace BlackRose.Core.Models.States
         /// 内部でTostring()を行い、stringを引数にとるLazyChangeに引き渡す
         /// </summary>
         void LazyChange(object request);
-        void UpdateMachine();               // ステートマシンの更新処理（Stayの呼び出し、LazyChangeの反映）
+        void UpdateMachine(float deltaTime);               // ステートマシンの更新処理（Stayの呼び出し、LazyChangeの反映）
         void AddState(string key, StateComp IState);  // ステートの追加
         void AddState(object key, StateComp IState);  // ステートの追加
 

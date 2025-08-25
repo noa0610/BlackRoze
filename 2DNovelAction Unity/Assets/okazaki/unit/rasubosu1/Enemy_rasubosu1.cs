@@ -1,7 +1,8 @@
-using UnityEngine;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using UnityEngine;
+
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
@@ -102,7 +103,7 @@ namespace BlackRose.Core.Models.Units
             var armpunch = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.armpunch, armpunch);
             // 拡散ビーム砲
-            var diffusebeamgun = new Attack(_rb, firePoints, bulletPrefab)
+            var diffusebeamgun = new Models.States.Attack(_rb, firePoints, bulletPrefab)
             .SetAnimeTrigger("diffusebeamgun")
             .SetCancelableProgress(0);
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
@@ -129,14 +130,13 @@ namespace BlackRose.Core.Models.Units
                 });
             }
         }
-        protected override void Awake()
+        protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            base.Awake();
         }
-        private void FixedUpdate()
+        protected override void AfterFixedUpdate()
         {
-            if (_isPlaying) SearchPlayer();
+            SearchPlayer();
         }
         public void Attackjudgement()
         {

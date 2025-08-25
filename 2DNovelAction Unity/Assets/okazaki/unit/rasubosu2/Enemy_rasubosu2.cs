@@ -1,7 +1,5 @@
-using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 namespace BlackRose.Core.Models.Units

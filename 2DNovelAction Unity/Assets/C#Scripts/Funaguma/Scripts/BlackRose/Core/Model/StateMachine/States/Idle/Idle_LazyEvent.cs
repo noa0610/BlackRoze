@@ -9,11 +9,11 @@ namespace BlackRose.Core.Models.States
     /// </summary>
     public class Idle_LazyEvent : Idle
     {
-        private readonly float _lazyChangeTime;
-        private readonly bool _isBlock;
-        private UnityEvent _lazyEvent;
-        private float _time;
-        private bool _blocked;
+        protected readonly float _lazyChangeTime;
+        protected readonly bool _isBlock;
+        protected UnityEvent _lazyEvent = new();
+        protected float _time;
+        protected bool _blocked;
 
         public UnityEvent LazyEvent
         {
@@ -35,13 +35,14 @@ namespace BlackRose.Core.Models.States
             _time = _lazyChangeTime;
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             _time -= Time.deltaTime;
             if (_time <= 0)
             {
-                _lazyEvent?.Invoke();
+                Debug.Log("Invoked Lazy Event");
                 _blocked = false;
+                _lazyEvent?.Invoke();
             }
         }
 

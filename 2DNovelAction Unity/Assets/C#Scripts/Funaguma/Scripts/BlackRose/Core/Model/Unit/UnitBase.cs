@@ -20,8 +20,10 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] public static bool _isPlaying = true;
 
 #if UNITY_EDITOR
+        // エディタからの監視用
         [Header("Debug")]
         [SerializeField] private string _currentState;
+        [SerializeField] private Vector2 _currentDirection;
 #endif
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
@@ -44,28 +46,27 @@ namespace BlackRose.Core.Models.Units
 
         // 初期状態のステート
         protected virtual string StartState => "idle";
-
-        protected virtual void RegisterStatus()
-        {
-            statusManager.AddStatus(Status.HP, _status.maxHp);
-            statusManager.AddStatus(Status.Speed, _status.speed);
-            statusManager.AddStatus(Status.SpeedInAir, _status.speedInAir);
-            statusManager.AddStatus(Status.JumpPower, _status.jumpPower);
-            statusManager.AddStatus(Status.DashSpeed, _status.dashSpeed);
-            statusManager.AddStatus(Status.Power, _status.power);
-            statusManager.AddStatus(Status.DamageRatio, 1);
-        }
         protected abstract void RegisterStats();
 
         // ===== ステータス操作 =====
 
-        public virtual void TakeDamage(float damage)
+        public void TakeDamage(float damage)
         {
-            IsInvincible = true;
-            statusManager?.TakeDamage(damage);
+            if (!BeforeTakeDamage(ref damage)) return;
+            if(statusManager.TakeDamage(damage))
+                OnDeath();
+            OnTakeDamage(damage);
         }
 
-        protected virtual void DeadCallBack()
+        protected virtual bool BeforeTakeDamage(ref float damage)
+        {
+            return true;
+        }
+        protected virtual void OnTakeDamage(float damage)
+        {
+        }
+
+        protected virtual void OnDeath()
         {
             Debug.Log($"{_status.name}が死亡した");
         }
@@ -78,28 +79,58 @@ namespace BlackRose.Core.Models.Units
         {
         }
 
-        // 子クラスで行いたい処理に合わせてBase.Awake()の位置は調整すること
-        protected virtual void Awake()
+        protected void Awake()
         {
+            BeforeAwake();
             UnitManager.instance.AddUnit(this);
             _stateMachine = new StateMachine(this);
             statusManager = new StatusManager();
             effectManager = new(this);
-            RegisterStatus();
+
+            // ステートとステータス登録
+            BeforeRegisterStats();
+            statusManager.Initialize(_status);
             RegisterStats();
+
+            // ステートマシン起動
             _stateMachine.Awake(StartState);
+            AfterAwake();
         }
 
+        protected virtual void BeforeAwake() { }
+        protected virtual void AfterAwake() { }
+        protected virtual void BeforeRegisterStats() { }
         // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
-        protected virtual void Update()
+        protected void Update()
         {
+            BeforeUpdate();
             if (!_isPlaying) return;
-            _stateMachine.UpdateMachine();
+            OnUpdate();
+            _stateMachine.UpdateMachine(Time.deltaTime);
             effectManager.Update();
+            AfterUpdate();
 # if UNITY_EDITOR
-            var s = _stateMachine.CurrentState.key;
-            _currentState = s; // インスペクターからの監視用変数
-# endif
+            _currentState = _stateMachine.CurrentState.key;
+            _currentDirection = Direction;
+#endif
         }
+        // _isPlayingの判定の前に呼ばれる（常に呼ばれる）
+        protected virtual void BeforeUpdate() { }
+        // ステートマシンのアップデートの前に呼ばれる（_isPlayingがtrueのときのみ呼ばれる）
+        protected virtual void OnUpdate() { }
+
+        // ステートマシンのアップデートの後に呼ばれる（_isPlayingがtrueのときのみ呼ばれる）
+        protected virtual void AfterUpdate() { }
+        protected virtual void FixedUpdate()
+        {
+            BeforeFixedUpdate();
+            if (!_isPlaying) return;
+            AfterFixedUpdate();
+        }
+        // _isPlayingの判定の前に呼ばれる（常に呼ばれる）
+        protected virtual void BeforeFixedUpdate() { }
+
+        // _isPlayingがtrueのときのみ呼ばれる
+        protected virtual void AfterFixedUpdate() { }
     }
 }

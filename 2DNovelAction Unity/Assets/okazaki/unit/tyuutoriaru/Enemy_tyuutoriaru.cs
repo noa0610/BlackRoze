@@ -1,5 +1,4 @@
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.Helper;
@@ -43,6 +42,7 @@ namespace BlackRose.Core.Models.Units
 
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private Transform playerTransform;
+        private int currentAttack = 1; // 初期値は1（アタック1）
         protected override void RegisterStats()
         {
             // トランスミッショングループを作成
@@ -149,16 +149,15 @@ namespace BlackRose.Core.Models.Units
                 playerTransform = ui[0].Transform;
             }
         }
-        protected override void Awake()
+
+        protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            base.Awake();
         }
-        private void FixedUpdate()
+        protected override void AfterFixedUpdate()
         {
-            if (_isPlaying) SearchPlayer();
+            SearchPlayer();
         }
-        private int currentAttack = 1; // 初期値は1（アタック1）
 
         private void Attackselect()
         {

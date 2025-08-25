@@ -11,6 +11,7 @@ namespace BlackRose.Core.Models.States
     {
         [SerializeField] private float _createPos = 0.35f;
         [SerializeField] private Vector2 _direction = Vector2.right;
+        [SerializeField] private GameObject _muzzle;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootForward() { }
         public override void Enter(IState preview, UnitBase parent)
@@ -24,9 +25,15 @@ namespace BlackRose.Core.Models.States
             return false;
         }
 
-        public void SetDirection(Vector2 newDirection)
+        public ShootForward SetDirection(Vector2 newDirection)
         {
             _direction = newDirection.normalized;
+            return this;
+        }
+        public ShootForward SetMuzzle(GameObject muzzle)
+        {
+            _muzzle = muzzle;
+            return this;
         }
         protected async override UniTask Shoot(UnitBase unit)
         {
@@ -36,7 +43,7 @@ namespace BlackRose.Core.Models.States
                 Debug.Log("Do not set bullet.");
             }
             // 弾の生成位置（プレイヤーのちょっと前）
-            Vector3 spawnPos = unit.Transform.position + new Vector3(unit.Direction.x * _createPos, 0, 0);
+            Vector3 spawnPos = _muzzle.transform.position + new Vector3(unit.Direction.x * _createPos, 0, 0);
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
             // ステータスをセット（速度、方向、ダメージなど）

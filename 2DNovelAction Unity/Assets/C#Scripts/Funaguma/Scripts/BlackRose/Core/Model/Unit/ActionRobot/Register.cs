@@ -178,25 +178,31 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.LazyChange(Triggers.watingTimeHasElapsed);
             }).AddTo(this);
             _stateMachine.AddState(StateKey.shootWait, time);
+
             // shoot
             _normal = new ShootForward(_bullets[0], _targetLayer)
-                .SetAnimeTrigger("Attack");
+                .SetAnimeTrigger("Attack")
+                .SetMuzzle(gameObject);
             _normal.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
             }).AddTo(this);
             _stateMachine.AddState(StateKey.shoot, _normal);
+
             // chargeShoot
             _halfCharge = new ShootForward(_bullets[1], _targetLayer)
-                .SetAnimeTrigger("Attack");
+                .SetAnimeTrigger("Attack")
+                .SetMuzzle(gameObject);
             _halfCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
             }).AddTo(this);
             _stateMachine.AddState(StateKey.chargeShoot, _halfCharge);
+
             // fullChargeShoot
             _fullCharge = new ShootForward(_bullets[2], _targetLayer)
-                .SetAnimeTrigger("Attack");
+                .SetAnimeTrigger("Attack")
+                .SetMuzzle(gameObject);
             _fullCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);

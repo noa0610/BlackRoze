@@ -3,13 +3,13 @@ using BlackRose.Core.Models.States;
 using HighElixir;
 using System.Collections.Generic;
 using UniRx;
-
+using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_Turret
     {
+        [SerializeField] private ShootForward _shoot;
         private Idle_Looking _looking;
-        private ShootForward _shootForward;
         private static Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
         private enum States
         {
@@ -72,20 +72,19 @@ namespace BlackRose.Core.Models.Units
 
             // 待機
             //_stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-            _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0));
+            _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0).SetAnimeTrigger("Leave"));
 
             // 発射
-            _shootForward = new ShootForward(_bulletData, _targetLayer);
-            _shootForward.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
-            _shootForward.SetBullet(_bulletData);
-            _stateMachine.AddState(States.shoot, _shootForward);
+            _shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
+            _shoot.SetBullet(_bulletData);
+            _stateMachine.AddState(States.shoot, _shoot);
 
             // インターバル
             var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval).SetAnimeTrigger("idle");
             _stateMachine .AddState(States.shootInterval, interval);
             // 警戒
             //_looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);
-            _looking = new Idle_Looking(_turret).SetCancelableProgress(0);
+            _looking = new Idle_Looking(_turret).SetCancelableProgress(0).SetAnimeTrigger("Contact");
             _stateMachine.AddState(States.inVigilance, _looking);
 
             // 死亡

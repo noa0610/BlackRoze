@@ -82,7 +82,7 @@ namespace BlackRose.Core.Models.Units
             // ステートの判断
             if (_shootIntervalCount <= 0f && IsMatchState(States.inVigilance) && _looking.IsLookingTarget(35f))
             {
-                _shootForward.SetDirection(Direction);
+                _shoot.SetDirection(Direction);
                 _stateMachine.ChangeState(Triggers.ShootReady);
             }
             else if (_trishootIntervalCount <= 0f && IsMatchState(States.shootInterval))

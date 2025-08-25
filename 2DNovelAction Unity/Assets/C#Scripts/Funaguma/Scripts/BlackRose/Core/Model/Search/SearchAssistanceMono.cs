@@ -9,7 +9,6 @@ namespace BlackRose.Core.Models.SearchSystems
     /// <summary>
     /// ユニットの検索に使う。
     /// 候補になるユニットリストは <see cref="UnitManager.GetUnitList"/> 等で取得する。
-    /// </summary>
     /// <example>
     /// 使い方:
     /// <code>
@@ -21,6 +20,7 @@ namespace BlackRose.Core.Models.SearchSystems
     /// }
     /// </code>
     /// </example>
+    /// </summary>
 
     public class SearchAssistanceMono : MonoBehaviour, ISearch
     {
@@ -89,7 +89,11 @@ namespace BlackRose.Core.Models.SearchSystems
         public bool Execute(string key, List<UnitBase> candidates, out List<UnitBase> res)
         {
             res = null;
-
+            if (candidates == null || candidates.Count == 0)
+            {
+                Debug.LogWarning("Candidates list is null or empty.");
+                return false;
+            }
             // デフォルトキー決定を安全化
             if (string.IsNullOrEmpty(key))
             {

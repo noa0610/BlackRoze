@@ -12,6 +12,5 @@ namespace BlackRose.Datas.Definitions
         public float time;        // 存在時間（寿命）
         public float damage;      // ダメージ量
         public float speed;       // 弾速
-        public Vector2 direction; // 飛ぶ方向
     }
 }

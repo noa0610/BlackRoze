@@ -66,7 +66,7 @@ namespace BlackRose.Core.Models.States
         // ===============================
         // 毎フレーム呼び出して状態更新（Update内で呼ぶ）
         // ===============================
-        public void UpdateMachine()
+        public void UpdateMachine(float deltaTime)
         {
             while (_requests.Count > 0)
             {
@@ -74,7 +74,7 @@ namespace BlackRose.Core.Models.States
                 // 成功したらその時点で抜けて次フレームへ
                 if (ChangeState(trig)) return;
             }
-            _currentState.state.Stay(_parent);
+            _currentState.state.Stay(_parent, deltaTime);
         }
 
         public void Awake(string startStateKey = "idle")

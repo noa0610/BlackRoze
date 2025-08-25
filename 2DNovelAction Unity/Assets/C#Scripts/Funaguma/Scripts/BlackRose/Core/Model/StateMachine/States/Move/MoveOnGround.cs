@@ -26,7 +26,7 @@ namespace BlackRose.Core.Models.States
                 _rigidbody2D.velocity = Vector2.zero; // inExitStopの代わりに使用するフラグがtrueなら速度をゼロにする
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             if (parent.StatusManager.TryGetStatus(Status.Speed, out var info))
                 _rigidbody2D.velocity = info.CurrentAmount * GetDirection(parent) + Vector2.up * _rigidbody2D.velocity.y;

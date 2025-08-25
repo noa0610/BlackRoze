@@ -11,7 +11,7 @@ namespace BlackRose.Core.Models.States
     {
         void Enter(IState previousIState, UnitBase parent);
 
-        void Stay(UnitBase parent);
+        void Stay(UnitBase parent, float deltaTime);
 
         void Exit(IState nextIState, UnitBase parent);
 
@@ -47,7 +47,7 @@ namespace BlackRose.Core.Models.States
         {
         }
 
-        public virtual void Stay(UnitBase parent)
+        public virtual void Stay(UnitBase parent, float deltaTime)
         {
         }
     }

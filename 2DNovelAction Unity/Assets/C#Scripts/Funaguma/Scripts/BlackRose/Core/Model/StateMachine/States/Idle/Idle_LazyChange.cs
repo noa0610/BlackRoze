@@ -31,7 +31,7 @@ namespace BlackRose.Core.Models.States
             _time = _lazyChangeTime;
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             _time -= Time.deltaTime;
             if (_time <= 0)

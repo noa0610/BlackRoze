@@ -1,5 +1,6 @@
 ﻿using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
+using HighElixir;
 using HighElixir.UI;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(UnityEngine.InputSystem.PlayerInput)), Serializable]
     public partial class ActionRobot : GroundedUnit
@@ -20,14 +21,18 @@ namespace BlackRose
         [SerializeField] private TextThrower _thrower;
         private Stun _stunState;
         private Rigidbody2D _rigidbody;
+        private TimeHolders _timeHolders = new TimeHolders();
 
         [Header("Option Settings")]
-        [SerializeField] private float coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
+        [SerializeField] private float _coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
         [SerializeField] private float[] _chargeShoot = new float[2] { 1.8f, 3.4f }; // チャージ攻撃用の時間配列
         [SerializeField] private bool _canChargeCount = false;
         [SerializeField] private Vector2 _stunKnockback = Vector2.zero;
-        private float coyoteTimeCounter;
+        [SerializeField] private int _maxSuccession = 3; // 最大連射回数
+        [SerializeField] private float _shootBlockTime = 0.6f; // 連射をブロックする時間
+        private int _successionCount = 0; // 連射回数
         private float _shootPressTime = 0f; // 攻撃ボタンを押した時間
+        private Vector2 _shootDirection = Vector2.right; // 攻撃方向
 
 
 
@@ -36,7 +41,7 @@ namespace BlackRose
         [SerializeField] private bool _forceEnableJump;
 #endif
         // 地面にいるかどうか（OverlapCircle判定＆コヨーテタイム管理）
-        public bool canJump => _forceEnableJump || coyoteTimeCounter > 0f;
+        public bool canJump => _forceEnableJump || !_timeHolders.IsFinished(nameof(_coyoteTime));
 
         public List<BulletData> Bullets
         {
@@ -46,26 +51,25 @@ namespace BlackRose
 
         protected override void OnGrounded()
         {
-            coyoteTimeCounter = coyoteTime;
+            _timeHolders.Reset(nameof(_coyoteTime));
             _jump.HadLeapt = false;
             _stateMachine.ChangeState(Triggers.landing);
-        }
-        protected override void OnUnGrounded()
-        {
-            coyoteTimeCounter -= Mathf.Max(0, Time.fixedDeltaTime);
         }
         protected override void OnFall()
         {
             _stateMachine.ChangeState(Triggers.falling);
         }
 
-        public override void TakeDamage(float damage)
+        protected override bool BeforeTakeDamage(ref float damage)
         {
-            if (IsInvincible) return;
-            base.TakeDamage(damage);
-            _stateMachine.ChangeState(Triggers.stuned.ToString());
+            return !IsInvincible;
         }
 
+        protected override void OnTakeDamage(float damage)
+        {
+            IsInvincible = true;
+            _stateMachine.ChangeState(Triggers.stuned.ToString());
+        }
         public override void Pause()
         {
             GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Disable();
@@ -85,7 +89,8 @@ namespace BlackRose
             if (canJump)
             {
                 _stateMachine.ChangeState(Triggers.jumpInput);
-                coyoteTimeCounter = 0f;  // ジャンプしたら猶予リセット
+                AfterJump();
+                _timeHolders.Stop(nameof(_coyoteTime)); // ジャンプしたのでコヨーテタイムを終了させる
             }
             if (!value.isPressed)
             {
@@ -96,7 +101,7 @@ namespace BlackRose
         {
             if (!value.isPressed)
             {
-                _stateMachine.ChangeState(Triggers.cancelMove);
+                _stateMachine.LazyChange(Triggers.cancelMove);
                 return;
             }
             if (!IsGrounded) return; // 地面にいない場合は無視
@@ -105,41 +110,71 @@ namespace BlackRose
         private void OnMove(InputValue value)
         {
             var d = value.Get<Vector2>();
+            Direction = d.normalized;
             if (d == Vector2.zero)
             {
                 _stateMachine.ChangeState(Triggers.cancelMove);
-                Debug.Log("Canceled Move.");
+                //Debug.Log("Canceled Move.");
                 return;
             }
-            Direction = d.normalized;
+            else if (d.x != 0)
+                _shootDirection = d; // 横入力がある場合は攻撃方向を更新
             _stateMachine.ChangeState(Triggers.moveInput);
         }
         private void OnAttack(InputValue value)
         {
             if (value.isPressed)
             {
-                _bullets[0].originalstatus.direction = Direction; // 攻撃方向を設定
-                Debug.Log("Shoot");
+                _normal.SetDirection(_shootDirection); // 攻撃方向を設定
+                //Debug.Log("Shoot");
                 // 入力時に一度通常攻撃を行い、その後チャージを行う
-                _stateMachine.ChangeState(Triggers.shootInput);
-                _canChargeCount = true; // 攻撃ボタンを押したのでチャージ可能状態にする
+                if (IsMatchState(StateKey.shootWait) && _successionCount >= _maxSuccession)
+                {
+                    return;
+                }
+                else if (!IsMatchState(StateKey.shootWait))
+                    _successionCount = 0;
+
+                if (_timeHolders.IsFinished(nameof(_shootBlockTime)))
+                {
+                    _successionCount++;
+                    if (IsGrounded)
+                        _stateMachine.ChangeState(Triggers.shootInput);
+                    else
+                        _stateMachine.ChangeState(Triggers.shootInAir);
+                    _canChargeCount = true; // 攻撃ボタンを押したのでチャージ可能状態にする
+                }
+                if (_successionCount >= _maxSuccession)
+                {
+                    _successionCount = 0;
+                    _timeHolders.Start(nameof(_shootBlockTime)); // 連射ブロックタイムを開始
+                    _stateMachine.LazyChange(Triggers.watingTimeHasElapsed);
+                    _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
+                }
             }
             else
             {
+                Debug.Log("Releaced Attack Button");
                 _shootPressTime = 0f; // 攻撃ボタンを離したので時間をリセット
                 _canChargeCount = false; // 攻撃ボタンを離したのでチャージ不可状態にする
                 if (_chargeShoot[0] <= _shootPressTime && _shootPressTime < _chargeShoot[1])
                 {
                     Debug.Log("チャージ１");
                     // チャージ攻撃の状態にする
-                    _stateMachine.ChangeState(Triggers.chargeShoot);
-                    _bullets[1].originalstatus.direction = Direction; // 攻撃方向を設定
+                    if (IsGrounded)
+                        _stateMachine.ChangeState(Triggers.chargeShoot);
+                    else
+                        _stateMachine.ChangeState(Triggers.halfChargeInAir);
+                    _halfCharge.SetDirection(_shootDirection); // 攻撃方向を設定
                 }
                 else if (_shootPressTime >= _chargeShoot[1])
                 {
                     Debug.Log("フルチャージ");
-                    _stateMachine.ChangeState(Triggers.fullChargeShoot);
-                    _bullets[2].originalstatus.direction = Direction; // 攻撃方向を設定
+                    if (IsGrounded)
+                        _stateMachine.ChangeState(Triggers.fullChargeShoot);
+                    else
+                        _stateMachine.ChangeState(Triggers.fullChargeInAir);
+                    _fullCharge.SetDirection(_shootDirection); // 攻撃方向を設定
                 }
                 else
                 {
@@ -148,21 +183,31 @@ namespace BlackRose
             }
         }
         #endregion
+
+        private bool IsMatchState(StateKey state)
+        {
+            return _stateMachine.CurrentState.key == _states[state];
+        }
+        private bool IsMatchState(StateKey arg1, StateKey arg2)
+        {
+            return IsMatchState(arg1) || IsMatchState(arg2);
+        }
         // === Unity LifeCycle ===
-        protected override void Awake()
+        protected override void BeforeAwake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
-            base.Awake();
+            _timeHolders.Register(nameof(_coyoteTime), _coyoteTime);
+            _timeHolders.Register(nameof(_shootBlockTime), _shootBlockTime);
         }
         protected virtual void Start()
         {
             this.UpdateAsObservable()
-                .Where(_ => _stateMachine.CurrentState.state is Stun stun && stun.StunTimer <= 0f)
-                .Subscribe(_ => _stateMachine.LazyChange(Triggers.finishedStun))
-                .AddTo(this);
-            this.UpdateAsObservable()
                 .Where(_ => _canChargeCount)
                 .Subscribe(_ => _shootPressTime += Time.deltaTime)
+                .AddTo(this);
+            this.UpdateAsObservable()
+                .Where(_ => _isPlaying)
+                .Subscribe(_ => _timeHolders.Update(Time.deltaTime))
                 .AddTo(this);
         }
     }

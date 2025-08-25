@@ -1,14 +1,21 @@
+﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.SearchSystems;
+using BlackRose.Core.Models.States;
+using HighElixir;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_huyuu : UnitBase
     {
-        [SerializeField] private SuicideBombing  _suicideBombing;
+        [SerializeField] private SuicideBombing _suicideBombing;
+        [SerializeField] private FreeMove _freeMove;
         [SerializeField] private Rigidbody2D _RB2;
         private UnitBase _player;
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
         public enum States
         {
             none,
@@ -58,20 +65,19 @@ namespace BlackRose
             _stateMachine.AddState(States.idle, idle);
 
             // 移動
-            var s = statusManager.GetStatusAmount(Status.Speed);
-            var move = new MoveOnGround(_RB2, s, true).SetAnimeTrigger("move").SetCancelableProgress(0);
+            var move = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
             _stateMachine.AddState(States.move, move);
 
             //爆発
             _suicideBombing.SetAnimeTrigger("explosion").SetCancelableProgress(0);
-            _suicideBombing .OnExplode.AddListener(() =>
+            _suicideBombing.OnExplode.AddListener(() =>
             {
                 _stateMachine.LazyChange(Triggers.Died);
             });
             _stateMachine.AddState(States.explosion, _suicideBombing);
             // 死亡
             var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimeationCompleted.AddListener(() =>
+            died.OnAnimationCompleted.AddListener(() =>
             {
                 Debug.Log("Enemy_huyuu: 死亡アニメーションが完了しました。");
                 UnitManager.instance.RemoveUnit(this);
@@ -84,42 +90,35 @@ namespace BlackRose
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
-            if (_stateMachine.CurrentState.key == States.move.ToString() && _searchAssistance.Execute("red", list, out var ui))
+            if (IsMatchingState(States.move) && _searchAssistance.Execute("red", list, out _))
             {
                 _stateMachine.ChangeState(Triggers.AttackRange);
             }
-            if (_stateMachine.CurrentState.key == States.idle.ToString() && _searchAssistance.Execute("yellow", list, out var units))
+            if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
             {
-                // 最短距離のプレイヤーを狙う
-                units.Sort((a, b) =>
-                {
-                    var diffA = a.Transform.position - transform.position;
-                    var diffB = b.Transform.position - transform.position;
-                    return diffA.sqrMagnitude
-                        .CompareTo(diffB.sqrMagnitude);
-                });
-                _player = units[0];
+                _player = units.GetUnitNearest(transform.position);
                 _stateMachine.ChangeState(Triggers.FoundPlayer);
             }
             else if (!_searchAssistance.Execute("green", list, out _))
                 _stateMachine.ChangeState(Triggers.MissingPlayer);
 
         }
-        protected override void Awake()
+        protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            base.Awake();
         }
-        private void FixedUpdate()
+        protected override void AfterFixedUpdate()
         {
-            if (_isPlaying)
+            SearchPlayer();
+            if (_player != null)
             {
-                SearchPlayer();
-                if(_player != null)
-                {
-                    Direction = (_player.Transform.position - transform.position).normalized;
-                }
-            } 
+                Direction = (_player.Transform.position - transform.position).normalized;
+            }
+        }
+
+        private bool IsMatchingState(States state)
+        {
+            return _stateMachine.CurrentState.key == _stateNames[state];
         }
     }
 }

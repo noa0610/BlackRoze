@@ -1,7 +1,8 @@
+﻿using BlackRose.Core.Models.Units;
 using System;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.States
 {
     [Serializable]
     public class Attack : StateWithAnime
@@ -28,7 +29,7 @@ namespace BlackRose
             currentFirePointIndex = 0;
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             cooldownTimer -= Time.deltaTime;
 

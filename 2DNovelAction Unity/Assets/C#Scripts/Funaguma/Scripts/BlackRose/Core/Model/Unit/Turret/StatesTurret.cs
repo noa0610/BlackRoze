@@ -1,5 +1,7 @@
 ﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using HighElixir;
+using System.Collections.Generic;
 using UniRx;
 
 namespace BlackRose.Core.Models.Units
@@ -7,7 +9,8 @@ namespace BlackRose.Core.Models.Units
     public partial class Enemy_Turret
     {
         private Idle_Looking _looking;
-
+        private ShootForward _shootForward;
+        private static Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
         private enum States
         {
             none = 0,
@@ -24,6 +27,7 @@ namespace BlackRose.Core.Models.Units
             FindPlayer,     // プレイヤーを発見した
             ShootReserve,   // 発射待機に入った
             ShootReady,     // 発射準備完了
+            IntervalIsFinished, // インターバル完了
             ShootComplete,  // 発射完了(短い遅延用)
             Died,           // 死亡した（HPが０になった）
         }
@@ -57,7 +61,7 @@ namespace BlackRose.Core.Models.Units
             // States.shootInterval
             var intervalTrigger = new[]
             {
-                (Triggers.ShootReady, States.shoot),
+                (Triggers.IntervalIsFinished, States.shoot),
                 (Triggers.Died, States.dead)
             };
             _stateMachine
@@ -71,10 +75,10 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0));
 
             // 発射
-            var shoot = new ShootForward(_bulletData, _targetLayer);
-            shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
-            shoot.SetBullet(_bulletData);
-            _stateMachine.AddState(States.shoot, shoot);
+            _shootForward = new ShootForward(_bulletData, _targetLayer);
+            _shootForward.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
+            _shootForward.SetBullet(_bulletData);
+            _stateMachine.AddState(States.shoot, _shootForward);
 
             // インターバル
             var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval).SetAnimeTrigger("idle");

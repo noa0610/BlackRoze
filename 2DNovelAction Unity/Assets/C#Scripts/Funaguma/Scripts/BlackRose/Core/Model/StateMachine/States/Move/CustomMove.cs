@@ -15,7 +15,7 @@ namespace BlackRose.Core.Models.States
             _assists.Add(comp);
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             float t = Time.deltaTime;
             foreach (var assist in _assists)

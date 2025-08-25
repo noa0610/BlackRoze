@@ -25,8 +25,7 @@ namespace BlackRose.Core.Models.States
             _target = target;
         }
 
-
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
             if (_rotationTarget == null || _target == null) return;
 
@@ -40,5 +39,15 @@ namespace BlackRose.Core.Models.States
             Direction = new Vector2(toTarget.x, toTarget.y).normalized;
         }
 
+        // 指定した角度以内にターゲットがいるか
+        public bool IsLookingTarget(float ditectionAngle)
+        {
+            if (_rotationTarget == null || _target == null) return false;
+            var toTarget = _target.transform.position - _rotationTarget.transform.position;
+            float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+            float current = _rotationTarget.transform.eulerAngles.z;
+            float angleDiff = Mathf.DeltaAngle(current, targetAngle);
+            return Mathf.Abs(angleDiff) <= ditectionAngle;
+        }
     }
 }

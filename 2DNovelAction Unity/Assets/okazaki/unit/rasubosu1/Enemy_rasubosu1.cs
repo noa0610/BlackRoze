@@ -1,7 +1,9 @@
-using Unity.VisualScripting;
+﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.SearchSystems;
+using BlackRose.Core.Models.States;
 using UnityEngine;
 
-namespace BlackRose
+namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_rasubosu1 : UnitBase
@@ -87,7 +89,7 @@ namespace BlackRose
             _stateMachine.AddState(States.idle, idle);
             // 死亡
             var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimeationCompleted.AddListener(() =>
+            died.OnAnimationCompleted.AddListener(() =>
             {
                 UnitManager.instance.RemoveUnit(this);
                 Destroy(gameObject);
@@ -101,7 +103,7 @@ namespace BlackRose
             var armpunch = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.armpunch, armpunch);
             // 拡散ビーム砲
-            var diffusebeamgun = new Attack(_rb, firePoints, bulletPrefab)
+            var diffusebeamgun = new Models.States.Attack(_rb, firePoints, bulletPrefab)
             .SetAnimeTrigger("diffusebeamgun")
             .SetCancelableProgress(0);
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
@@ -128,14 +130,13 @@ namespace BlackRose
                 });
             }
         }
-        protected override void Awake()
+        protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            base.Awake();
         }
-        private void FixedUpdate()
+        protected override void AfterFixedUpdate()
         {
-            if (_isPlaying) SearchPlayer();
+            SearchPlayer();
         }
         public void Attackjudgement()
         {

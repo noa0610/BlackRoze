@@ -37,9 +37,8 @@ namespace BlackRose.Core.Models.Units
         }
 
 
-        protected override void Awake()
+        protected override void AfterAwake()
         {
-            base.Awake();
             InitAIState();
         }
         // === Private ===

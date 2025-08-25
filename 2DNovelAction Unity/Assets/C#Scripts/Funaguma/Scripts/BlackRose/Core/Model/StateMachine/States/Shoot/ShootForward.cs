@@ -10,6 +10,7 @@ namespace BlackRose.Core.Models.States
     public class ShootForward : ShootStateBase
     {
         [SerializeField] private float _createPos = 0.35f;
+        [SerializeField] private Vector2 _direction = Vector2.right;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootForward() { }
         public override void Enter(IState preview, UnitBase parent)
@@ -23,6 +24,10 @@ namespace BlackRose.Core.Models.States
             return false;
         }
 
+        public void SetDirection(Vector2 newDirection)
+        {
+            _direction = newDirection.normalized;
+        }
         protected async override UniTask Shoot(UnitBase unit)
         {
             var b = _data.prefab;
@@ -36,6 +41,7 @@ namespace BlackRose.Core.Models.States
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
             // ステータスをセット（速度、方向、ダメージなど）
             instantiatedBullet.SetBulletStatus(_data, _targetLayer);
+            instantiatedBullet.SetDirection(_direction);
             await base.Shoot(unit);
         }
     }

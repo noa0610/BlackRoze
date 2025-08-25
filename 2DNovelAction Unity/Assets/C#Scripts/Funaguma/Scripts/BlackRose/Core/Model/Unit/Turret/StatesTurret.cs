@@ -1,13 +1,16 @@
 ﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using HighElixir;
+using System.Collections.Generic;
 using UniRx;
-
+using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_Turret
     {
+        [SerializeField] private ShootForward _shoot;
         private Idle_Looking _looking;
-
+        private static Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
         private enum States
         {
             none = 0,
@@ -24,6 +27,7 @@ namespace BlackRose.Core.Models.Units
             FindPlayer,     // プレイヤーを発見した
             ShootReserve,   // 発射待機に入った
             ShootReady,     // 発射準備完了
+            IntervalIsFinished, // インターバル完了
             ShootComplete,  // 発射完了(短い遅延用)
             Died,           // 死亡した（HPが０になった）
         }
@@ -55,33 +59,32 @@ namespace BlackRose.Core.Models.Units
             };
 
             // States.shootInterval
-            var intervalTriger = new[]
+            var intervalTrigger = new[]
             {
-                (Triggers.ShootReady, States.shoot),
+                (Triggers.IntervalIsFinished, States.shoot),
                 (Triggers.Died, States.dead)
             };
             _stateMachine
              .AddTransmissions(States.idle, idleTrigger)
              .AddTransmissions(States.shoot, shootTrigger)
              .AddTransmissions(States.inVigilance, vigilanceTrigger)
-             .AddTransmissions(States.shootInterval, intervalTriger);
+             .AddTransmissions(States.shootInterval, intervalTrigger);
 
             // 待機
             //_stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-            _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0));
+            _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0).SetAnimeTrigger("Leave"));
 
             // 発射
-            var shoot = new ShootForward(_bulletData, _targetLayer);
-            shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
-            shoot.SetBullet(_bulletData);
-            _stateMachine.AddState(States.shoot, shoot);
+            _shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
+            _shoot.SetBullet(_bulletData);
+            _stateMachine.AddState(States.shoot, _shoot);
 
             // インターバル
             var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval).SetAnimeTrigger("idle");
             _stateMachine .AddState(States.shootInterval, interval);
             // 警戒
             //_looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);
-            _looking = new Idle_Looking(_turret).SetCancelableProgress(0);
+            _looking = new Idle_Looking(_turret).SetCancelableProgress(0).SetAnimeTrigger("Contact");
             _stateMachine.AddState(States.inVigilance, _looking);
 
             // 死亡

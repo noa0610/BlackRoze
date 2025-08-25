@@ -1,5 +1,4 @@
 ﻿using BlackRose.Core.Models.Units;
-using BlackRose.Editors;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,9 +30,6 @@ namespace BlackRose.Core.Models.SearchSystems
                 float targetX = unit.transform.position.x;
                 float distance = Mathf.Abs(targetX - myX);
                 bool flag = distance <= _detectionDistance;
-#if UNITY_EDITOR
-                Debug.Log(StringProssecing.GetFilterSummary(this, unit, flag, $"\nDitection:{_detectionDistance}\nDistance:{distance}"));
-#endif
                 if (flag)
                 {
                     result.Add(unit);

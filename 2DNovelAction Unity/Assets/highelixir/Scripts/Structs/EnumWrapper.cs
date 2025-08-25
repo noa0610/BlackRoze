@@ -17,5 +17,19 @@ namespace HighElixir
         {
             return Enum.GetValues(typeof(T)).Cast<T>().ToHashSet();
         }
+
+        public static Dictionary<T, string> GetDict<T>() where T : Enum
+        {
+            var values = Enum.GetValues(typeof(T)).Cast<T>();
+            var names = Enum.GetNames(typeof(T));
+            var dict = new Dictionary<T, string>();
+            int i = 0;
+            foreach (var v in values)
+            {
+                dict[v] = names[i];
+                i++;
+            }
+            return dict;
+        }
     }
 }

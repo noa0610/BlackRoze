@@ -1,6 +1,6 @@
 ﻿using HighElixir;
 
-namespace BlackRose.Core.Model.EffectManager
+namespace BlackRose.Core.Models.EffectManager
 {
     public class StatusEffectHolder : SingletonBehavior<StatusEffectHolder>
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
-
-namespace BlackRose.Core
+using BlackRose.Core;
+namespace BlackRose.Editors
 {
     [CustomEditor(typeof(CameraBounds))]
     public class CameraBoundsEditor : Editor

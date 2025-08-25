@@ -38,10 +38,6 @@ namespace BlackRose.Core.Models.Units
 
                 private SearchAssistanceMono _searchAssistance;
 
-                // shootReady 用タイマー
-                private float shootReadyTimer = 0f;
-                private float shootReadyDuration = 1.0f; // クールダウン秒数
-
                 protected override void Awake()
                 {
                         _searchAssistance = GetComponent<SearchAssistanceMono>();
@@ -89,23 +85,32 @@ namespace BlackRose.Core.Models.Units
                             .AddTransmissions(States.knockBack, knockBackTrigger);
 
                         // ステート設定
-                        _stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-                        var s = statusManager.GetStatus(Status.Speed);
+
+                        var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
+                        _stateMachine.AddState(States.idle, idle);
+                        //移動
                         var move = new MoveOnGround(_rb2, true).SetAnimeTrigger("move").SetCancelableProgress(0);
                         _stateMachine.AddState(States.move, move);
-
+                        //シュート待機
                         var shootReady = new Idle().SetAnimeTrigger("shootReady").SetCancelableProgress(0);
                         _stateMachine.AddState(States.shootReady, shootReady);
-
+                        //シュート
                         var shoot = new ShootForward();
                         shoot.SetBullet(_bulletData);
                         shoot.SetAnimeTrigger("shoot");
-                       shoot.SetCancelableProgress(0);
+                        shoot.SetCancelableProgress(0);
                         _stateMachine.AddState(States.shoot, shoot);
 
+
+                        //ノックバック
+
                         _stateMachine.AddState(States.knockBack, new Stun().SetAnimeTrigger("knockBack").SetCancelableProgress(0));
+                        //死亡
+                        var dead = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
                         _stateMachine.AddState(States.dead, new Idle());
+
                 }
+
 
                 private void SearchPlayer()
                 {
@@ -123,7 +128,7 @@ namespace BlackRose.Core.Models.Units
                                         return diffA.sqrMagnitude
                             .CompareTo(diffB.sqrMagnitude);
                                 });
-                                //         // _player = units[0];エラー発生中のためコメントアウト
+                                // _player = units[0];エラー発生中のためコメントアウト
                                 _stateMachine.ChangeState(Triggers.FoundPlayer);
                         }
                         else
@@ -136,8 +141,9 @@ namespace BlackRose.Core.Models.Units
                         if (!_isPlaying) return;
 
                         SearchPlayer();
+                        Debug.Log($"CurrentState: {_stateMachine.CurrentState.key}");
 
-                        Debug.Log(_stateMachine.CurrentState.key);
                 }
         }
+
 }

@@ -5,7 +5,7 @@ namespace BlackRose.Core.Models.Helper
 {
     public static class StateMachineHelper
     {
-        public static IStateMachine AddTransmissions<Trigger, State>(this IStateMachine machine, State from, (Trigger trigger, State to)[] triggers) 
+        public static IStateMachine AddTransmissions<Trigger, State>(this IStateMachine machine, State from, (Trigger trigger, State to)[] triggers)
             where Trigger : Enum
             where State : Enum
         {

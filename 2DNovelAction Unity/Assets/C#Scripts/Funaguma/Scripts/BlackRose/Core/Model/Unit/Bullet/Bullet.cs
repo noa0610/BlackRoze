@@ -8,6 +8,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField, Tooltip("常に衝突可能なレイヤー")] private LayerMask _canHitLayer;
         protected LayerMask _targetLayer;
         protected BulletStatus _status;
+        protected Vector2 _direction;
         public Transform Transform => transform;
 
         // 弾のステータス設定（生成時に呼ばれる想定）
@@ -16,11 +17,14 @@ namespace BlackRose.Core.Models.Units
             _status = bullet.originalstatus; // 初期ステータスを設定
             _targetLayer = targetLayer;
         }
-
+        public void SetDirection(Vector2 dir)
+        {
+            _direction = dir.normalized;
+        }
         // 毎フレームの更新処理（弾の移動）
         protected virtual void Update()
         {
-            transform.position = transform.position + (Vector3)_status.direction * _status.speed * Time.deltaTime;
+            transform.position = transform.position + (Vector3)_direction * _status.speed * Time.deltaTime;
         }
 
         // 2D衝突検知（敵や壁に当たったら発動）

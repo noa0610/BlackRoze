@@ -34,9 +34,9 @@ namespace BlackRose.Core.Models.States
                 parent.Animator.SetTrigger(animeTriggerName);
         }
 
-        public override void Stay(UnitBase parent)
+        public override void Stay(UnitBase parent, float deltaTime)
         {
-            base.Stay(parent);
+            base.Stay(parent, deltaTime);
             if (!_completed && GetNormalized(parent) >= 1f)
             {
                 _completed = true;

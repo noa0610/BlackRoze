@@ -37,6 +37,8 @@ namespace BlackRose.Core.Models
                     _currentAmount.Value = value;
                     _onAmountChanged?.Invoke(before, _currentAmount);
                 }
+                else
+                    throw new Exception("EnableDynamicParamsがtrueなため値をセットできません");
             }
         }
         public float DefaultAmount => _defaultAmount;
@@ -73,7 +75,7 @@ namespace BlackRose.Core.Models
             _currentAmount.Subscribe((before, after) =>
             {
                 if (_enableDynamicParams) _dirty = true;
-                _onAmountChanged.Invoke(before, after);
+                _onAmountChanged?.Invoke(before, after);
             });
             Recalculate();
         }

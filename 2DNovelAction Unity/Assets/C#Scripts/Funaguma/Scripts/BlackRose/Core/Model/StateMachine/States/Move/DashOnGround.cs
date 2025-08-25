@@ -5,53 +5,91 @@ using BlackRose.Core.Models.Units;
 
 namespace BlackRose.Core.Models.States
 {
-	[Serializable]
-	public class DashOnGround : StateComp
-	{
-		[SerializeField] private StatusInfo _dashSpeed;
-		[SerializeField] private Rigidbody2D _rigidbody2D;
-		[SerializeField] private DynamicAfterImageEffect2DPlayer _afterImagePlayer;
-		[SerializeField] private bool _onDashJump = false;
+    [Serializable]
+    public class DashOnGround : HolizontalMovingStates
+    {
+        [SerializeField] private Rigidbody2D _rigidbody2D;
+        [SerializeField] private DynamicAfterImageEffect2DPlayer _afterImagePlayer;
+        [SerializeField] private bool _onDashJump = false;
 
-		public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent, StatusInfo dashSpeed)
-		{
-			if (_afterImagePlayer == null)
-				_afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();
-			_afterImagePlayer.SetActive(false); // 初期状態ではAfterImageを非表示にする
-			_dashSpeed = dashSpeed;
-			_rigidbody2D = rigidbody2D;
-		}
-		public DashOnGround() { }
-		public override void Enter(IState previousIState, UnitBase parent)
-		{
-			_afterImagePlayer.SetActive(true);
-		}
-		public override void Stay(UnitBase parent)
-		{
-			if (parent is not GroundedUnit grounded) return;
-			if (!grounded.IsGrounded) return; // 地面にいない場合はDashを行わない
-											  // Dash中の処理
-			Vector2 dashDirection = parent.Direction * _dashSpeed.CurrentAmount;
-			_rigidbody2D.velocity = dashDirection + _rigidbody2D.velocity * new Vector2(0, 1);
-		}
-		public override void Exit(IState nextIState, UnitBase parent)
-		{
-			if (nextIState is Jump jumpIState && parent is GroundedUnit grounded)
-			{
-				_onDashJump = true; // DashからJumpに移行する場合はフラグを立てる
-                Action onLanding = null;
-                onLanding = () =>
+        [SerializeField] private float _accel = 60f;   // 加速度
+        [SerializeField] private float _maxSpeedScale = 1f; // ステータスに掛ける上限倍率
+
+        // Exit→着地までの購読を保持しておく（破棄時に保険で解除）
+        private Action _onLandingHandler;
+
+        public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent)
+        {
+            _rigidbody2D = rigidbody2D;
+            if (_afterImagePlayer == null)
+                _afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();
+
+            if (_afterImagePlayer != null)
+                _afterImagePlayer.SetActive(false);
+        }
+
+        public DashOnGround() { }
+
+        public override void Enter(IState previousIState, UnitBase parent)
+        {
+            // Null保険
+            if (_afterImagePlayer != null)
+                _afterImagePlayer.SetActive(true);
+        }
+
+        public override void Stay(UnitBase parent, float deltaTime)
+        {
+            if (parent is not GroundedUnit grounded) return;
+            if (!grounded.IsGrounded) return;
+            if (_rigidbody2D == null) return;
+
+            // 速度・向き取得（キャッシュ）
+            var dashStatus = parent.statusManager.GetStatus(Status.DashSpeed);
+            float maxSpeed = dashStatus.CurrentAmount * _maxSpeedScale;
+
+            // 目標速度（向き × 上限）
+            float dirX = Mathf.Sign(GetDirection(grounded).x); // -1 or 1 を期待
+            float targetVx = dirX * maxSpeed;
+
+            // MoveTowardsでスムーズに目標へ近づける
+            float dt = Time.deltaTime;
+            float newVx = Mathf.MoveTowards(_rigidbody2D.velocity.x, targetVx, _accel * dt);
+
+            _rigidbody2D.velocity = new Vector2(newVx, _rigidbody2D.velocity.y);
+        }
+
+        public override void Exit(IState nextIState, UnitBase parent)
+        {
+            // 既存の購読が残っていたら解除（保険）
+            if (_onLandingHandler != null && parent is GroundedUnit g0)
+            {
+                g0.OnAirToGround -= _onLandingHandler;
+                _onLandingHandler = null;
+            }
+
+            if (nextIState is Jump && parent is GroundedUnit grounded)
+            {
+                _onDashJump = true;
+
+                _onLandingHandler = () =>
                 {
                     _onDashJump = false;
-                    _afterImagePlayer.SetActive(false);
-                    grounded.OnAirToGround -= onLanding; // ちゃんと同じ参照を解除する
-                };
-                grounded.OnAirToGround += onLanding;
+                    if (_afterImagePlayer != null)
+                        _afterImagePlayer.SetActive(false);
 
-                // 着地時のコールバックを登録
+                    grounded.OnAirToGround -= _onLandingHandler;
+                    _onLandingHandler = null;
+                };
+
+                grounded.OnAirToGround += _onLandingHandler;
             }
-            if (!_onDashJump)
-				_afterImagePlayer.SetActive(false); // Dash終了時にAfterImageの再生を停止
-		}
-	}
+            else
+            {
+                // ダッシュ→ジャンプ以外の遷移なら即OFF
+                if (!_onDashJump && _afterImagePlayer != null)
+                    _afterImagePlayer.SetActive(false);
+            }
+        }
+    }
+
 }

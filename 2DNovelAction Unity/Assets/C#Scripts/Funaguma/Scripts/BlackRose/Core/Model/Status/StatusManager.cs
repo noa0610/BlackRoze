@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace BlackRose.Core.Models
 {
@@ -23,6 +24,7 @@ namespace BlackRose.Core.Models
             AddStatus(Status.SpeedInAir, data.speedInAir);
             AddStatus(Status.Power, data.power, isHideIfDefault: true);
             AddStatus(Status.DashSpeed, data.dashSpeed);
+            AddStatus(Status.DamageRatio, 1f, isHideIfDefault: true);
             return this;
         }
 
@@ -87,6 +89,7 @@ namespace BlackRose.Core.Models
         {
             var s = _statusAmounts[Status.HP];
             s.CurrentAmount -= value;
+            Debug.Log($"TakeDamage: {value}, HP: {s.CurrentAmount}/{_statusAmounts[Status.MaxHP].CurrentAmount}");
             return s.CurrentAmount <= 0;
         }
     }

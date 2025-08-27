@@ -80,7 +80,7 @@ namespace BlackRose
             }
         }
 
-        public void AfterJump()
+        public virtual void AfterJump()
         {
             _disableCheckTime = 0.2f; // ジャンプしたら地面判定を無効にする
         }

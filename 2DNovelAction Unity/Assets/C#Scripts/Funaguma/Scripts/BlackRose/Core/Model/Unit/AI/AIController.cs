@@ -1,67 +1,164 @@
-﻿using UnityEngine;
+﻿using AIE2D;
+using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.States;
+using BlackRose.Datas.Definitions;
+using HighElixir;
+using HighElixir.UI;
+using System.Collections.Generic;
+using UniRx;
+using UniRx.Triggers;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace BlackRose.Core.Models.Units
 {
+    [RequireComponent(
+        typeof(Rigidbody2D),
+        typeof(UnityEngine.InputSystem.PlayerInput),
+        typeof(DynamicAfterImageEffect2DPlayer))]
     public class AIController : GroundedUnit
     {
-        private enum Mode
+        public enum Mode { Normal, Right, Heavy }
+
+        // 各モードに共通するステート
+        public enum AIStates { Idle, Move, Dash, SpecialAttack }
+        public enum AITriggers
         {
-            Normal,
-            Right,
-            Heavy
+            moveInput, cancelMove, dashInput,
+            shootComplete, watingTimeHasElapsed,
+            landing, falling, stun, recoverFromStun,
+            modeChanged
         }
 
-        // モードごとの登録処理
-        [SerializeField] private UnitStatusData _normalStatus;
+        [Header("Reference")]
+        [SerializeField] private List<BulletData> _bullets = new();
+        [SerializeField] private LayerMask _targetLayer;
+        [SerializeField] private TextThrower _thrower;
+        private Stun _stunState;
+        private Rigidbody2D _rigidbody;
+        private TimeHolders _timeHolders = new();
+
+        [Header("Option Settings")]
+        [SerializeField] private bool _canChargeCount = false;
+        [SerializeField] private Vector2 _stunKnockback = Vector2.zero;
+        [SerializeField] private int _maxSuccession = 3;
+
+        // 時間管理
+        [SerializeField] private float[] _chargeShoot = new float[2] { 1.8f, 3.4f };
+        [SerializeField] private float _shootBlockTime = 0.6f;
+        [SerializeField] private float _coyoteTime = 0.2f;
+        private int _successionCount = 0;
+        private float _shootPressTime = 0f;
+        private Vector2 _shootDirection = Vector2.right;
+
+        // ===== モード関連 =====
+        [Header("Mode Status")]
         [SerializeField] private UnitStatusData _rightStatus;
         [SerializeField] private UnitStatusData _heavyStatus;
-        private IAIState _normalMode;
+        [SerializeField] private NormalMode _normalMode;   // ScriptableObject なら Serialize でOK
         private IAIState _rightMode;
         private IAIState _heavyMode;
         private IAIState _currentMode;
+        private Mode _currentEnumMode = Mode.Normal;       // 実体保持（任意）
+
+
+        public TimeHolders TimeHolders => _timeHolders;
+
+        // 外部からのモード切替 API
+        public void SwitchModeRight() => ChangeMode(Mode.Right);
+        public void SwitchModeHeavy() => ChangeMode(Mode.Heavy);
+        public void SwitchModeNormal() => ChangeMode(Mode.Normal);
+
+
+        // === Input Action ===
+        private void OnJump(InputValue value)
+        {
+            _currentMode?.OnJump(value);
+        }
+
+        private void OnDash(InputValue value)
+        {
+            if (!value.isPressed)
+            {
+                _stateMachine.LazyChange(AITriggers.cancelMove);
+                return;
+            }
+            if (!IsGrounded) return;
+            _stateMachine.ChangeState(AITriggers.dashInput);
+        }
+
+        private void OnMove(InputValue value)
+        {
+            var d = value.Get<Vector2>();
+            Direction = d.normalized;
+            if (d == Vector2.zero)
+            {
+                _stateMachine.ChangeState(AITriggers.cancelMove);
+                return;
+            }
+            else if (d.x != 0) _shootDirection = d;
+            _stateMachine.ChangeState(AITriggers.moveInput);
+        }
+
+        private void OnAttack(InputValue value)
+        {
+            if (value.isPressed)
+            {
+                Debug.Log("AI Attack Pressed");
+                _currentMode?.OnShoot(value);
+            }
+            else
+            {
+                _currentMode?.OnReleaseShoot(value);
+            }
+        }
+
+        // === GroundedUnit の抽象 ===
         protected override void OnGrounded()
         {
-            throw new System.NotImplementedException();
+            _timeHolders.Reset(nameof(_coyoteTime));
+            _stateMachine.ChangeState(AITriggers.landing);
+        }
+        protected override void OnFall()
+        {
+            _stateMachine.ChangeState(AITriggers.falling);
         }
 
-        protected override void OnUnGrounded()
+        public override void AfterJump()
         {
-            throw new System.NotImplementedException();
-        }
-
-        protected override void RegisterStats()
-        {
-            _normalMode.Register();
-            _rightMode.Register();
-            _heavyMode.Register();
-        }
-
-
-        protected override void AfterAwake()
-        {
-            InitAIState();
+            base.AfterJump();
+            // ジャンプしたのでコヨーテタイムを終了させる
+            _timeHolders.Stop(nameof(_coyoteTime));
         }
         // === Private ===
         private void InitAIState()
         {
-            _normalMode = new NormalMode(this);
+            // ★ ここで各モードの IAIState 実装を作る
+            _normalMode.Bind(this);
+
+            //_rightMode = new RightMode(this, _rightStatus);
+            //_heavyMode = new HeavyMode(this, _heavyStatus);
         }
+
         private void ChangeMode(Mode mode)
         {
+            // ★ ステータス反映
             var status = mode switch
             {
-                Mode.Normal => _normalStatus,
+                Mode.Normal => _normalMode.StatusData,
                 Mode.Right => _rightStatus,
                 Mode.Heavy => _heavyStatus,
-                _ => _normalStatus
+                _ => _normalMode.StatusData
             };
             statusManager.GetStatus(Status.MaxHP).SetDefault(status.maxHp);
-            statusManager.GetStatus(Status.MaxHP).SetDefault(status.speed);
-            statusManager.GetStatus(Status.MaxHP).SetDefault(status.speedInAir);
-            statusManager.GetStatus(Status.MaxHP).SetDefault(status.jumpPower);
-            statusManager.GetStatus(Status.MaxHP).SetDefault(status.dashSpeed);
-            statusManager.GetStatus(Status.MaxHP).SetDefault(   status.power);
-            statusManager.GetStatus(Status.MaxHP).SetDefault(status.damageTakeScale);
+            statusManager.GetStatus(Status.Speed).SetDefault(status.speed);
+            statusManager.GetStatus(Status.SpeedInAir).SetDefault(status.speedInAir);
+            statusManager.GetStatus(Status.JumpPower).SetDefault(status.jumpPower);
+            statusManager.GetStatus(Status.DashSpeed).SetDefault(status.dashSpeed);
+            statusManager.GetStatus(Status.Power).SetDefault(status.power);
+            statusManager.GetStatus(Status.DamageRatio).SetDefault(status.damageTakeScale);
+
+            // ★ モードの実体切替
             _currentMode = mode switch
             {
                 Mode.Normal => _normalMode,
@@ -69,6 +166,62 @@ namespace BlackRose.Core.Models.Units
                 Mode.Heavy => _heavyMode,
                 _ => _normalMode
             };
+            _currentEnumMode = mode;
+
+            // ★ ステートマシンへモードを通知（最重要！）
+            _stateMachine.SetLayer(mode.ToString());
+
+            // ★ 必要に応じてモード専用 Entry を走らせるなら Trigger で
+            _stateMachine.LazyChange(AITriggers.modeChanged);
+        }
+        protected override void BeforeAwake()
+        {
+            _rigidbody = GetComponent<Rigidbody2D>();
+            _timeHolders.Register(nameof(_coyoteTime), _coyoteTime);
+            _timeHolders.Register(nameof(_shootBlockTime), _shootBlockTime);
+
+            _normalMode.Bind(this);
+        }
+
+        protected override void AfterAwake()
+        {
+            InitAIState();     // ★ モードクラス生成＆登録
+            RegisterStats();   // ★ 既存：各モードが自分の遷移を登録
+            ChangeMode(Mode.Normal); // ★ 初期モードへ（SetMode連動 & 遷移通知）
+        }
+
+        protected override void RegisterStats()
+        {
+            _normalMode.Register();
+            //_rightMode.Register();
+            //_heavyMode.Register();
+
+            // ★ 例：モード非依存の共通フォールバック（必要に応じて）
+            _stateMachine.AddTransmissions(AIStates.Idle,
+                (AITriggers.moveInput, AIStates.Move),
+                (AITriggers.dashInput, AIStates.Dash));
+            _stateMachine.AddTransmissions(AIStates.Move,
+                (AITriggers.cancelMove, AIStates.Idle),
+                (AITriggers.dashInput, AIStates.Dash));
+            _stateMachine.AddState(AIStates.Idle, new Idle());
+            _stateMachine.AddState(AIStates.Move, new MoveOnGround(_rigidbody));
+            _stateMachine.AddState(AIStates.Dash, new DashOnGround(_rigidbody, this).SetCancelableProgress(0.5f));
+        }
+        protected override void Start()
+        {
+            ReactiveDirection.Subscribe(d =>
+            {
+                if (d.x > 0) transform.localScale = Vector3.one;
+                else if (d.x < 0) transform.localScale = new Vector3(-1, 1, 1);
+            }).AddTo(this);
+            this.UpdateAsObservable()
+                .Where(_ => _canChargeCount)
+                .Subscribe(_ => _shootPressTime += Time.deltaTime)
+                .AddTo(this);
+            this.UpdateAsObservable()
+                .Where(_ => _isPlaying)
+                .Subscribe(_ => _timeHolders.Update(Time.deltaTime))
+                .AddTo(this);
         }
     }
 }

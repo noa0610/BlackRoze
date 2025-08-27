@@ -1,6 +1,7 @@
 ﻿using BlackRose.Core.Models.EffectManagers;
 using BlackRose.Core.Models.States;
 using System;
+using UniRx;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
@@ -18,7 +19,7 @@ namespace BlackRose.Core.Models.Units
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
         [SerializeField] public static bool _isPlaying = true;
-
+        private ReactiveProperty<Vector2> _reactiveDirection = new(new(1, 0));
 #if UNITY_EDITOR
         // エディタからの監視用
         [Header("Debug")]
@@ -30,7 +31,20 @@ namespace BlackRose.Core.Models.Units
         public Transform Transform => transform;
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
-        public Vector2 Direction { get; set; } = new Vector2(1, 0); // ユニットの向き（右方向が1,0）
+
+        public IObservable<Vector2> ReactiveDirection => _reactiveDirection;
+
+        public Vector2 Direction
+        {
+            get
+            {
+                return _reactiveDirection.Value;
+            }
+            set
+            {
+                _reactiveDirection.Value = value;
+            }
+        }
         public Animator Animator
         {
             get
@@ -53,7 +67,7 @@ namespace BlackRose.Core.Models.Units
         public void TakeDamage(float damage)
         {
             if (!BeforeTakeDamage(ref damage)) return;
-            if(statusManager.TakeDamage(damage))
+            if (statusManager.TakeDamage(damage))
                 OnDeath();
             OnTakeDamage(damage);
         }
@@ -100,6 +114,13 @@ namespace BlackRose.Core.Models.Units
         protected virtual void BeforeAwake() { }
         protected virtual void AfterAwake() { }
         protected virtual void BeforeRegisterStats() { }
+
+        protected virtual void Start()
+        {
+#if UNITY_EDITOR
+            ReactiveDirection.Subscribe(v => _currentDirection = v).AddTo(this);
+#endif
+        }
         // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
         protected void Update()
         {
@@ -111,7 +132,6 @@ namespace BlackRose.Core.Models.Units
             AfterUpdate();
 # if UNITY_EDITOR
             _currentState = _stateMachine.CurrentState.key;
-            _currentDirection = Direction;
 #endif
         }
         // _isPlayingの判定の前に呼ばれる（常に呼ばれる）

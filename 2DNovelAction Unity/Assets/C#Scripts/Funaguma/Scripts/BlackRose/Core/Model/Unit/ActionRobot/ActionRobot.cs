@@ -199,7 +199,7 @@ namespace BlackRose.Core.Models.Units
             _timeHolders.Register(nameof(_coyoteTime), _coyoteTime);
             _timeHolders.Register(nameof(_shootBlockTime), _shootBlockTime);
         }
-        protected virtual void Start()
+        protected override void Start()
         {
             this.UpdateAsObservable()
                 .Where(_ => _canChargeCount)

@@ -44,14 +44,15 @@ namespace BlackRose.Core.Models.Helper
         /// ★モード依存版：同じ from & triggers でも mode によって行き先を分岐
         /// 定義がある場合は非モード表より優先されます。
         /// </summary>
-        public static IStateMachine AddTransitionsForLayer<TMode, TTrigger, TState>(
+        public static IStateMachine AddTransitionsForLayer<TMode, TTrigger, TStateFrom, TStateTo>(
             this IStateMachine machine,
             TMode mode,
-            TState from,
-            params (TTrigger trigger, TState to)[] triggers)
+            TStateFrom from,
+            params (TTrigger trigger, TStateTo to)[] triggers)
             where TMode : Enum
             where TTrigger : Enum
-            where TState : Enum
+            where TStateFrom : Enum
+            where TStateTo : Enum
         {
             foreach (var (trigger, to) in triggers)
             {

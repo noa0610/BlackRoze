@@ -1,66 +1,91 @@
 ﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.States;
+using HighElixir;
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static BlackRose.SpriteEffectHolders;
 
 namespace BlackRose.Core.Models.Units
 {
+    [Serializable]
     public class NormalMode : IAIState
     {
         private AIController _parent;
         public enum State
         {
-            N_Idle,
             N_Shoot,
-            N_Move,
             N_Jump,
-            N_Dash,
             N_Skill
         }
         public enum Trigger
         {
             Shoot,
-            Move,
             Jump,
-            Dash,
             Skill
         }
 
+        [SerializeField] private UnitStatusData _normalStatus;
+        [SerializeField] private Jump _jump;
+
+        public UnitStatusData StatusData => _normalStatus;
+
+        public bool CanJump => !_parent.TimeHolders.IsFinished("_coyoteTime");
+
         public void Register()
         {
-            _parent.StateMachine.AddTransmissions(State.N_Idle,
-                new[] { 
+            _parent.StateMachine.AddTransitionsForLayer(
+                AIController.Mode.Normal,
+                AIController.AIStates.Idle,
                     (Trigger.Shoot, State.N_Shoot),
-                    (Trigger.Move, State.N_Move),
                     (Trigger.Jump, State.N_Jump),
-                    (Trigger.Dash, State.N_Dash),
                     (Trigger.Skill, State.N_Skill)
-                });
+                );
+
+            _parent.StateMachine.AddState(State.N_Jump, _jump);
         }
 
-        public string OnShoot()
+        // Grounded Event
+        public void OnGrounded()
+        {
+            _jump.HadLeapt = false;
+        }
+        // Input Action
+        public void OnShoot(InputValue value)
         {
             throw new System.NotImplementedException();
         }
 
-        public string OnMove()
+        public void OnJump(InputValue value)
+        {
+            Debug.Log($"NormalMode OnJump: CanJump={CanJump}, isPressed={value.isPressed}");
+            if (CanJump)
+            {
+                _parent.StateMachine.ChangeState(Trigger.Jump);
+                _parent.AfterJump();
+            }
+            if (!value.isPressed)
+            {
+                _jump.Cut();
+            }
+        }
+
+        public void OnDash(InputValue value)
         {
             throw new System.NotImplementedException();
         }
 
-        public string OnJump()
+        public void OnSkill(InputValue value)
         {
             throw new System.NotImplementedException();
         }
 
-        public string OnDash()
+        public void OnReleaseShoot(InputValue value)
         {
             throw new System.NotImplementedException();
         }
 
-        public string OnSkill()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public NormalMode(AIController parent)
+        public void Bind(AIController parent)
         {
             _parent = parent;
         }

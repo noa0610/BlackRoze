@@ -1,10 +1,11 @@
-﻿using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models.Systems;
+using BlackRose.Core.Models.Units;
 using UnityEngine;
 
 namespace BlackRose.Core.UI
 {
     [RequireComponent(typeof(Camera))]
-    public class FollowUnit : MonoBehaviour
+    public class FollowUnit : MonoBehaviour, IPlayerFollower
     {
         [Header("References")]
         [SerializeField, Tooltip("追従するユニットを指定")] private UnitBase _target;
@@ -51,6 +52,11 @@ namespace BlackRose.Core.UI
             Vector3 smoothedPos = Vector3.Lerp(currentPos, desiredPos, _smoothSpeed * Time.deltaTime);
 
             _camT.position = smoothedPos;
+        }
+
+        public void SetTarget(UnitBase target)
+        {
+            _target = target;
         }
     }
 }

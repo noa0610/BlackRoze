@@ -1,4 +1,4 @@
-﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using HighElixir;
@@ -122,4 +122,3 @@ namespace BlackRose.Core.Models.Units
         }
     }
 }
-

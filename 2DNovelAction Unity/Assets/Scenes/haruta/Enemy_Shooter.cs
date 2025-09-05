@@ -248,22 +248,22 @@ if (IsMatchingState(States.shoot))
         shootTimer = 0f;
 
         // ShootForward の Shoot を実行
-        var state = _stateMachine.CurrentState as ShootForward;
-        if (state != null)
-        {
-            state.Shoot(this);
-            shootCount++;
-            Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount})");
-        }
+        // var state = _stateMachine.CurrentState as ShootForward;
+        // if (state != null)
+        // {
+        //     // state.Shoot(this);
+        //     shootCount++;
+        //     Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount})");
+        // }
 
-        // 規定回数に達したら終了処理
-        if (shootCount >= maxShootCount)
-        {
-            shootCount = 0;
-            Debug.Log("🏁 AttackEnd 発火 → shootReadyへ");
-            _anim.SetTrigger("AttackEnd");
-            _stateMachine.ChangeState(Triggers.shoot); 
-        }
+        // // 規定回数に達したら終了処理
+        // if (shootCount >= maxShootCount)
+        // {
+        //     shootCount = 0;
+        //     Debug.Log("🏁 AttackEnd 発火 → shootReadyへ");
+        //     _anim.SetTrigger("AttackEnd");
+        //     _stateMachine.ChangeState(Triggers.shoot); 
+        // }
     }
 }
 else

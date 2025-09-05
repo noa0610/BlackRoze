@@ -29,6 +29,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Enter(IState previousIState, UnitBase parent)
         {
+            base.Enter(previousIState, parent);
             Debug .Log("Enter of SuicideBombing");
             _ = Explode(parent);
         }

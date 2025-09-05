@@ -103,7 +103,7 @@ namespace BlackRose.Core.Models.Units
             var armpunch = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.armpunch, armpunch);
             // 拡散ビーム砲
-            var diffusebeamgun = new Models.States.Attack(_rb, firePoints, bulletPrefab)
+            var diffusebeamgun = new Models.States.LaserShot(_rb, firePoints, bulletPrefab)
             .SetAnimeTrigger("diffusebeamgun")
             .SetCancelableProgress(0);
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);

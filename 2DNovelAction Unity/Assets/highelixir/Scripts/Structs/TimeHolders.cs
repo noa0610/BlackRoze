@@ -10,35 +10,60 @@ namespace HighElixir
     [Serializable]
     public sealed class TimeHolders
     {
+        public enum CountType
+        {
+            Time, // 時間でカウント
+            Tick, // 更新回数でカウント
+        }
         // 内部タイマー。
         [Serializable]
         private sealed class Timer
         {
-            public float Max { get; }
+            public bool IsEnable { get; private set; }
+            public float Max { get; private set; }
             public float Remaining { get; private set; }
+            public CountType Type { get; }
             public event Action Finished; // null 許容
             public bool Running => Remaining > 0f;
 
-            public Timer(float duration, bool start, Action onFinished)
+            // オプション Maxが無視される
+            public bool IsCountUp { get; set; }
+
+            public Timer(float duration, CountType type, bool start, Action onFinished, bool isCountup = false)
             {
                 if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
-                Max = duration;
-                Remaining = start ? duration : 0f;
+                Max = IsCountUp ? duration : float.MaxValue;
+                Type = type;
+                IsCountUp = isCountup;
                 if (onFinished != null) Finished += onFinished;
+                Reset();
+                if (start)
+                    Start();
             }
 
-            public void Reset(bool start = true) => Remaining = start ? Max : 0f;
+            public void Reset()
+            {
+                IsEnable = false;
+                Remaining = IsCountUp ? 0f : Max;
+            }
 
-            public void Start() => Remaining = Max;
+            public void Start()
+            {
+                IsEnable = true;
+            }
 
-            public void Stop() => Remaining = 0f;
+            public void Stop()
+            {
+                IsEnable = false;
+            }
 
             public void Tick(float dt)
             {
+                if (Type == CountType.Tick) dt = 1f;
                 if (Remaining <= 0f) return;
                 if (dt <= 0f) return; // 負やゼロを無視
 
-                var next = Remaining - dt;
+                var next = Remaining + (IsCountUp ? dt : -dt);
                 if (next > 0f)
                 {
                     Remaining = next;
@@ -47,10 +72,23 @@ namespace HighElixir
 
                 // ちょうど/下回った → 0 に丸め、完了を 1 回だけ通知
                 Remaining = 0f;
-                Finished?.Invoke();
+                if (!IsCountUp)
+                    Finished?.Invoke();
             }
 
-            public float NormalizedElapsed => Max <= 0f ? 1f : 1f - Math.Clamp(Remaining / Max, 0f, 1f);
+            public void UpdateMaxTime(float newMax)
+            {
+                if (newMax < 0f) throw new ArgumentOutOfRangeException(nameof(newMax));
+                Max = newMax;
+                if (Remaining > Max) Remaining = Max;
+            }
+            public void UpdataRemaining(float newRemaining)
+            {
+                if (newRemaining < 0f) throw new ArgumentOutOfRangeException(nameof(newRemaining));
+                if (newRemaining > Max) newRemaining = Max;
+                Remaining = newRemaining;
+            }
+            public float NormalizedElapsed => !IsCountUp ? (Max <= 0f ? 1f : 1f - Math.Clamp(Remaining / Max, 0f, 1f)) : 1f;
         }
 
         // エディタ監視用のスナップショット。
@@ -60,11 +98,12 @@ namespace HighElixir
             public readonly float Max;
             public readonly float Remaining;
             public readonly float NormalizedElapsed;
+            public readonly bool IsCountUp;
             public readonly bool Running;
 
-            public TimerSnapshot(string id, float max, float remaining, float normalized, bool running)
+            public TimerSnapshot(string id, float max, float remaining, float normalized, bool running, bool isCountup)
             {
-                Id = id; Max = max; Remaining = remaining; NormalizedElapsed = normalized; Running = running;
+                Id = id; Max = max; Remaining = remaining; NormalizedElapsed = normalized; Running = running; IsCountUp = isCountup;
             }
         }
         private readonly Dictionary<string, Timer> _timers = new(StringComparer.Ordinal);
@@ -72,35 +111,48 @@ namespace HighElixir
         /// <summary>
         /// 新規登録。既に同じ id があれば false。
         /// </summary>
-        public bool Register(string id, float duration, bool start = false, Action onFinished = null)
+        public bool Register(string id, float duration, CountType countType = CountType.Time, bool start = false, Action onFinished = null, bool isCountup = false)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
             if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
 
-            var timer = new Timer(duration, start, onFinished);
+            var timer = new Timer(duration, countType, start, onFinished, isCountup);
             return _timers.TryAdd(id, timer);
         }
 
+        public bool Contains(string id) => _timers.ContainsKey(id);
+
+        public void ChangeDuration(string id, float newDuration)
+        {
+            if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
+            if (newDuration < 0f) throw new ArgumentOutOfRangeException(nameof(newDuration));
+            if (_timers.TryGetValue(id, out var t))
+            {
+                t.UpdateMaxTime(newDuration);
+                if (t.Remaining > newDuration)
+                    t.UpdataRemaining(newDuration);
+            }
+        }
         /// <summary>
         /// 登録解除。存在しなければ false。
         /// </summary>
         public bool Unregister(string id) => _timers.Remove(id);
 
         /// <summary>
-        /// Max にリセット。start=false で 0 に戻す。
+        /// Max にリセット。IsCountupがtrueの場合、0fに
         /// </summary>
-        public bool Reset(string id, bool start = true)
+        public bool Reset(string id)
         {
             if (_timers.TryGetValue(id, out var t))
             {
-                t.Reset(start);
+                t.Reset();
                 return true;
             }
             return false;
         }
 
         /// <summary>
-        /// 進行開始（Max にセット）。
+        /// 進行開始。
         /// </summary>
         public bool Start(string id)
         {
@@ -113,7 +165,7 @@ namespace HighElixir
         }
 
         /// <summary>
-        /// 停止（残りを 0）。
+        /// 停止。
         /// </summary>
         public bool Stop(string id)
         {
@@ -130,7 +182,7 @@ namespace HighElixir
         /// </summary>
         public bool IsFinished(string id)
         {
-            return _timers.TryGetValue(id, out var t) && t.Remaining <= 0f;
+            return _timers.TryGetValue(id, out var t) && !t.IsCountUp && t.Remaining <= 0f;
         }
 
         /// <summary>
@@ -215,7 +267,8 @@ namespace HighElixir
                         t.Max,
                         t.Remaining,
                         t.NormalizedElapsed,
-                        t.Running
+                        t.Running,
+                        t.IsCountUp
                     );
                 }
             }

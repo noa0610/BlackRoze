@@ -10,10 +10,13 @@ namespace BlackRose.Core.Models.States
     {
         [SerializeField] protected Rigidbody2D _rb;
         [SerializeField] protected bool _hasLeapt = false;
+        [SerializeField] protected int _enableJumped = -1;
         [SerializeField] protected float _cutMultiplier = 0.5f;  // 上昇中にカットする倍率
         [SerializeField] protected float _accel = 60f;           // 横方向の加速（m/s^2 想定）
         [SerializeField] protected float _airFriction = 30f;   // 入力がないときの減速
 
+        // 連続ジャンプ回数
+        protected int _jumpCount = 0;
         public bool HadLeapt
         {
             get => _hasLeapt;
@@ -23,6 +26,14 @@ namespace BlackRose.Core.Models.States
         public Jump(Rigidbody2D rb) { _rb = rb; }
         public Jump() { }
 
+        public override bool AllowEnter(IState previousState, UnitBase parent)
+        {
+            if (base.AllowEnter(previousState, parent))
+            {
+                return !_hasLeapt;
+            }
+            return false;
+        }
         public override void Enter(IState previousIState, UnitBase parent)
         {
             if (_rb == null)
@@ -31,15 +42,15 @@ namespace BlackRose.Core.Models.States
                 return;
             }
 
-            if (!_hasLeapt)
-            {
-                if (!parent.StatusManager.TryReadValue(Status.JumpPower, out var amount))
-                    Debug.LogError("JumpPowerが登録されてないよ！");
+            if (!parent.StatusManager.TryReadValue(Status.JumpPower, out var amount))
+                Debug.LogError("JumpPowerが登録されてないよ！");
 
-                // 一度だけ上方向にインパルス
-                _rb.AddForce(Vector2.up * amount, ForceMode2D.Impulse);
+            // 一度だけ上方向にインパルス
+            _rb.AddForce(Vector2.up * amount, ForceMode2D.Impulse);
+            if (_enableJumped == -1 || _jumpCount >= _enableJumped)
                 _hasLeapt = true;
-            }
+            else if (_enableJumped != -1)
+                _jumpCount++;
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
@@ -56,8 +67,8 @@ namespace BlackRose.Core.Models.States
             float targetVx = desiredDir * maxSpeed;
 
             // 目標Vxへ滑らかに近づける
-            float newVx = absInput > 0.0001f ? 
-                Mathf.MoveTowards(_rb.velocity.x, targetVx, _accel * deltaTime) : 
+            float newVx = absInput > 0.0001f ?
+                Mathf.MoveTowards(_rb.velocity.x, targetVx, _accel * deltaTime) :
                 Mathf.MoveTowards(_rb.velocity.x, 0f, _airFriction * deltaTime);
 
             // 縦速度は保持、横だけ更新
@@ -74,6 +85,15 @@ namespace BlackRose.Core.Models.States
         }
 
         // どこか（例：着地イベントやExit）で呼んでリセットする想定
-        public void ResetLeaptFlag() => _hasLeapt = false;
+        public void ResetLeaptFlag()
+        {
+            _hasLeapt = false;
+            _jumpCount = 0;
+        }
+
+        public void SetEnableJumped(int count)
+        {
+            _enableJumped = count;
+        }
     }
 }

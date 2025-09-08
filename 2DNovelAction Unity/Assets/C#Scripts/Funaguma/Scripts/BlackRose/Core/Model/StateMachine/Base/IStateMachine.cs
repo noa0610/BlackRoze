@@ -16,17 +16,25 @@ namespace BlackRose.Core.Models.States
         /// <summary>現在のステート（キーとインスタンス）</summary>
         (string key, StateComp state) CurrentState { get; }
 
+        // オプション
+
+        /// <summary>
+        /// もし現在のレイヤーで指定された遷移先が見つからなかった場合、
+        /// デフォルトレイヤーから探すかどうか (デフォルトはtrue)
+        /// </summary>
+        bool UseDefaultLayerIfMissingTransmission { get; set; }
+
         /// <summary>
         /// デフォルトの遷移表。（fromState, trigger）→ toState  
         /// ※モード依存の定義が無い場合のフォールバックとして利用される
         /// </summary>
-        Dictionary<(string state, string trigger), string> TransmissionGroup { get; }
+        Dictionary<(string state, string trigger), (string state, string animetrigger)> TransmissionGroup { get; }
 
         /// <summary>
         /// モード依存の遷移表。（layer, fromState, trigger）→ toState  
         /// ※定義がある場合は必ずこちらが優先される
         /// </summary>
-        Dictionary<(string layer, string state, string trigger), string> LayerTransmissionGroup { get; }
+        Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransmissionGroup { get; }
 
         /// <summary>現在モード（必要なら実装側で enum ラップ可）</summary>
         string CurrentLayer { get; }
@@ -68,20 +76,20 @@ namespace BlackRose.Core.Models.States
         /// デフォルト遷移の追加。（fromState, trigger）→ toState  
         /// モード定義が無ければこのルールが使われる
         /// </summary>
-        void AddTransition(string fromState, string trigger, string toState);
+        void AddTransition(string fromState, string trigger, string toState, string animationTrigger = "");
 
         /// <summary>
         /// Layer依存遷移の追加。（mode, fromState, trigger）→ toState  
         /// 同一組み合わせがある場合はこちらが常に優先される
         /// </summary>
-        void AddTransitionForLayer(string layer, string fromState, string trigger, string toState);
+        void AddTransitionForLayer(string layer, string fromState, string trigger, string toState, string animationTrigger = "");
 
         /// <summary>Enum対応の糖衣：デフォルト遷移</summary>
-        void AddTransition<TState, TTrig>(TState fromState, TTrig trigger, string toState)
+        void AddTransition<TState, TTrig>(TState fromState, TTrig trigger, string toState, string animationTrigger = "")
             where TState : Enum where TTrig : Enum;
 
         /// <summary>Enum対応の糖衣：Layer依存遷移</summary>
-        void AddTransitionForLayer<TLayer, TState, TTrig>(TLayer mode, TState fromState, TTrig trigger, string toState)
+        void AddTransitionForLayer<TLayer, TState, TTrig>(TLayer mode, TState fromState, TTrig trigger, string toState, string animationTrigger = "")
             where TLayer : Enum where TState : Enum where TTrig : Enum;
 
         /// <summary>現在Layerを設定</summary>

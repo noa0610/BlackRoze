@@ -1,12 +1,13 @@
 ﻿using BlackRose.Core.Models.EffectManagers;
 using BlackRose.Core.Models.States;
+using BlackRose.Core.Models.States.Animators;
 using System;
 using UniRx;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
-    [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
+    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Animator)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IPausable
     {
         // === Reference ===
@@ -15,7 +16,7 @@ namespace BlackRose.Core.Models.Units
         public StatusEffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected Animator _animator;
+        protected Animator _animator;
         [Header("StateMachine")]
         protected IStateMachine _stateMachine; // ステートマシン本体
         [SerializeField] public static bool _isPlaying = true;
@@ -96,8 +97,9 @@ namespace BlackRose.Core.Models.Units
         protected void Awake()
         {
             BeforeAwake();
+            _animator = GetComponent<Animator>();
             UnitManager.instance.AddUnit(this);
-            _stateMachine = new StateMachine(this);
+            _stateMachine = new StateMachine(this, new AnimatorAnimationDriver(_animator));
             statusManager = new StatusManager();
             effectManager = new(this);
 

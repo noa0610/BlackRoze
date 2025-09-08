@@ -2,6 +2,7 @@
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
+using Fungus;
 using HighElixir;
 using HighElixir.UI;
 using System.Collections.Generic;
@@ -18,14 +19,14 @@ namespace BlackRose.Core.Models.Units
         typeof(DynamicAfterImageEffect2DPlayer))]
     public class AIController : GroundedUnit
     {
-        public enum Mode { Normal, Right, Heavy }
+        public enum Mode { Normal, Light, Heavy }
 
         // 各モードに共通するステート
-        public enum AIStates { Idle, Move, Dash, SpecialAttack }
+        public enum AIStates { Idle, Move, Jump, Fall, Shoot, HalfCharge, FullCharge, Skill, Dash, SpecialAttac, Deadk }
         public enum AITriggers
         {
-            moveInput, cancelMove, dashInput,
-            shootComplete, watingTimeHasElapsed,
+            moveInput, cancelMove, dashInput, shootInput, jumpInput,
+            shootComplete, watingTimeHasElapsed, skillInput,
             landing, falling, stun, recoverFromStun,
             modeChanged
         }
@@ -55,17 +56,23 @@ namespace BlackRose.Core.Models.Units
         [Header("Mode Status")]
         [SerializeField] private UnitStatusData _rightStatus;
         [SerializeField] private UnitStatusData _heavyStatus;
-        [SerializeField] private NormalMode _normalMode;   // ScriptableObject なら Serialize でOK
-        private IAIState _rightMode;
-        private IAIState _heavyMode;
-        private IAIState _currentMode;
+        [SerializeField] private LighrMode _normalMode;   // ScriptableObject なら Serialize でOK
+        [SerializeField] private LightMode _lightMode;
+        [SerializeField] private HeavyMode _heavyMode;
         private Mode _currentEnumMode = Mode.Normal;       // 実体保持（任意）
 
 
         public TimeHolders TimeHolders => _timeHolders;
-
+        public AIModeBase CurrentMode => _currentEnumMode switch
+        {
+            Mode.Normal => _normalMode,
+            Mode.Heavy => _heavyMode,
+            Mode.Light => _lightMode,
+            _ => _normalMode
+        };
+        public bool CanJump => !TimeHolders.IsFinished(nameof(_coyoteTime));
         // 外部からのモード切替 API
-        public void SwitchModeRight() => ChangeMode(Mode.Right);
+        public void SwitchModeLight() => ChangeMode(Mode.Light);
         public void SwitchModeHeavy() => ChangeMode(Mode.Heavy);
         public void SwitchModeNormal() => ChangeMode(Mode.Normal);
 
@@ -73,7 +80,15 @@ namespace BlackRose.Core.Models.Units
         // === Input Action ===
         private void OnJump(InputValue value)
         {
-            _currentMode?.OnJump(value);
+            Debug.Log($"OnJump: CanJump={CanJump}, isPressed={value.isPressed}");
+            if (CanJump)
+            {
+                CurrentMode.OnJump(value);
+            }
+            if (!value.isPressed)
+            {
+                CurrentMode.CanceldJump(value);
+            }
         }
 
         private void OnDash(InputValue value)
@@ -91,6 +106,7 @@ namespace BlackRose.Core.Models.Units
         {
             var d = value.Get<Vector2>();
             Direction = d.normalized;
+            CurrentMode.OnInputMove(Direction);
             if (d == Vector2.zero)
             {
                 _stateMachine.ChangeState(AITriggers.cancelMove);
@@ -105,11 +121,11 @@ namespace BlackRose.Core.Models.Units
             if (value.isPressed)
             {
                 Debug.Log("AI Attack Pressed");
-                _currentMode?.OnShoot(value);
+                CurrentMode.OnShoot(value);
             }
             else
             {
-                _currentMode?.OnReleaseShoot(value);
+                CurrentMode.OnReleaseShoot(value);
             }
         }
 
@@ -143,13 +159,7 @@ namespace BlackRose.Core.Models.Units
         private void ChangeMode(Mode mode)
         {
             // ★ ステータス反映
-            var status = mode switch
-            {
-                Mode.Normal => _normalMode.StatusData,
-                Mode.Right => _rightStatus,
-                Mode.Heavy => _heavyStatus,
-                _ => _normalMode.StatusData
-            };
+            var status = CurrentMode.StatusData;
             statusManager.GetStatus(Status.MaxHP).SetDefault(status.maxHp);
             statusManager.GetStatus(Status.Speed).SetDefault(status.speed);
             statusManager.GetStatus(Status.SpeedInAir).SetDefault(status.speedInAir);
@@ -158,14 +168,6 @@ namespace BlackRose.Core.Models.Units
             statusManager.GetStatus(Status.Power).SetDefault(status.power);
             statusManager.GetStatus(Status.DamageRatio).SetDefault(status.damageTakeScale);
 
-            // ★ モードの実体切替
-            _currentMode = mode switch
-            {
-                Mode.Normal => _normalMode,
-                Mode.Right => _rightMode,
-                Mode.Heavy => _heavyMode,
-                _ => _normalMode
-            };
             _currentEnumMode = mode;
 
             // ★ ステートマシンへモードを通知（最重要！）
@@ -198,14 +200,14 @@ namespace BlackRose.Core.Models.Units
 
             // ★ 例：モード非依存の共通フォールバック（必要に応じて）
             _stateMachine.AddTransmissions(AIStates.Idle,
-                (AITriggers.moveInput, AIStates.Move),
-                (AITriggers.dashInput, AIStates.Dash));
+                (AITriggers.moveInput, AIStates.Move, ""),
+                (AITriggers.dashInput, AIStates.Dash, ""));
             _stateMachine.AddTransmissions(AIStates.Move,
-                (AITriggers.cancelMove, AIStates.Idle),
-                (AITriggers.dashInput, AIStates.Dash));
+                (AITriggers.cancelMove, AIStates.Idle, ""),
+                (AITriggers.dashInput, AIStates.Dash, ""));
             _stateMachine.AddState(AIStates.Idle, new Idle());
             _stateMachine.AddState(AIStates.Move, new MoveOnGround(_rigidbody));
-            _stateMachine.AddState(AIStates.Dash, new DashOnGround(_rigidbody, this).SetCancelableProgress(0.5f));
+            _stateMachine.AddState(AIStates.Dash, new DashOnGround(_rigidbody, this));
         }
         protected override void Start()
         {

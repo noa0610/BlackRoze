@@ -38,8 +38,8 @@ namespace BlackRose.Core.Models.Units
             // States.idle
             var idleTrigger = new[]
             {
-                (Triggers.FindPlayer, States.inVigilance),
-                (Triggers.Died, States.dead)
+                (Triggers.FindPlayer, States.inVigilance, "Contact"),
+                (Triggers.Died, States.dead, "")
             };
 
             // States.inVigilance

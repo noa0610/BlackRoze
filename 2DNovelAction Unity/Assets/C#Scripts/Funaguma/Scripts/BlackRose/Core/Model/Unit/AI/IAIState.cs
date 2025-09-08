@@ -6,7 +6,6 @@ namespace BlackRose.Core.Models.Units
     public interface IAIState
     {
         UnitStatusData StatusData { get; }
-        bool CanJump { get; }
         void Register();
         void Bind(AIController parent);
 
@@ -17,7 +16,12 @@ namespace BlackRose.Core.Models.Units
         void OnShoot(InputValue value);
         void OnReleaseShoot(InputValue value);
         void OnJump(InputValue value);
-        void OnDash(InputValue value);
+        void CanceldJump(InputValue value);
         void OnSkill(InputValue value);
+
+        // Unity Lifecycle
+        void Update(float deltaTime);
+        void FixedUpdate(float deltaTime);
+
     }
 }

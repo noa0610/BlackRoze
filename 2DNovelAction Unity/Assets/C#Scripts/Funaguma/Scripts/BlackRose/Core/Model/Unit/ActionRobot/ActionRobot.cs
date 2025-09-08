@@ -52,7 +52,7 @@ namespace BlackRose.Core.Models.Units
         protected override void OnGrounded()
         {
             _timeHolders.Reset(nameof(_coyoteTime));
-            _jump.HadLeapt = false;
+            _jump.ResetLeaptFlag();
             _stateMachine.ChangeState(Triggers.landing);
         }
         protected override void OnFall()

@@ -38,12 +38,6 @@ namespace BlackRose.Core.Models.Units
             _parent.StateMachine.AddState(LightStates.L_Skill, _warp);
         }
 
-        // Input Action
-        public override void OnShoot(InputValue value)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override void OnSkill(InputValue value)
         {
             if (value.isPressed)
@@ -57,11 +51,6 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        public override void OnReleaseShoot(InputValue value)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override void OnInputMove(Vector2 dir)
         {
             WarpPreDir = dir;
@@ -70,6 +59,21 @@ namespace BlackRose.Core.Models.Units
         public override void FixedUpdate(float deltaTime)
         {
             _preWarpDemo.transform.position = _parent.transform.position + (Vector3)WarpPreDir * _warpRange;
+        }
+
+        public override void InvokeShoot()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void InvokeHalfShoot()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void InvokeFullShoot()
+        {
+            throw new NotImplementedException();
         }
     }
 }

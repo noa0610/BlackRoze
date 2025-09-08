@@ -56,7 +56,7 @@ namespace BlackRose.Core.Models.Units
         [Header("Mode Status")]
         [SerializeField] private UnitStatusData _rightStatus;
         [SerializeField] private UnitStatusData _heavyStatus;
-        [SerializeField] private LighrMode _normalMode;   // ScriptableObject なら Serialize でOK
+        [SerializeField] private NormalMode _normalMode;   // ScriptableObject なら Serialize でOK
         [SerializeField] private LightMode _lightMode;
         [SerializeField] private HeavyMode _heavyMode;
         private Mode _currentEnumMode = Mode.Normal;       // 実体保持（任意）

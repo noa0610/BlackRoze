@@ -7,7 +7,7 @@ using AIStates = BlackRose.Core.Models.Units.AIController.AIStates;
 namespace BlackRose.Core.Models.Units
 {
     [Serializable]
-    public class LighrMode : AIModeBase
+    public class NormalMode : AIModeBase
     {
         public override void Register()
         {
@@ -23,19 +23,25 @@ namespace BlackRose.Core.Models.Units
         }
 
         // Input Action
-        public override void OnShoot(InputValue value)
-        {
-            throw new System.NotImplementedException();
-        }
 
         public override void OnSkill(InputValue value)
         {
             throw new System.NotImplementedException();
         }
 
-        public override void OnReleaseShoot(InputValue value)
+        public override void InvokeShoot()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public override void InvokeHalfShoot()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void InvokeFullShoot()
+        {
+            throw new NotImplementedException();
         }
     }
 }

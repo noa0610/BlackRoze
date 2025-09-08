@@ -5,7 +5,6 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using HighElixir;
 
-
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
@@ -42,6 +41,7 @@ namespace BlackRose.Core.Models.Units
         }
         [SerializeField] private List<GameObject> _junpPositions;
         [SerializeField] private GameObject _centerPositions;
+        [SerializeField] private GameObject _YPositions;
 
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private Transform playerTransform;
@@ -51,6 +51,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private Transform[] _firePoints;
         [SerializeField] private GameObject _bulletPrefab;
         [SerializeField] private Rigidbody2D _RB2;
+        [SerializeField] private FreeMove _freeMove;
+
         protected override void RegisterStats()
         {
             // トランスミッショングループを作成
@@ -62,8 +64,8 @@ namespace BlackRose.Core.Models.Units
             };
             var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー  
             {
-                (Triggers.Attack1, States.lasershot),              // 攻撃１でレーザー攻撃へ
-                (Triggers.Attack2, States.beamswordattack),   // 攻撃２でビームソード接近へ
+                (Triggers.Attack2, States.lasershot),              // 攻撃１でレーザー攻撃へ
+                (Triggers.Attack1, States.beamswordattack),   // 攻撃２でビームソード接近へ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
             };
@@ -121,7 +123,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.dead, died);
             // ジャンプ
             var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
-            var fixedpositionjump = new PositionJump(jumpPositions, 1.0f)
+            var fixedpositionjump = new PositionJump(jumpPositions, 0.1f)
                 .SetAnimeTrigger("fixedpositionjump")
                 .SetCancelableProgress(0);
             _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
@@ -133,9 +135,8 @@ namespace BlackRose.Core.Models.Units
             var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab).SetAnimeTrigger("lasershot").SetCancelableProgress(0);
             _stateMachine.AddState(States.lasershot, lasershot);
             // ビームソード攻撃
-            var beamswordattack = new Idle().SetAnimeTrigger("beamswordattack").SetCancelableProgress(0);
+            var beamswordattack = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
-            // スタン
             var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
             _stateMachine.AddState(States.stun, stun);
             // ショックウェーブ
@@ -160,11 +161,27 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
+
+            // beamswordattackステート中のみ判定
+            if (IsMatchingState(States.beamswordattack) && _player != null && _YPositions != null)
+            {
+                // プレイヤーが_YPositionsのy座標を通過したら止める
+                float targetX = _YPositions.transform.position.x;
+                float playerX = _player.Transform.position.x;
+
+                // 例えば「近い」判定（±0.5以内など）
+                if (Mathf.Abs(playerX - targetX) < 0.5f)
+                {
+                    Debug.Log("プレイヤーがY座標を通過しました");
+                    // ステート遷移（例：ジャンプや攻撃待機など）
+                    _stateMachine.ChangeState(Triggers.Attack2end);
+                }
+            }
+
+            // 見た目の向き変更など既存処理
             if (_player != null)
             {
                 Direction = (_player.Transform.position - transform.position).normalized;
-
-                // 見た目の向きを変更（左右反転）
                 if (Direction.x != 0)
                 {
                     var scale = transform.localScale;
@@ -216,6 +233,8 @@ namespace BlackRose.Core.Models.Units
 
         // }
 
+
     }
+
 }
 

@@ -385,7 +385,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 10
+  m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -466,6 +466,7 @@ Transform:
   - {fileID: 1714022059}
   - {fileID: 1013090594}
   - {fileID: 239979223}
+  - {fileID: 1886157187}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &77449239
@@ -495,6 +496,8 @@ MonoBehaviour:
   - {fileID: 1714022059}
   - {fileID: 1013090594}
   - {fileID: 239979223}
+  _swordfirePoints:
+  - {fileID: 1886157187}
   _bulletPrefab: {fileID: 424759803315516098, guid: 7409ed57efa165d438b8781dbc71d20b, type: 3}
   _RB2: {fileID: 6191470538540050238, guid: 7409ed57efa165d438b8781dbc71d20b, type: 3}
   _freeMove:
@@ -503,9 +506,13 @@ MonoBehaviour:
     cancelableProgress: 0
     _rigidbody2D: {fileID: 77449233}
     _isStopInExit: 0
-    _accel: 1
-    _decel: 5
+    _accel: 10
+    _decel: 10
     _deadZone: 0.0522
+  _beamswordBulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
+  _beamswordTargetLayer:
+    serializedVersion: 2
+    m_Bits: 1024
 --- !u!114 &77449240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2821,7 +2828,7 @@ Transform:
   m_GameObject: {fileID: 1714022058}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.36, y: 0.63, z: 0}
+  m_LocalPosition: {x: 3.12, y: 0.63, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3038,6 +3045,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 397aef63463fa204bafa283970f85f06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1886157186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1886157187}
+  m_Layer: 0
+  m_Name: sword
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1886157187
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886157186}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.48, y: 3.18, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 77449238}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1942615497
 GameObject:
   m_ObjectHideFlags: 0

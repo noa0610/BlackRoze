@@ -26,7 +26,7 @@ namespace BlackRose.Core.Models.Units
         public enum AITriggers
         {
             moveInput, cancelMove, dashInput, shootInput, jumpInput,
-            shootComplete, watingTimeHasElapsed, skillInput,
+            shootComplete, watingTimeHasElapsed, skillInput, skillFinished,
             landing, falling, stun, recoverFromStun,
             modeChanged
         }
@@ -53,9 +53,7 @@ namespace BlackRose.Core.Models.Units
         private Vector2 _shootDirection = Vector2.right;
 
         // ===== モード関連 =====
-        [Header("Mode Status")]
-        [SerializeField] private UnitStatusData _rightStatus;
-        [SerializeField] private UnitStatusData _heavyStatus;
+        [Header("Mode")]
         [SerializeField] private NormalMode _normalMode;   // ScriptableObject なら Serialize でOK
         [SerializeField] private LightMode _lightMode;
         [SerializeField] private HeavyMode _heavyMode;
@@ -129,6 +127,11 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        private void OnSkill(InputValue value)
+        {
+            Debug.Log("Skill");
+            CurrentMode.OnSkill(value);
+        }
         // === GroundedUnit の抽象 ===
         protected override void OnGrounded()
         {
@@ -198,14 +201,17 @@ namespace BlackRose.Core.Models.Units
             //_rightMode.Register();
             //_heavyMode.Register();
 
-            // ★ 例：モード非依存の共通フォールバック（必要に応じて）
+            // モード非依存の共通フォールバック
             _stateMachine.AddTransmissions(AIStates.Idle,
                 (AITriggers.moveInput, AIStates.Move, ""),
-                (AITriggers.dashInput, AIStates.Dash, ""));
+                (AITriggers.dashInput, AIStates.Dash, ""),
+                (AITriggers.falling, AIStates.Fall, ""));
             _stateMachine.AddTransmissions(AIStates.Move,
                 (AITriggers.cancelMove, AIStates.Idle, ""),
                 (AITriggers.dashInput, AIStates.Dash, ""));
+
             _stateMachine.AddState(AIStates.Idle, new Idle());
+            _stateMachine.AddState(AIStates.Fall, new Idle());
             _stateMachine.AddState(AIStates.Move, new MoveOnGround(_rigidbody));
             _stateMachine.AddState(AIStates.Dash, new DashOnGround(_rigidbody, this));
         }
@@ -223,6 +229,10 @@ namespace BlackRose.Core.Models.Units
             this.UpdateAsObservable()
                 .Where(_ => _isPlaying)
                 .Subscribe(_ => _timeHolders.Update(Time.deltaTime))
+                .AddTo(this);
+            this.FixedUpdateAsObservable()
+                .Where(_ => _isPlaying)
+                .Subscribe(_ => CurrentMode?.FixedUpdate(Time.fixedDeltaTime))
                 .AddTo(this);
         }
     }

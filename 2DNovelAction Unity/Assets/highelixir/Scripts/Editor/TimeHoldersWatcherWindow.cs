@@ -184,7 +184,7 @@ namespace HighElixir.Editor
                 {
                     if (GUILayout.Button("Start", GUILayout.Width(60))) owner.Timers.Start(s.Id);
                     if (GUILayout.Button("Stop", GUILayout.Width(60))) owner.Timers.Stop(s.Id);
-                    if (GUILayout.Button("Reset", GUILayout.Width(60))) owner.Timers.Reset(s.Id, start: true);
+                    if (GUILayout.Button("Reset", GUILayout.Width(60))) owner.Timers.Reset(s.Id);
                     GUILayout.FlexibleSpace();
                 }
             }

@@ -25,6 +25,7 @@ namespace BlackRose.Core.Models.Units
         // エディタからの監視用
         [Header("Debug")]
         [SerializeField] private string _currentState;
+        [SerializeField] private string _currentMode;
         [SerializeField] private Vector2 _currentDirection;
 #endif
         public UnitStatusData UnitStatusData => _status;
@@ -134,6 +135,7 @@ namespace BlackRose.Core.Models.Units
             AfterUpdate();
 # if UNITY_EDITOR
             _currentState = _stateMachine.CurrentState.key;
+            _currentMode = _stateMachine.CurrentLayer;
 #endif
         }
         // _isPlayingの判定の前に呼ばれる（常に呼ばれる）

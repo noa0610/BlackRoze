@@ -15,7 +15,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected string _timerName = "chargeTimer";
         protected AIController _parent;
         public UnitStatusData StatusData => _status;
-
+        public IStateMachine SM => _parent.StateMachine;
         public abstract void Register();
 
         // Grounded Event

@@ -1,6 +1,7 @@
 ﻿using BlackRose.Core.Models.States.Animators;
 using BlackRose.Core.Models.Units;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {

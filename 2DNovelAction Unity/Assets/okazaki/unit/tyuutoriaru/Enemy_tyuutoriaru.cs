@@ -56,6 +56,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private FreeMove _freeMove;
         [SerializeField] private BulletData _beamswordBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _beamswordTargetLayer; // 必要ならInspectorでセット
+        [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
+        [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
 
 
         protected override void RegisterStats()
@@ -69,8 +71,8 @@ namespace BlackRose.Core.Models.Units
             };
             var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー  
             {
-                (Triggers.Attack2, States.lasershot),              // 攻撃１でレーザー攻撃へ
-                (Triggers.Attack1, States.beamswordattackmove),   // 攻撃２でビームソード接近へ
+                (Triggers.Attack1, States.lasershot),              // 攻撃１でレーザー攻撃へ
+                (Triggers.Attack2, States.beamswordattackmove),   // 攻撃２でビームソード接近へ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
             };
@@ -88,7 +90,7 @@ namespace BlackRose.Core.Models.Units
             };
             var beamswordattackTrigger = new[]                     // ビームソード攻撃ステートのトリガー
             {
-                (Triggers.Attack2end, States.fixedpositionjump),                // 攻撃２終了でジャンプへ
+                (Triggers.Attack2end, States.attackidle),                // 攻撃２終了でジャンプへ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
             };
@@ -160,7 +162,11 @@ namespace BlackRose.Core.Models.Units
             var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
             _stateMachine.AddState(States.stun, stun);
             // ショックウェーブ
-            var shockwave = new Idle().SetAnimeTrigger("shockwave").SetCancelableProgress(0);
+            var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
+            .SetDirection(Vector2.left) // プレイヤー方向など、必要に応じてセット
+            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
+            .SetAnimeTrigger("beamswordattack")
+            .SetCancelableProgress(0);
             _stateMachine.AddState(States.shockwave, shockwave);
         }
         private SearchAssistanceMono _searchAssistance;
@@ -178,9 +184,31 @@ namespace BlackRose.Core.Models.Units
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
         }
+        private bool _halfHpTriggered = false;
+
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
+
+            // HPが半分以下になったら一度だけトリガー発火
+            if (!_halfHpTriggered)
+            {
+                var hpStatus = statusManager.GetStatus(Status.HP);
+                var maxHpStatus = statusManager.GetStatus(Status.MaxHP);
+
+                if (hpStatus != null && maxHpStatus != null)
+                {
+                    float hp = hpStatus.CurrentAmount;
+                    float maxHp = maxHpStatus.CurrentAmount;
+
+                    if (hp <= maxHp / 2f)
+                    {
+                        _halfHpTriggered = true;
+                        Debug.Log("HPが半分以下になりました");
+                        _stateMachine.ChangeState(Triggers.HalfHP);
+                    }
+                }
+            }
 
             // beamswordattackステート中のみ判定
             if (IsMatchingState(States.beamswordattackmove) && _player != null && _YPositions != null)

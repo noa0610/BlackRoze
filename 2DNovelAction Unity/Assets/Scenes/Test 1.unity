@@ -396,7 +396,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &77449237
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -506,11 +506,15 @@ MonoBehaviour:
     cancelableProgress: 0
     _rigidbody2D: {fileID: 77449233}
     _isStopInExit: 0
-    _accel: 10
+    _accel: 10.23
     _decel: 10
     _deadZone: 0.0522
   _beamswordBulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
   _beamswordTargetLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _shockwaveBulletData: {fileID: 11400000, guid: 016ab258fb45be846af73b346a27f7b6, type: 2}
+  _shockwaveTargetLayer:
     serializedVersion: 2
     m_Bits: 1024
 --- !u!114 &77449240
@@ -4012,6 +4016,10 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1286135387309870284, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
       propertyPath: _suicideBombing._damage
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 1286135387309870284, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
+      propertyPath: _suicideBombing._radius
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7298730748722147604, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}

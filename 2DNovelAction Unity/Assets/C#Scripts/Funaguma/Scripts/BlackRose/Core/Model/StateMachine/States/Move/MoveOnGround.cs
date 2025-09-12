@@ -14,12 +14,14 @@ namespace BlackRose.Core.Models.States
 
         public bool IsStopInExit { get => _isStopInExit; set => _isStopInExit = value; }
         public MoveOnGround(bool isStopInExit = false)
+            :base()
         {
             _isStopInExit = isStopInExit; // inExitStopの代わりに使用するフラグを設定
         }
 
         [Obsolete]
         public MoveOnGround(Rigidbody2D rigidbody2D, bool isStopInExit = false)
+            : base()
         {
             _isStopInExit = isStopInExit;
         }
@@ -31,6 +33,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             if (parent.StatusManager.TryGetStatus(Status.Speed, out var info))
                 Rigidbody2D.velocity = info.CurrentAmount * GetDirection(parent) + Vector2.up * Rigidbody2D.velocity.y;
         }

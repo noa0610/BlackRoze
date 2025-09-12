@@ -19,6 +19,7 @@ namespace BlackRose.Core.Models.States
 
         [Obsolete]
         public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent)
+            : base()
         {
             if (_afterImagePlayer == null)
                 _afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();
@@ -27,6 +28,7 @@ namespace BlackRose.Core.Models.States
                 _afterImagePlayer.SetActive(false);
         }
         public DashOnGround(GroundedUnit parent)
+            : base()
         {
             if (_afterImagePlayer == null)
                 _afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();
@@ -38,6 +40,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Enter(IState previousIState, UnitBase parent)
         {
+            base.Enter(previousIState, parent);
             // Null保険
             if (_afterImagePlayer != null)
                 _afterImagePlayer.SetActive(true);
@@ -45,6 +48,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             if (parent is not GroundedUnit grounded) return;
             if (!grounded.IsGrounded) return;
             if (Rigidbody2D == null) return;

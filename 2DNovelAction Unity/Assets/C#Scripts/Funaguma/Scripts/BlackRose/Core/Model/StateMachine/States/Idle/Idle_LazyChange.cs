@@ -29,29 +29,31 @@ namespace BlackRose.Core.Models.States
         private readonly string _lazyChange;
         private readonly float _lazyChangeTime;
         private readonly bool _isBlock;
-        private float _time;
         private bool _blocked;
 
         /// <param name="lazyChange">一定時間後に遷移するステート</param>
         /// <param name="lazyChangeTime">遷移の遅延</param>
         /// <param name="isBlock">遅延時間が終わるまで遷移を阻むかどうか</param>
         public Idle_LazyChange(string lazyChange, float lazyChangeTime, bool isBlock = false)
+            : base()
         {
             _lazyChange = lazyChange;
             _lazyChangeTime = lazyChangeTime;
             _isBlock = isBlock;
+            _timeHolders.Register(nameof(_lazyChangeTime), _lazyChangeTime);
         }
 
         public override void Enter(IState previousIState, UnitBase parent)
         {
+            base.Enter(previousIState, parent);
             _blocked = _isBlock;
-            _time = _lazyChangeTime;
+            _timeHolders.Start(nameof(_lazyChangeTime));
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
-            _time -= Time.deltaTime;
-            if (_time <= 0)
+            base.Stay(parent, deltaTime);
+            if (_timeHolders.IsFinished(nameof(_lazyChangeTime)))
             {
                 parent.StateMachine.LazyChange(_lazyChange);
                 _blocked = false;

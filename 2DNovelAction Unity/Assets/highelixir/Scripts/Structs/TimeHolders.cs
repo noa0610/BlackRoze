@@ -154,10 +154,11 @@ namespace HighElixir
         /// <summary>
         /// 進行開始。
         /// </summary>
-        public bool Start(string id)
+        public bool Start(string id, bool reset = true)
         {
             if (_timers.TryGetValue(id, out var t))
             {
+                if (reset) t.Reset();
                 t.Start();
                 return true;
             }

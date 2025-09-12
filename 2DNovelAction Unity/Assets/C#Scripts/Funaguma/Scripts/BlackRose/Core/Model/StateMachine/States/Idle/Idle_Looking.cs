@@ -15,7 +15,7 @@ namespace BlackRose.Core.Models.States
 
         public Vector2 Direction { get; private set; } = new(1, 0);
         /// <param name="target">回転させたいもの</param>
-        public Idle_Looking(GameObject target)
+        public Idle_Looking(GameObject target) : base()
         {
             _rotationTarget = target;
         }
@@ -27,6 +27,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             if (_rotationTarget == null || _target == null) return;
 
             var toTarget = _target.transform.position - _rotationTarget.transform.position;

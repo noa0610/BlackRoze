@@ -93,6 +93,11 @@ namespace BlackRose.Core.Models.States
                 _timeHolders = new();
                 _timeHolders.Register(nameof(_waitFrame), _waitFrame, TimeHolders.CountType.Tick);
             }
+            OnDeserialize();
+        }
+
+        public virtual void OnDeserialize()
+        {
         }
     }
 }

@@ -19,21 +19,25 @@ namespace BlackRose.Core.Models.States
 
         [Obsolete]
         public MoveOnAir(Rigidbody2D rigidbody2D, bool isStopInExit = false)
+            :base ()
         {
             _isStopInExit = isStopInExit; 
         }
-        public MoveOnAir(bool isStopInExit = false)
+        public MoveOnAir(bool isStopInExit = false) 
+            : base()
         {
             _isStopInExit = isStopInExit; 
         }
         public override void Exit(IState nextIState, UnitBase parent)
         {
+            base.Exit(nextIState, parent);
             if (_isStopInExit)
                 Rigidbody2D.velocity = Vector2.zero;
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             if (Rigidbody2D == null) return;
 
             // 横入力（例：-1〜1）と空中速度上限

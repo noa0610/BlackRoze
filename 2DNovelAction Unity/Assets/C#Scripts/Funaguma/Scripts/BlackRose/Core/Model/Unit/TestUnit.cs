@@ -28,6 +28,7 @@ namespace BlackRose.Core.Models.Units
         {
             StateMachine.SetStateDirect(States.Idle.ToString());
             transform.position = _basePos;
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
         }
         protected override void RegisterStats()
         {

@@ -21,18 +21,14 @@ namespace BlackRose.Core.Models.States
             get => _hasLeapt;
             set => _hasLeapt = value;
         }
-        public Jump() { }
 
         public override bool AllowEnter(IState previousState, UnitBase parent)
         {
-            if (base.AllowEnter(previousState, parent))
-            {
-                return !_hasLeapt;
-            }
-            return false;
+            return !_hasLeapt;
         }
         public override void Enter(IState previousIState, UnitBase parent)
         {
+            base.Enter(previousIState, parent);
             if (Rigidbody2D == null)
             {
                 Debug.LogError($"{nameof(Jump)}: Rigidbody2D not set.");
@@ -52,6 +48,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             if (Rigidbody2D == null) return;
 
             // 横入力（例：-1〜1）と空中速度上限
@@ -91,6 +88,11 @@ namespace BlackRose.Core.Models.States
         public void SetEnableJumped(int count)
         {
             _enableJumped = count;
+        }
+
+        public override void OnDeserialize()
+        {
+            HadLeapt = false;
         }
     }
 }

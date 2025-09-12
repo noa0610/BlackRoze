@@ -12,7 +12,6 @@ namespace BlackRose.Core.Models.States
         protected readonly float _lazyChangeTime;
         protected readonly bool _isBlock;
         protected UnityEvent _lazyEvent = new();
-        protected float _time;
         protected bool _blocked;
 
         public UnityEvent LazyEvent
@@ -23,22 +22,24 @@ namespace BlackRose.Core.Models.States
         /// <param name="lazyChange">一定時間後に遷移するステート</param>
         /// <param name="lazyChangeTime">遷移の遅延</param>
         /// <param name="isBlock">遅延時間が終わるまで遷移を阻むかどうか</param>
-        public Idle_LazyEvent(float lazyChangeTime, bool isBlock = false)
+        public Idle_LazyEvent(float lazyChangeTime, bool isBlock = false) : base()
         {
             _lazyChangeTime = lazyChangeTime;
             _isBlock = isBlock;
+            _timeHolders.Register(nameof(_lazyChangeTime), _lazyChangeTime);
         }
 
         public override void Enter(IState previousIState, UnitBase parent)
         {
+            base.Enter(previousIState, parent);
             _blocked = _isBlock;
-            _time = _lazyChangeTime;
+            _timeHolders.Start(nameof(_lazyChangeTime));
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
-            _time -= Time.deltaTime;
-            if (_time <= 0)
+            base.Stay(parent, deltaTime);
+            if (_timeHolders.IsFinished(nameof(_lazyChangeTime)))
             {
                 Debug.Log("Invoked Lazy Event");
                 _blocked = false;

@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
-using BlackRose.Core.Models.Units;
 
 namespace BlackRose.Core.Models.States
 {

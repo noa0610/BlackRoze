@@ -211,22 +211,17 @@ namespace BlackRose.Core.Models.Units
             // move
             _stateMachine.AddState(
                 StateKey.move,
-                new MoveOnGround(
-                    _rigidbody
-                )
+                new MoveOnGround()
             );
 
             // dash
             _stateMachine.AddState(
                 StateKey.dash,
-                new DashOnGround(
-                    _rigidbody,
-                    this
-                )
+                new DashOnGround(this)
             );
 
             // jump
-            _jump = new Jump(_rigidbody);
+            _jump = new Jump();
             _stateMachine.AddState(
                 StateKey.jump,
                 _jump
@@ -235,9 +230,7 @@ namespace BlackRose.Core.Models.Units
             // fall
             _stateMachine.AddState(
                 StateKey.fall,
-                new MoveOnAir(
-                    _rigidbody
-                )
+                new MoveOnAir()
                 .SetAccel(40f)
                 .SetAirFriction(-20f)
             );

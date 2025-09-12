@@ -212,8 +212,8 @@ namespace BlackRose.Core.Models.Units
 
             _stateMachine.AddState(AIStates.Idle, new Idle());
             _stateMachine.AddState(AIStates.Fall, new Idle());
-            _stateMachine.AddState(AIStates.Move, new MoveOnGround(_rigidbody));
-            _stateMachine.AddState(AIStates.Dash, new DashOnGround(_rigidbody, this));
+            _stateMachine.AddState(AIStates.Move, new MoveOnGround());
+            _stateMachine.AddState(AIStates.Dash, new DashOnGround(this));
         }
         protected override void Start()
         {

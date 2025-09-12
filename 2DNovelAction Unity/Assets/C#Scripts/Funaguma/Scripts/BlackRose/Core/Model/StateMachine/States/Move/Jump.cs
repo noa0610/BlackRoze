@@ -8,7 +8,6 @@ namespace BlackRose.Core.Models.States
     [Serializable]
     public class Jump : MovingStateBase
     {
-        [SerializeField] protected Rigidbody2D _rb;
         [SerializeField] protected bool _hasLeapt = false;
         [SerializeField] protected int _enableJumped = -1;
         [SerializeField] protected float _cutMultiplier = 0.5f;  // 上昇中にカットする倍率
@@ -22,8 +21,6 @@ namespace BlackRose.Core.Models.States
             get => _hasLeapt;
             set => _hasLeapt = value;
         }
-
-        public Jump(Rigidbody2D rb) { _rb = rb; }
         public Jump() { }
 
         public override bool AllowEnter(IState previousState, UnitBase parent)
@@ -36,7 +33,7 @@ namespace BlackRose.Core.Models.States
         }
         public override void Enter(IState previousIState, UnitBase parent)
         {
-            if (_rb == null)
+            if (Rigidbody2D == null)
             {
                 Debug.LogError($"{nameof(Jump)}: Rigidbody2D not set.");
                 return;
@@ -46,7 +43,7 @@ namespace BlackRose.Core.Models.States
                 Debug.LogError("JumpPowerが登録されてないよ！");
 
             // 一度だけ上方向にインパルス
-            _rb.AddForce(Vector2.up * amount, ForceMode2D.Impulse);
+            Rigidbody2D.AddForce(Vector2.up * amount, ForceMode2D.Impulse);
             if (_enableJumped == -1 || _jumpCount >= _enableJumped)
                 _hasLeapt = true;
             else if (_enableJumped != -1)
@@ -55,7 +52,7 @@ namespace BlackRose.Core.Models.States
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
-            if (_rb == null) return;
+            if (Rigidbody2D == null) return;
 
             // 横入力（例：-1〜1）と空中速度上限
             var input = parent.X(); // Vector2 なら x 成分を使う
@@ -68,20 +65,20 @@ namespace BlackRose.Core.Models.States
 
             // 目標Vxへ滑らかに近づける
             float newVx = absInput > 0.0001f ?
-                Mathf.MoveTowards(_rb.velocity.x, targetVx, _accel * deltaTime) :
-                Mathf.MoveTowards(_rb.velocity.x, 0f, _airFriction * deltaTime);
+                Mathf.MoveTowards(Rigidbody2D.velocity.x, targetVx, _accel * deltaTime) :
+                Mathf.MoveTowards(Rigidbody2D.velocity.x, 0f, _airFriction * deltaTime);
 
             // 縦速度は保持、横だけ更新
-            _rb.velocity = new Vector2(newVx, _rb.velocity.y);
+            Rigidbody2D.velocity = new Vector2(newVx, Rigidbody2D.velocity.y);
         }
 
         // いわゆる「ジャンプカット」：入力離しで上昇を弱める
         public void Cut()
         {
-            if (_rb == null) return;
+            if (Rigidbody2D == null) return;
 
-            if (_rb.velocity.y > 0f)
-                _rb.velocity = new Vector2(_rb.velocity.x, _rb.velocity.y * _cutMultiplier);
+            if (Rigidbody2D.velocity.y > 0f)
+                Rigidbody2D.velocity = new Vector2(Rigidbody2D.velocity.x, Rigidbody2D.velocity.y * _cutMultiplier);
         }
 
         // どこか（例：着地イベントやExit）で呼んでリセットする想定

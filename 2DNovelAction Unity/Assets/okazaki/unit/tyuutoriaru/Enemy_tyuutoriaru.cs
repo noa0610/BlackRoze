@@ -58,6 +58,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _beamswordTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
+        [SerializeField] private PositionJump _positionJump ;
 
 
         protected override void RegisterStats()
@@ -90,7 +91,7 @@ namespace BlackRose.Core.Models.Units
             };
             var beamswordattackTrigger = new[]                     // ビームソード攻撃ステートのトリガー
             {
-                (Triggers.Attack2end, States.attackidle),                // 攻撃２終了でジャンプへ
+                (Triggers.Attack2end, States.fixedpositionjump),                // 攻撃２終了でジャンプへ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
             };
@@ -137,7 +138,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.dead, died);
             // ジャンプ
             var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
-            var fixedpositionjump = new PositionJump(jumpPositions, 0.1f)
+            var fixedpositionjump = new PositionJump(jumpPositions, 10f)
                 .SetAnimeTrigger("fixedpositionjump")
                 .SetCancelableProgress(0);
             _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
@@ -157,16 +158,26 @@ namespace BlackRose.Core.Models.Units
             .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
             .SetAnimeTrigger("beamswordattack")
             .SetCancelableProgress(0);
+            beamswordattack.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack2end);
+            });
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
             // スタン
             var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
             _stateMachine.AddState(States.stun, stun);
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
-            .SetDirection(Vector2.left) // プレイヤー方向など、必要に応じてセット
+            .SetDirection(Vector2.left)
             .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
             .SetAnimeTrigger("beamswordattack")
             .SetCancelableProgress(0);
+
+            // 弾発射完了時にショックウェーブ終了トリガーを発火
+            shockwave.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Shockwaveend);
+            });
             _stateMachine.AddState(States.shockwave, shockwave);
         }
         private SearchAssistanceMono _searchAssistance;

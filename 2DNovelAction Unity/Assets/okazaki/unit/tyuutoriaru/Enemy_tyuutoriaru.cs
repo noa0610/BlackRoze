@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using HighElixir;
+
 
 namespace BlackRose.Core.Models.Units
 {
@@ -25,6 +27,7 @@ namespace BlackRose.Core.Models.Units
         private enum Triggers
         {
             None,
+            FoundPlayer,   // プレイヤーを発見した
             Attackcooldown, // 攻撃クールダウンした
             Attack1, // 攻撃１
             Attack2, // 攻撃２
@@ -43,12 +46,17 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private Transform playerTransform;
         private int currentAttack = 1; // 初期値は1（アタック1）
+        private UnitBase _player;
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        [SerializeField] private Transform[] _firePoints;
+        [SerializeField] private GameObject _bulletPrefab;
+        [SerializeField] private Rigidbody2D _RB2;
         protected override void RegisterStats()
         {
             // トランスミッショングループを作成
             var idleTrigger = new[]                                // 待機ステートのトリガー
             {
-                (Triggers.Event1, States.attackidle),              // イベント1発生で攻撃待機へ
+                (Triggers.FoundPlayer, States.attackidle),              // イベント1発生で攻撃待機へ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
             };
@@ -112,15 +120,17 @@ namespace BlackRose.Core.Models.Units
             });
             _stateMachine.AddState(States.dead, died);
             // ジャンプ
-            // var fixedpositionjump = new List<Vector2>(_junpPositions.ConvertAll(pos => (Vector2)pos.transform.position)); ;
-            // var = new PositionJump(junpPositions, 1.0f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
-            // _stateMachine.AddState(States.attackidle, attackidle);
+            var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
+            var fixedpositionjump = new PositionJump(jumpPositions, 1.0f)
+                .SetAnimeTrigger("fixedpositionjump")
+                .SetCancelableProgress(0);
+            _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
             // 攻撃待機
             var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
             attackIdle.LazyEvent.AddListener(Attackselect);
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
-            var lasershot = new Idle().SetAnimeTrigger("lasershot").SetCancelableProgress(0);
+            var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab).SetAnimeTrigger("lasershot").SetCancelableProgress(0);
             _stateMachine.AddState(States.lasershot, lasershot);
             // ビームソード攻撃
             var beamswordattack = new Idle().SetAnimeTrigger("beamswordattack").SetCancelableProgress(0);
@@ -136,17 +146,10 @@ namespace BlackRose.Core.Models.Units
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
-            if (_searchAssistance.Execute("", list, out var ui))
+            if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
             {
-                // 最短距離のプレイヤーを狙う
-                ui.Sort((a, b) =>
-                {
-                    var diffA = a.Transform.position - transform.position;
-                    var diffB = b.Transform.position - transform.position;
-                    return diffA.sqrMagnitude
-                        .CompareTo(diffB.sqrMagnitude);
-                });
-                playerTransform = ui[0].Transform;
+                _player = units.GetUnitNearest(transform.position);
+                _stateMachine.ChangeState(Triggers.FoundPlayer);
             }
         }
 
@@ -157,6 +160,18 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
+            if (_player != null)
+            {
+                Direction = (_player.Transform.position - transform.position).normalized;
+
+                // 見た目の向きを変更（左右反転）
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
+            }
         }
 
         private void Attackselect()
@@ -172,6 +187,10 @@ namespace BlackRose.Core.Models.Units
                 Attack2();
                 currentAttack = 1;
             }
+        }
+        private bool IsMatchingState(States state)
+        {
+            return _stateMachine.CurrentState.key == _stateNames[state];
         }
         void Attack1()
         {

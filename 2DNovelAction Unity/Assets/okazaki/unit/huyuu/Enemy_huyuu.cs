@@ -111,6 +111,14 @@ namespace BlackRose.Core.Models.Units
             if (_player != null)
             {
                 Direction = (_player.Transform.position - transform.position).normalized;
+
+                // 見た目の向きを変更（左右反転）
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
             }
         }
 

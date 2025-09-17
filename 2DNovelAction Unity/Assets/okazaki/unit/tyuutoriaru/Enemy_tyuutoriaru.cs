@@ -72,7 +72,7 @@ namespace BlackRose.Core.Models.Units
             };
             var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー  
             {
-                (Triggers.Attack1, States.lasershot),              // 攻撃１でレーザー攻撃へ
+                (Triggers.Attack1, States.fixedpositionjump),              // 攻撃１でレーザー攻撃へ
                 (Triggers.Attack2, States.beamswordattackmove),   // 攻撃２でビームソード接近へ
                 (Triggers.Died, States.dead),                      // 死亡で死へ
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
@@ -141,6 +141,10 @@ namespace BlackRose.Core.Models.Units
             var fixedpositionjump = new PositionJump(jumpPositions, 10f)
                 .SetAnimeTrigger("fixedpositionjump")
                 .SetCancelableProgress(0);
+                fixedpositionjump.OnArrived += () =>
+                {
+                   _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
+                };
             _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
             // 攻撃待機
             var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
@@ -172,7 +176,6 @@ namespace BlackRose.Core.Models.Units
             .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
             .SetAnimeTrigger("beamswordattack")
             .SetCancelableProgress(0);
-
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {

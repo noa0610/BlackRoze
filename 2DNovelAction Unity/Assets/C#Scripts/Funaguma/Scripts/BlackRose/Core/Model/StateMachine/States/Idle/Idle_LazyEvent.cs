@@ -1,4 +1,5 @@
 ﻿using BlackRose.Core.Models.Units;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -7,13 +8,18 @@ namespace BlackRose.Core.Models.States
     /// <summary>
     /// 途中でほかのステートに移動した場合、カウンターはリセットされる
     /// </summary>
-    public class Idle_LazyEvent : Idle
+    public class Idle_LazyEvent : Idle, ICompleteEmitter
     {
         protected readonly float _lazyChangeTime;
         protected readonly bool _isBlock;
+
+        [Obsolete]
         protected UnityEvent _lazyEvent = new();
         protected bool _blocked;
 
+        public event Action OnCompleted;
+
+        [Obsolete]
         public UnityEvent LazyEvent
         {
             get => _lazyEvent;
@@ -44,6 +50,7 @@ namespace BlackRose.Core.Models.States
                 Debug.Log("Invoked Lazy Event");
                 _blocked = false;
                 _lazyEvent?.Invoke();
+                OnCompleted?.Invoke();
             }
         }
 

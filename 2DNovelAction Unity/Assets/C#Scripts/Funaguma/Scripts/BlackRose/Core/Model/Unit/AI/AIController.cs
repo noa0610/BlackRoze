@@ -129,7 +129,6 @@ namespace BlackRose.Core.Models.Units
 
         private void OnSkill(InputValue value)
         {
-            Debug.Log("Skill");
             CurrentMode.OnSkill(value);
         }
         // === GroundedUnit の抽象 ===
@@ -137,6 +136,7 @@ namespace BlackRose.Core.Models.Units
         {
             _timeHolders.Reset(nameof(_coyoteTime));
             _stateMachine.ChangeState(AITriggers.landing);
+            CurrentMode.OnGrounded();
         }
         protected override void OnFall()
         {
@@ -150,14 +150,6 @@ namespace BlackRose.Core.Models.Units
             _timeHolders.Stop(nameof(_coyoteTime));
         }
         // === Private ===
-        private void InitAIState()
-        {
-            // ★ ここで各モードの IAIState 実装を作る
-            _normalMode.Bind(this);
-
-            //_rightMode = new RightMode(this, _rightStatus);
-            //_heavyMode = new HeavyMode(this, _heavyStatus);
-        }
 
         private void ChangeMode(Mode mode)
         {
@@ -186,29 +178,45 @@ namespace BlackRose.Core.Models.Units
             _timeHolders.Register(nameof(_shootBlockTime), _shootBlockTime);
 
             _normalMode.Bind(this);
+            _lightMode.Bind(this);
+            _heavyMode.Bind(this);
         }
 
         protected override void AfterAwake()
         {
-            InitAIState();     // ★ モードクラス生成＆登録
-            RegisterStats();   // ★ 既存：各モードが自分の遷移を登録
             ChangeMode(Mode.Normal); // ★ 初期モードへ（SetMode連動 & 遷移通知）
         }
 
         protected override void RegisterStats()
         {
             _normalMode.Register();
-            //_rightMode.Register();
-            //_heavyMode.Register();
+            _lightMode.Register();
+            _heavyMode.Register();
 
             // モード非依存の共通フォールバック
-            _stateMachine.AddTransmissions(AIStates.Idle,
+
+            // Idle
+            _stateMachine.AddTransitionsForLayer(
+                Layer.COMMON,
+                AIStates.Idle,
                 (AITriggers.moveInput, AIStates.Move, ""),
                 (AITriggers.dashInput, AIStates.Dash, ""),
-                (AITriggers.falling, AIStates.Fall, ""));
-            _stateMachine.AddTransmissions(AIStates.Move,
+                (AITriggers.falling, AIStates.Fall, "")
+                );
+            // Move
+            _stateMachine.AddTransitionsForLayer(
+                Layer.COMMON,
+                AIStates.Move,
                 (AITriggers.cancelMove, AIStates.Idle, ""),
-                (AITriggers.dashInput, AIStates.Dash, ""));
+                (AITriggers.dashInput, AIStates.Dash, ""),
+                (AITriggers.jumpInput, AIStates.Jump, "")
+                );
+            // Fall
+            _stateMachine.AddTransitionsForLayer(
+                Layer.COMMON,
+                AIStates.Fall,
+                (AITriggers.landing, AIStates.Idle, "")
+                );
 
             _stateMachine.AddState(AIStates.Idle, new Idle());
             _stateMachine.AddState(AIStates.Fall, new Idle());
@@ -222,13 +230,18 @@ namespace BlackRose.Core.Models.Units
                 if (d.x > 0) transform.localScale = Vector3.one;
                 else if (d.x < 0) transform.localScale = new Vector3(-1, 1, 1);
             }).AddTo(this);
+            float dt = Time.deltaTime;
             this.UpdateAsObservable()
-                .Where(_ => _canChargeCount)
-                .Subscribe(_ => _shootPressTime += Time.deltaTime)
+                .Where(_ => _canChargeCount && _isPlaying)
+                .Subscribe(_ => _shootPressTime += dt)
                 .AddTo(this);
             this.UpdateAsObservable()
                 .Where(_ => _isPlaying)
-                .Subscribe(_ => _timeHolders.Update(Time.deltaTime))
+                .Subscribe(_ =>
+                {
+                    _timeHolders.Update(dt);
+                    CurrentMode.Update(dt);
+                })
                 .AddTo(this);
             this.FixedUpdateAsObservable()
                 .Where(_ => _isPlaying)

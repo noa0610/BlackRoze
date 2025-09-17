@@ -76,45 +76,55 @@ namespace BlackRose.Core.Models.States
         {
             if (_layerTransmissionGroup.TryGetValue((CurrentLayer, _currentState.key, trigger), out var transByLayer))
             {
-                var to = _stateMap[transByLayer.state];
-                if (_currentState.state.AllowChange(to, _parent) && to.AllowEnter(_currentState.state, _parent))
-                {
-                    var from = _currentState.state;
-                    var fromKey = _currentState.key;
+                return Change(transByLayer);
+                //var to = _stateMap[transByLayer.state];
+                //if (_currentState.state.AllowChange(to, _parent) && to.AllowEnter(_currentState.state, _parent))
+                //{
+                //    var from = _currentState.state;
+                //    var fromKey = _currentState.key;
 
-                    from.Exit(to, _parent);
-                    _currentState = (transByLayer.state, to);
+                //    from.Exit(to, _parent);
+                //    _currentState = (transByLayer.state, to);
 
-                    _anim.OnTransition(fromKey, _currentState.key, transByLayer.animetrigger);
+                //    _anim.OnTransition(fromKey, _currentState.key, transByLayer.animetrigger);
 
-                    to.Enter(from, _parent);
-                    return true;
-                }
-                return false; // レイヤー指定があるのに不可なら即終了
+                //    to.Enter(from, _parent);
+                //    return true;
+                //}
+                //return false; // レイヤー指定があるのに不可なら即終了
             }
 
+            if (_layerTransmissionGroup.TryGetValue((Layer.COMMON.ToString(), _currentState.key, trigger), out var trs))
+            {
+                if (Change(trs)) return true;
+            }
             if (!UseDefaultLayerIfMissingTransmission) return false;
 
             if (_transmissionGroup.TryGetValue((_currentState.key, trigger), out var trans))
             {
-                var to = _stateMap[trans.state];
-                if (_currentState.state.AllowChange(to, _parent) && to.AllowEnter(_currentState.state, _parent))
-                {
-                    var from = _currentState.state;
-                    var fromKey = _currentState.key;
-
-                    from.Exit(to, _parent);
-                    _currentState = (trans.state, to);
-
-                    _anim.OnTransition(fromKey, _currentState.key, trans.animetrigger);
-
-                    to.Enter(from, _parent);
-                    return true;
-                }
+                return Change(trans);
             }
             return false;
         }
 
+        private bool Change((string state, string animetrigger) trs)
+        {
+            var to = _stateMap[trs.state];
+            if (_currentState.state.AllowChange(to, _parent) && to.AllowEnter(_currentState.state, _parent))
+            {
+                var from = _currentState.state;
+                var fromKey = _currentState.key;
+
+                from.Exit(to, _parent);
+                _currentState = (trs.state, to);
+
+                _anim.OnTransition(fromKey, _currentState.key, trs.animetrigger);
+
+                to.Enter(from, _parent);
+                return true;
+            }
+            return false;
+        }
         public bool ChangeState<T>(T trigger) where T : System.Enum
             => ChangeState(trigger.ToString());
 
@@ -156,7 +166,15 @@ namespace BlackRose.Core.Models.States
             }
         }
 
-        public void AddState(string key, StateComp state) => _stateMap[key] = state;
+        public void AddState(string key, StateComp state)
+        {
+            _stateMap[key] = state;
+            if (state is IRigidbodyUser user)
+            {
+                if (_parent.TryGetComponent<Rigidbody2D>(out var rb)) user.SetRB2(rb);
+                else Debug.LogWarning("RigitBody が未設定");
+            }
+        }
 
         public void AddState<T>(T key, StateComp state) where T : System.Enum
             => AddState(key.ToString(), state);

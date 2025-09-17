@@ -26,16 +26,16 @@ namespace BlackRose.Core.Models.Units
         public Vector2 WarpPreDir { get; private set; }
         public override void Register()
         {
-            _parent.StateMachine.AddTransitionsForLayer(
-                AIController.Mode.Normal,
+            SM.AddTransitionsForLayer(
+                AIController.Mode.Light,
                 AIController.AIStates.Idle,
                     (Triggers.shootInput, LightStates.L_Shoot, ""),
                     (Triggers.jumpInput, LightStates.L_Jump, ""),
                     (Triggers.skillInput, LightStates.L_Skill, "")
                 );
 
-            _parent.StateMachine.AddState(LightStates.L_Jump, _jump);
-            _parent.StateMachine.AddState(LightStates.L_Skill, _warp);
+            SM.AddState(LightStates.L_Jump, _jump);
+            SM.AddState(LightStates.L_Skill, _warp);
         }
 
         public override void OnSkill(InputValue value)
@@ -47,7 +47,7 @@ namespace BlackRose.Core.Models.Units
             else
             {
                 // TODO : ワープ実行
-                _parent.StateMachine.ChangeState(Triggers.skillInput);
+                SM.ChangeState(Triggers.skillInput);
             }
         }
 

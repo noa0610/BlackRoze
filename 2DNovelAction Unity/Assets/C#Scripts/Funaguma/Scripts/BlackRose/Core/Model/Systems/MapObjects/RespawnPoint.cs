@@ -25,28 +25,23 @@ namespace BlackRose.Core.Models.Objects
                     continue;
                 point.isStart = false;
             }
-            PlayerSpawnner.instance.SetRespawnPoint(this);
+            PlayerSpawnner.SetRespawnPoint(this);
         }
         // === Unity Lifecycle ===
         private void Awake()
         {
-            if (!points.Contains(this))points.Add(this);
+            if (!points.Contains(this)) points.Add(this);
             if (isStart)
             {
                 _enable = false; // スタート地点は初期化時に無効化
-                if (PlayerSpawnner.instance != null)
-                    PlayerSpawnner.instance.SetRespawnPoint(this);
-                else
-                {
-                    Debug.LogWarning("PlayerSpawnner instance is not set. Please ensure PlayerSpawnner is initialized before using RespawnPoint.");
-                }
+                SetStart();
             }
         }
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if (_enable && collision.gameObject.CompareTag(_tag))
             {
-                PlayerSpawnner.instance.SetRespawnPoint(this);
+                PlayerSpawnner.SetRespawnPoint(this);
                 SetEnable(false);
                 Debug.Log("SetSpawnPoint");
             }

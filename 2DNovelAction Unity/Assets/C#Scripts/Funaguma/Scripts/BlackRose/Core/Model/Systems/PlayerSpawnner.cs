@@ -1,15 +1,16 @@
-﻿using BlackRose.Core.Models.Systems;
-using BlackRose.Core.Models.Units;
-using HighElixir;
-using UnityEngine;
+﻿using BlackRose.Core.Models.Units;
 
 namespace BlackRose.Core.Models.Objects
 {
-    public class PlayerSpawnner : SingletonBehavior<PlayerSpawnner>, IPlayerFollower
+    public static class PlayerSpawnner
     {
-        private RespawnPoint _currentRespawnPoint;
-        [SerializeField] private UnitBase player;
-        public void Spawn(UnitBase Player, RespawnPoint customRespawnPoint = null)
+        private static RespawnPoint _currentRespawnPoint;
+        private static UnitBase player;
+        public static void SetRespawnPoint(RespawnPoint respawnPoint)
+        {
+            _currentRespawnPoint = respawnPoint;
+        }
+        public static void Spawn(UnitBase Player, RespawnPoint customRespawnPoint = null)
         {
             if (customRespawnPoint == null)
             {
@@ -21,19 +22,14 @@ namespace BlackRose.Core.Models.Objects
             }
         }
 
-        public void SetRespawnPoint(RespawnPoint respawnPoint)
-        {
-            _currentRespawnPoint = respawnPoint;
-        }
 
-        protected override void Awake()
+        public static void InitialSpawn()
         {
-            base.Awake();
             Spawn(player);
             player.gameObject.SetActive(true);
         }
 
-        public void SetTarget(UnitBase target)
+        public static void SetTarget(UnitBase target)
         {
             player = target;
         }

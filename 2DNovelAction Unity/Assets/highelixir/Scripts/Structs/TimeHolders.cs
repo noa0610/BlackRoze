@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace HighElixir
 {
@@ -21,7 +22,7 @@ namespace HighElixir
         {
             public bool IsEnable { get; private set; }
             public float Max { get; private set; }
-            public float Remaining { get; private set; }
+            public float Remaining { get; private set; } = 0f;
             public CountType Type { get; }
             public event Action Finished; // null 許容
             public bool Running => Remaining > 0f;
@@ -32,14 +33,17 @@ namespace HighElixir
             public Timer(float duration, CountType type, bool start, Action onFinished, bool isCountup = false)
             {
                 if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
-                Max = IsCountUp ? duration : float.MaxValue;
                 Type = type;
-                IsCountUp = isCountup;
+                IsCountUp = isCountup; // 先に代入
+                Max = IsCountUp ? duration : duration;
                 if (onFinished != null) Finished += onFinished;
-                Reset();
                 if (start)
+                {
+                    Reset();
                     Start();
+                }
             }
+
 
             public void Reset()
             {
@@ -63,17 +67,15 @@ namespace HighElixir
                 if (Remaining <= 0f) return;
                 if (dt <= 0f) return; // 負やゼロを無視
 
-                var next = Remaining + (IsCountUp ? dt : -dt);
-                if (next > 0f)
+                Remaining += IsCountUp ? dt : -dt;
+                if (Remaining <= 0f)
                 {
-                    Remaining = next;
-                    return;
+                    Remaining = 0f;
+                    if (!IsCountUp)
+                        Finished?.Invoke();
                 }
-
-                // ちょうど/下回った → 0 に丸め、完了を 1 回だけ通知
-                Remaining = 0f;
-                if (!IsCountUp)
-                    Finished?.Invoke();
+                // 途中でリターンしてるわけではないのは確認済み
+                //Debug.Log($"current : {Remaining}");
             }
 
             public void UpdateMaxTime(float newMax)
@@ -181,9 +183,27 @@ namespace HighElixir
         /// <summary>
         /// 終了済みか（登録が無ければ false）。
         /// </summary>
-        public bool IsFinished(string id)
+        public bool IsFinished(string id, bool needLog = false)
         {
-            return _timers.TryGetValue(id, out var t) && !t.IsCountUp && t.Remaining <= 0f;
+            if (!_timers.TryGetValue(id, out var t))
+            {
+                if (needLog)
+                    Debug.Log($"[{id}]未登録のID");
+                return false;
+            }
+            if (t.IsCountUp)
+            {
+                if (needLog)
+                    Debug.Log($"[{id}]このタイマーはカウントアップです ");
+                return false;
+            }
+            if (t.Remaining > 0f)
+            {
+                if (needLog)
+                    Debug.Log($"[{id}]タイマーが完了していません:{t.Remaining}秒");
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -251,6 +271,10 @@ namespace HighElixir
                 if (_timers.TryGetValue(id, out var t))
                 {
                     t.Tick(deltaTime);
+                }
+                else
+                {
+                    Debug.Log($"{id} is not found.");
                 }
             }
         }

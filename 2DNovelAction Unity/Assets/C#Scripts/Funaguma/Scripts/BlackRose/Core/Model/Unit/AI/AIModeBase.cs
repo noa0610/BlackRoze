@@ -1,4 +1,5 @@
 ﻿using BlackRose.Core.Models.States;
+using HighElixir;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,13 +16,15 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected string _timerName = "chargeTimer";
         protected AIController _parent;
         public UnitStatusData StatusData => _status;
-        public IStateMachine SM => _parent.StateMachine;
+        protected IStateMachine SM => _parent.StateMachine;
+        protected TimeHolders TimeHolders => _parent.TimeHolders;
         public abstract void Register();
 
         // Grounded Event
         public virtual void OnGrounded()
         {
             _jump.ResetLeaptFlag();
+            //Debug.Log("Jump Reset");
         }
         // Input Action
         public void OnShoot(InputValue value)

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using BlackRose.Core.Models.Objects;
 using BlackRose.Core.Models.Units;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace BlackRose.Core.Models.Systems
             {
                 follower.SetTarget(_playerUnit);
             }
+            PlayerSpawnner.SetTarget(_playerUnit);
         }
     }
 

@@ -14,14 +14,16 @@ namespace HighElixir
         [Serializable]
         private sealed class Timer
         {
+            public string Key { get; set; }
             public float Max { get; }
             public float Remaining { get; private set; }
-            public event Action Finished; // null 許容
+            public event Action<string> Finished; // null 許容
             public bool Running => Remaining > 0f;
 
-            public Timer(float duration, bool start, Action onFinished)
+            public Timer(string key, float duration, bool start, Action<string> onFinished)
             {
                 if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
+                Key = key;
                 Max = duration;
                 Remaining = start ? duration : 0f;
                 if (onFinished != null) Finished += onFinished;
@@ -47,7 +49,7 @@ namespace HighElixir
 
                 // ちょうど/下回った → 0 に丸め、完了を 1 回だけ通知
                 Remaining = 0f;
-                Finished?.Invoke();
+                Finished?.Invoke(Key);
             }
 
             public float NormalizedElapsed => Max <= 0f ? 1f : 1f - Math.Clamp(Remaining / Max, 0f, 1f);
@@ -72,12 +74,12 @@ namespace HighElixir
         /// <summary>
         /// 新規登録。既に同じ id があれば false。
         /// </summary>
-        public bool Register(string id, float duration, bool start = false, Action onFinished = null)
+        public bool Register(string id, float duration, bool start = false, Action<string> onFinished = null)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
             if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
 
-            var timer = new Timer(duration, start, onFinished);
+            var timer = new Timer(id, duration, start, onFinished);
             return _timers.TryAdd(id, timer);
         }
 
@@ -158,7 +160,7 @@ namespace HighElixir
         /// <summary>
         /// 完了時の Action を追加。存在しない場合 false。
         /// </summary>
-        public bool AddAction(string id, Action action)
+        public bool AddAction(string id, Action<string> action)
         {
             if (action == null) return false;
             if (_timers.TryGetValue(id, out var t))
@@ -172,7 +174,7 @@ namespace HighElixir
         /// <summary>
         /// 完了時の Action を削除。存在しない場合 false。
         /// </summary>
-        public bool RemoveAction(string id, Action action)
+        public bool RemoveAction(string id, Action<string> action)
         {
             if (action == null) return false;
             if (_timers.TryGetValue(id, out var t))

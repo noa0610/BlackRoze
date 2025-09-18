@@ -6,7 +6,7 @@ using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
-    public abstract class UnitBase : MonoBehaviour, IPausable
+    public abstract class UnitBase : MonoBehaviour, IPausable, IUnit
     {
         // === Reference ===
         public SpriteEffectPlayer player;
@@ -50,19 +50,19 @@ namespace BlackRose.Core.Models.Units
 
         // ===== ステータス操作 =====
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(IUnit source, float damage)
         {
             if (!BeforeTakeDamage(ref damage)) return;
-            if(statusManager.TakeDamage(damage))
+            if (statusManager.TakeDamage(damage))
                 OnDeath();
-            OnTakeDamage(damage);
+            OnTakeDamage(source, damage);
         }
 
         protected virtual bool BeforeTakeDamage(ref float damage)
         {
             return true;
         }
-        protected virtual void OnTakeDamage(float damage)
+        protected virtual void OnTakeDamage(IUnit s, float damage)
         {
         }
 

@@ -65,10 +65,11 @@ namespace BlackRose.Core.Models.Units
             return !IsInvincible;
         }
 
-        protected override void OnTakeDamage(float damage)
+        protected override void OnTakeDamage(IUnit s, float damage)
         {
             IsInvincible = true;
-            _stateMachine.ChangeState(Triggers.stuned.ToString());
+            if (s is not ObjectDamageWorker)
+                _stateMachine.ChangeState(Triggers.stuned.ToString());
         }
         public override void Pause()
         {

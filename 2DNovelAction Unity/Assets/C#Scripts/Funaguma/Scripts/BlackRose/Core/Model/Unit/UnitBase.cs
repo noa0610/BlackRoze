@@ -1,5 +1,6 @@
 ﻿using BlackRose.Core.Models.EffectManagers;
 using BlackRose.Core.Models.States;
+using HighElixir;
 using System;
 using UnityEngine;
 
@@ -43,6 +44,8 @@ namespace BlackRose.Core.Models.Units
             }
         }
         public bool IsInvincible { get; set; }
+
+        public TimeHolders Timer { get; private set; } = new();
 
         // 初期状態のステート
         protected virtual string StartState => "idle";

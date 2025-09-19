@@ -20,7 +20,10 @@ namespace BlackRose.Core.Models.Objects
         /// <summary>
         /// 床を作成
         /// </summary>
-        public DamageFloor Create(Vector2 pos, float duration)
+        /// <param name="duration">床の持続時間</param>
+        /// <param name="maxLength">床の最大長さ</param>
+        /// <param name="pos">床の中心(地形に依存する為必ずしも中心にはならない)</param>
+        public DamageFloor Create(Vector2 pos, float duration, float maxLength)
         {
             var go = _pool.Get();
             go.transform.position = pos;
@@ -28,7 +31,7 @@ namespace BlackRose.Core.Models.Objects
             _floorTimerDict.Add(go, key);
             _floorTimerLink.Add(key, go);
             _timer.Register(key, duration, start:true, s => { DestroyFloor(go); });
-            go.Generate(pos);
+            go.Generate(pos, maxLength);
             return go;
         }
 

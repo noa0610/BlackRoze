@@ -21,7 +21,6 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private TextThrower _thrower;
         private Stun _stunState;
         private Rigidbody2D _rigidbody;
-        private TimeHolders _timeHolders = new TimeHolders();
 
         [Header("Option Settings")]
         [SerializeField] private float _coyoteTime = 0.2f;         // 地面離れてからジャンプ猶予(sec)
@@ -30,6 +29,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private Vector2 _stunKnockback = Vector2.zero;
         [SerializeField] private int _maxSuccession = 3; // 最大連射回数
         [SerializeField] private float _shootBlockTime = 0.6f; // 連射をブロックする時間
+        [SerializeField] private float _invincibleTime = 0.6f; // 無敵時間
         private int _successionCount = 0; // 連射回数
         private float _shootPressTime = 0f; // 攻撃ボタンを押した時間
         private Vector2 _shootDirection = Vector2.right; // 攻撃方向
@@ -41,7 +41,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private bool _forceEnableJump;
 #endif
         // 地面にいるかどうか（OverlapCircle判定＆コヨーテタイム管理）
-        public bool canJump => _forceEnableJump || !_timeHolders.IsFinished(nameof(_coyoteTime));
+        public bool canJump => _forceEnableJump || !Timer.IsFinished(nameof(_coyoteTime));
 
         public List<BulletData> Bullets
         {
@@ -51,7 +51,7 @@ namespace BlackRose.Core.Models.Units
 
         protected override void OnGrounded()
         {
-            _timeHolders.Reset(nameof(_coyoteTime));
+            Timer.Reset(nameof(_coyoteTime));
             _jump.HadLeapt = false;
             _stateMachine.ChangeState(Triggers.landing);
         }
@@ -67,7 +67,9 @@ namespace BlackRose.Core.Models.Units
 
         protected override void OnTakeDamage(IUnit s, float damage)
         {
+            //Debug.Log($"Take Damage : {StatusManager.ReadValue(Status.HP)}/{StatusManager.ReadValue(Status.MaxHP)}");
             IsInvincible = true;
+            Timer.Start(nameof(_invincibleTime));
             if (s is not ObjectDamageWorker)
                 _stateMachine.ChangeState(Triggers.stuned.ToString());
         }
@@ -91,7 +93,7 @@ namespace BlackRose.Core.Models.Units
             {
                 _stateMachine.ChangeState(Triggers.jumpInput);
                 AfterJump();
-                _timeHolders.Stop(nameof(_coyoteTime)); // ジャンプしたのでコヨーテタイムを終了させる
+                Timer.Stop(nameof(_coyoteTime)); // ジャンプしたのでコヨーテタイムを終了させる
             }
             if (!value.isPressed)
             {
@@ -136,7 +138,7 @@ namespace BlackRose.Core.Models.Units
                 else if (!IsMatchState(StateKey.shootWait))
                     _successionCount = 0;
 
-                if (_timeHolders.IsFinished(nameof(_shootBlockTime)))
+                if (Timer.IsFinished(nameof(_shootBlockTime)))
                 {
                     _successionCount++;
                     if (IsGrounded)
@@ -148,7 +150,7 @@ namespace BlackRose.Core.Models.Units
                 if (_successionCount >= _maxSuccession)
                 {
                     _successionCount = 0;
-                    _timeHolders.Start(nameof(_shootBlockTime)); // 連射ブロックタイムを開始
+                    Timer.Start(nameof(_shootBlockTime)); // 連射ブロックタイムを開始
                     _stateMachine.LazyChange(Triggers.watingTimeHasElapsed);
                     _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
                 }
@@ -197,8 +199,9 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
-            _timeHolders.Register(nameof(_coyoteTime), _coyoteTime);
-            _timeHolders.Register(nameof(_shootBlockTime), _shootBlockTime);
+            Timer.Register(nameof(_coyoteTime), _coyoteTime);
+            Timer.Register(nameof(_shootBlockTime), _shootBlockTime);
+            Timer.Register(nameof(_invincibleTime), _invincibleTime, false, _ => IsInvincible = false);
         }
         protected virtual void Start()
         {
@@ -208,7 +211,7 @@ namespace BlackRose.Core.Models.Units
                 .AddTo(this);
             this.UpdateAsObservable()
                 .Where(_ => _isPlaying)
-                .Subscribe(_ => _timeHolders.Update(Time.deltaTime))
+                .Subscribe(_ => Timer.Update(Time.deltaTime))
                 .AddTo(this);
         }
     }

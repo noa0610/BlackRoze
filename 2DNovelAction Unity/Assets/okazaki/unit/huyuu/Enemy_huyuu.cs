@@ -1,9 +1,8 @@
-﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using HighElixir;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
@@ -38,21 +37,20 @@ namespace BlackRose.Core.Models.Units
             // トランスミッショングループを作成
             var idleTrigger = new[]
             {
-        (Triggers.FoundPlayer, States.move),
-        (Triggers.Died, States.dead)
-    };
+                (Triggers.FoundPlayer, States.move),
+                (Triggers.Died, States.dead)
+            };
             var moveTrigger = new[]
             {
-        (Triggers.MissingPlayer, States.idle),
-        (Triggers.AttackRange, States.explosion),
-        (Triggers.Died, States.dead)
-
-    };
+                (Triggers.MissingPlayer, States.idle),
+                (Triggers.AttackRange, States.explosion),
+                (Triggers.Died, States.dead)
+            };
             var explosionTrigger = new[]
-                    {
-        (Triggers.Explosion, States.dead),
-        (Triggers.Died, States.dead)
-    };
+            {
+                (Triggers.Explosion, States.dead),
+                (Triggers.Died, States.dead)
+            };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
                 .AddTransmissions(States.idle, idleTrigger)
@@ -61,7 +59,7 @@ namespace BlackRose.Core.Models.Units
             // 死んだときに何もしないならDeadの設定はいらない
 
             // 待機
-            var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
+            var idle = new Idle().SetAnimeTrigger("Drone_Idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.idle, idle);
 
             // 移動
@@ -69,7 +67,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.move, move);
 
             //爆発
-            _suicideBombing.SetAnimeTrigger("explosion").SetCancelableProgress(0);
+            _suicideBombing.SetAnimeTrigger("Explosion").SetCancelableProgress(0);
             _suicideBombing.OnExplode.AddListener(() =>
             {
                 _stateMachine.LazyChange(Triggers.Died);
@@ -113,6 +111,14 @@ namespace BlackRose.Core.Models.Units
             if (_player != null)
             {
                 Direction = (_player.Transform.position - transform.position).normalized;
+
+                // 見た目の向きを変更（左右反転）
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
             }
         }
 
@@ -122,4 +128,3 @@ namespace BlackRose.Core.Models.Units
         }
     }
 }
-

@@ -1,12 +1,11 @@
 ﻿using BlackRose.Core.Models.Units;
 using System;
 using UnityEngine;
-using BlackRose.Core.Models.Units;
 
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class Attack : StateWithAnime
+    public class LaserShot : StateWithAnime
     {
         [SerializeField] protected Rigidbody2D _rb;
         [SerializeField] private float _attackCooldown = 5f; // 攻撃クールダウン時間
@@ -16,7 +15,10 @@ namespace BlackRose.Core.Models.States
         private float cooldownTimer = 0f; // 現在のクールダウン経過時間
         private int currentFirePointIndex = 0; // 今撃つポイントの番号
 
-        public Attack(Rigidbody2D rb, Transform[] firePoints, GameObject bulletPrefab)
+        private int shotCount = 0; // 発射した回数
+        private int maxShots = 6;  // 最大発射数
+
+        public LaserShot(Rigidbody2D rb, Transform[] firePoints, GameObject bulletPrefab)
         {
             _rb = rb;
             this.firePoints = firePoints;
@@ -28,10 +30,18 @@ namespace BlackRose.Core.Models.States
             Debug.Log("Enter of Attack");
             cooldownTimer = _attackCooldown; // 最初の発射をすぐにできるように
             currentFirePointIndex = 0;
+            shotCount = 0; // 発射回数リセット
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            if (shotCount >= maxShots)
+            {
+                // 6発撃ち終わったらトリガー発火
+                parent.StateMachine.ChangeState("Attack1end");
+                return;
+            }
+
             cooldownTimer -= Time.deltaTime;
 
             if (cooldownTimer <= 0f)
@@ -39,6 +49,7 @@ namespace BlackRose.Core.Models.States
                 ShootFromPoint(currentFirePointIndex);
                 currentFirePointIndex = (currentFirePointIndex + 1) % firePoints.Length;
                 cooldownTimer = _attackCooldown;
+                shotCount++;
             }
         }
 

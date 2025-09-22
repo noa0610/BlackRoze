@@ -10,8 +10,8 @@ namespace BlackRose.Core.Models.States
     /// </summary>
     public class Idle_LazyEvent : Idle, ICompleteEmitter
     {
-        protected readonly float _lazyChangeTime;
-        protected readonly bool _isBlock;
+        protected float _eventTime;
+        protected bool _isBlock = false;
 
         [Obsolete]
         protected UnityEvent _lazyEvent = new();
@@ -25,27 +25,44 @@ namespace BlackRose.Core.Models.States
             get => _lazyEvent;
             set => _lazyEvent = value;
         }
+
+        public float RemainTime
+        {
+            get
+            {
+                if (Timer.TryGetRemaining(nameof(_eventTime), out var t))
+                {
+                    return t;
+                }
+                // 完了扱い
+                return 0f;
+            }
+        }
         /// <param name="lazyChange">一定時間後に遷移するステート</param>
         /// <param name="lazyChangeTime">遷移の遅延</param>
         /// <param name="isBlock">遅延時間が終わるまで遷移を阻むかどうか</param>
-        public Idle_LazyEvent(float lazyChangeTime, bool isBlock = false) : base()
+        public Idle_LazyEvent(float eventTime, bool isBlock = false) : base()
         {
-            _lazyChangeTime = lazyChangeTime;
+            _eventTime = eventTime;
             _isBlock = isBlock;
-            _timeHolders.Register(nameof(_lazyChangeTime), _lazyChangeTime);
+            Timer.Register(nameof(_eventTime), _eventTime);
         }
 
+        public Idle_LazyEvent() : base()
+        {
+
+        }
         public override void Enter(IState previousIState, UnitBase parent)
         {
             base.Enter(previousIState, parent);
             _blocked = _isBlock;
-            _timeHolders.Start(nameof(_lazyChangeTime));
+            Timer.Start(nameof(_eventTime));
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
             base.Stay(parent, deltaTime);
-            if (_timeHolders.IsFinished(nameof(_lazyChangeTime)))
+            if (Timer.IsFinished(nameof(_eventTime)))
             {
                 Debug.Log("Invoked Lazy Event");
                 _blocked = false;
@@ -58,6 +75,23 @@ namespace BlackRose.Core.Models.States
         {
             if (_blocked) return false;
             return base.AllowChange(nextState, parent);
+        }
+
+        public void SetTime(float time)
+        {
+            _eventTime = time;
+        }
+
+        public void SetBlock(bool isBlock)
+        {
+            _isBlock = isBlock;
+            _blocked = isBlock;
+        }
+
+        public override void OnDeserialize()
+        {
+            base.OnDeserialize();
+            Timer.Register(nameof(_eventTime), _eventTime);
         }
     }
 }

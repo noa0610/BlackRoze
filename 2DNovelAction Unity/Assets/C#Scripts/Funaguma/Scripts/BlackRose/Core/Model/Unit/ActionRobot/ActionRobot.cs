@@ -118,7 +118,12 @@ namespace BlackRose.Core.Models.Units
                 return;
             }
             else if (d.x != 0)
+            {
                 _shootDirection = d; // 横入力がある場合は攻撃方向を更新
+                var tmp = d;
+                tmp.y = 0;
+                MoveDirection = tmp;
+            }
             _stateMachine.ChangeState(Triggers.moveInput);
         }
         private void OnAttack(InputValue value)

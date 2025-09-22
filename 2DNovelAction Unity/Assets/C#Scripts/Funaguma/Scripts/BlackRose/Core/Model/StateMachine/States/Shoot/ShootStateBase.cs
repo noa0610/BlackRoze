@@ -13,9 +13,13 @@ namespace BlackRose.Core.Models.States
         // 弾丸にセットするレイヤー
         [SerializeField] protected LayerMask _targetLayer;
         [SerializeField] protected BulletData _data;         // 発射する弾のデータ
-        [SerializeField] public UnityEvent onShootComplete = new();
-        [SerializeField] protected float _allowShootCancel = 0.4f;
+        [SerializeField] protected UnityEvent _onShootComplete = new();
 
+        public UnityEvent onShootComplete
+        {
+            get => _onShootComplete;
+            set => _onShootComplete = value;
+        }
         // === Constractor ===
         public ShootStateBase(BulletData data, LayerMask targetLayer)
         {
@@ -26,11 +30,15 @@ namespace BlackRose.Core.Models.States
         // === Public ===
         public bool IsCancel(UnitBase parent)
         {
-            return !HasTrigger(parent) || GetNormalized(parent) >= _allowShootCancel;
+            return true;
         }
         public void SetBullet(BulletData bullet)
         {
             _data = bullet;
+        }
+        public void SetLayer(LayerMask layer)
+        {
+            _targetLayer = layer;
         }
         public override bool AllowChange(IState nextState, UnitBase parent)
         {

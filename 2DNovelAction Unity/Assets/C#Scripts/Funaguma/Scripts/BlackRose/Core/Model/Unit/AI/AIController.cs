@@ -4,6 +4,7 @@ using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
 using Fungus;
 using HighElixir;
+using HighElixir.Timer;
 using HighElixir.UI;
 using System.Collections.Generic;
 using UniRx;
@@ -22,45 +23,43 @@ namespace BlackRose.Core.Models.Units
         public enum Mode { Normal, Light, Heavy }
 
         // 各モードに共通するステート
-        public enum AIStates { Idle, Move, Jump, Fall, Shoot, HalfCharge, FullCharge, Skill, Dash, SpecialAttac, Deadk }
+        public enum AIStates { Idle, Move, Jump, Fall, Dash, SpecialAttack, Dead, ShootInterval }
         public enum AITriggers
         {
-            moveInput, cancelMove, dashInput, shootInput, jumpInput,
-            shootComplete, watingTimeHasElapsed, skillInput, skillFinished,
+            moveInput, cancelMove, dashInput, shootInput, halfCharge, fullCharge, jumpInput,
+            shootCompleted, watingTimeHasElapsed, skillInput, skillFinished,
             landing, falling, stun, recoverFromStun,
             modeChanged
         }
-
+        public enum Tags
+        {
+            Shoot, Stunned
+        }
+        public readonly static Dictionary<Tags, string> tags = EnumWrapper.GetDict<Tags>();
         [Header("Reference")]
         [SerializeField] private List<BulletData> _bullets = new();
         [SerializeField] private LayerMask _targetLayer;
-        [SerializeField] private TextThrower _thrower;
-        private Stun _stunState;
-        private Rigidbody2D _rigidbody;
-        private TimeHolders _timeHolders = new();
+        private TimerHolder _timer = new();
 
         [Header("Option Settings")]
         [SerializeField] private bool _canChargeCount = false;
-        [SerializeField] private Vector2 _stunKnockback = Vector2.zero;
-        [SerializeField] private int _maxSuccession = 3;
 
         // 時間管理
-        [SerializeField] private float[] _chargeShoot = new float[2] { 1.8f, 3.4f };
         [SerializeField] private float _shootBlockTime = 0.6f;
         [SerializeField] private float _coyoteTime = 0.2f;
-        private int _successionCount = 0;
         private float _shootPressTime = 0f;
         private Vector2 _shootDirection = Vector2.right;
 
         // ===== モード関連 =====
         [Header("Mode")]
-        [SerializeField] private NormalMode _normalMode;   // ScriptableObject なら Serialize でOK
+        [SerializeField] private NormalMode _normalMode; 
         [SerializeField] private LightMode _lightMode;
         [SerializeField] private HeavyMode _heavyMode;
-        private Mode _currentEnumMode = Mode.Normal;       // 実体保持（任意）
+        private Mode _currentEnumMode = Mode.Normal;
 
+        // ===== State Machine =====
 
-        public TimeHolders TimeHolders => _timeHolders;
+        public TimerHolder TimeHolders => _timer;
         public AIModeBase CurrentMode => _currentEnumMode switch
         {
             Mode.Normal => _normalMode,
@@ -68,6 +67,8 @@ namespace BlackRose.Core.Models.Units
             Mode.Light => _lightMode,
             _ => _normalMode
         };
+
+        public List<BulletData> Bullets => _bullets;
         public bool CanJump => !TimeHolders.IsFinished(nameof(_coyoteTime));
         // 外部からのモード切替 API
         public void SwitchModeLight() => ChangeMode(Mode.Light);
@@ -103,14 +104,20 @@ namespace BlackRose.Core.Models.Units
         private void OnMove(InputValue value)
         {
             var d = value.Get<Vector2>();
-            Direction = d.normalized;
-            CurrentMode.OnInputMove(Direction);
-            if (d == Vector2.zero)
+            var tmp = d;
+            tmp.y = 0;
+            MoveDirection = tmp;
+            CurrentMode.OnInputMove(d);
+            if (d.x == 0)
             {
                 _stateMachine.ChangeState(AITriggers.cancelMove);
                 return;
             }
-            else if (d.x != 0) _shootDirection = d;
+            else if (d.x != 0 && !_stateMachine.CurrentState.HasTag(tags[Tags.Shoot], tags[Tags.Stunned]))
+            {
+                Direction = d.normalized;
+                _shootDirection = d;
+            }
             _stateMachine.ChangeState(AITriggers.moveInput);
         }
 
@@ -120,6 +127,7 @@ namespace BlackRose.Core.Models.Units
             {
                 Debug.Log("AI Attack Pressed");
                 CurrentMode.OnShoot(value);
+                _timer.Start("chargeTime");
             }
             else
             {
@@ -134,7 +142,7 @@ namespace BlackRose.Core.Models.Units
         // === GroundedUnit の抽象 ===
         protected override void OnGrounded()
         {
-            _timeHolders.Reset(nameof(_coyoteTime));
+            _timer.Reset(nameof(_coyoteTime));
             _stateMachine.ChangeState(AITriggers.landing);
             CurrentMode.OnGrounded();
         }
@@ -147,7 +155,7 @@ namespace BlackRose.Core.Models.Units
         {
             base.AfterJump();
             // ジャンプしたのでコヨーテタイムを終了させる
-            _timeHolders.Stop(nameof(_coyoteTime));
+            _timer.Stop(nameof(_coyoteTime));
         }
         // === Private ===
 
@@ -173,9 +181,9 @@ namespace BlackRose.Core.Models.Units
         }
         protected override void BeforeAwake()
         {
-            _rigidbody = GetComponent<Rigidbody2D>();
-            _timeHolders.Register(nameof(_coyoteTime), _coyoteTime);
-            _timeHolders.Register(nameof(_shootBlockTime), _shootBlockTime);
+            _timer.Register(nameof(_coyoteTime), _coyoteTime);
+            _timer.Register(nameof(_shootBlockTime), _shootBlockTime);
+            _timer.Register("chargeTime");
 
             _normalMode.Bind(this);
             _lightMode.Bind(this);
@@ -203,6 +211,14 @@ namespace BlackRose.Core.Models.Units
                 (AITriggers.dashInput, AIStates.Dash, ""),
                 (AITriggers.falling, AIStates.Fall, "")
                 );
+            _stateMachine.AddTransitionsForLayer(
+                Layer.COMMON,
+                AIStates.ShootInterval,
+                (AITriggers.watingTimeHasElapsed, AIStates.Idle, ""),
+                (AITriggers.moveInput, AIStates.Move, ""),
+                (AITriggers.dashInput, AIStates.Dash, ""),
+                (AITriggers.falling, AIStates.Fall, "")
+                );
             // Move
             _stateMachine.AddTransitionsForLayer(
                 Layer.COMMON,
@@ -219,9 +235,18 @@ namespace BlackRose.Core.Models.Units
                 );
 
             _stateMachine.AddState(AIStates.Idle, new Idle());
-            _stateMachine.AddState(AIStates.Fall, new Idle());
+            _stateMachine.AddState(AIStates.Fall, new MoveOnAir());
             _stateMachine.AddState(AIStates.Move, new MoveOnGround());
             _stateMachine.AddState(AIStates.Dash, new DashOnGround(this));
+
+            var idle = new Idle_LazyEvent();
+            _stateMachine.AddState(AIStates.ShootInterval, idle);
+
+            idle.SetTime(0.2f);
+            idle.OnCompleted += () =>
+            {
+                _stateMachine.ChangeState(AITriggers.watingTimeHasElapsed);
+            };
         }
         protected override void Start()
         {
@@ -239,7 +264,7 @@ namespace BlackRose.Core.Models.Units
                 .Where(_ => _isPlaying)
                 .Subscribe(_ =>
                 {
-                    _timeHolders.Update(dt);
+                    _timer.Update(dt);
                     CurrentMode.Update(dt);
                 })
                 .AddTo(this);

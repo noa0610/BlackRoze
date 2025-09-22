@@ -6,12 +6,12 @@ using UnityEngine;
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class Jump : MovingStateBase
+    public class Jump : HolizontalMovingStates
     {
         [SerializeField] protected bool _hasLeapt = false;
         [SerializeField] protected int _enableJumped = -1;
         [SerializeField] protected float _cutMultiplier = 0.5f;  // 上昇中にカットする倍率
-        [SerializeField] protected float _accel = 60f;           // 横方向の加速（m/s^2 想定）
+        [SerializeField] protected float _accel = 20f;           // 横方向の加速（m/s^2 想定）
         [SerializeField] protected float _airFriction = 30f;   // 入力がないときの減速
 
         // 連続ジャンプ回数
@@ -52,7 +52,7 @@ namespace BlackRose.Core.Models.States
             if (Rigidbody2D == null) return;
 
             // 横入力（例：-1〜1）と空中速度上限
-            var input = parent.X(); // Vector2 なら x 成分を使う
+            var input = GetDirection(parent);
             if (input.x == 0f) return;
             float desiredDir = Mathf.Sign(input.x);
             float absInput = Mathf.Abs(input.x);

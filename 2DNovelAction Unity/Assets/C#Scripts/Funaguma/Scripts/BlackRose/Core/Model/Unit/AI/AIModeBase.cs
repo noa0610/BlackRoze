@@ -1,5 +1,6 @@
 ﻿using BlackRose.Core.Models.States;
 using HighElixir;
+using HighElixir.Timer;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,11 +14,10 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected Jump _jump;
         [SerializeField] protected float[] _chargeTime = new float[2] { 1.2f, 2.3f };
-        [SerializeField] protected string _timerName = "chargeTimer";
         protected AIController _parent;
         public UnitStatusData StatusData => _status;
         protected IStateMachine SM => _parent.StateMachine;
-        protected TimeHolders TimeHolders => _parent.TimeHolders;
+        protected TimerHolder Timer => _parent.TimeHolders;
         public abstract void Register();
 
         // Grounded Event
@@ -29,30 +29,20 @@ namespace BlackRose.Core.Models.Units
         // Input Action
         public void OnShoot(InputValue value)
         {
-            if (value.isPressed)
-            {
-                InvokeShoot();
-                _parent.TimeHolders.Start(_timerName);
-            }
-            else
-            {
-                OnReleaseShoot(value);
-            }
+            InvokeShoot();
         }
         public virtual void OnReleaseShoot(InputValue value)
         {
-            if (!_parent.TimeHolders.TryGetRemaining(_timerName, out var t)) return;
-            _parent.TimeHolders.Stop(_timerName);
-            
-            if (_chargeTime[1] > t)
-            {
-                InvokeHalfShoot();
-            }
-            else if (_chargeTime[0] > t)
+            if (!Timer.Stop("chargeTime", out var t)) return;
+
+            if (t > _chargeTime[1])
             {
                 InvokeFullShoot();
             }
-            _parent.TimeHolders.Reset(_timerName);
+            else if (t > _chargeTime[0])
+            {
+                InvokeHalfShoot();
+            }
         }
 
         public abstract void InvokeShoot();
@@ -88,7 +78,6 @@ namespace BlackRose.Core.Models.Units
         public void Bind(AIController parent)
         {
             _parent = parent;
-            _parent.TimeHolders.Register(_timerName, 0, isCountup: true);
         }
     }
 }

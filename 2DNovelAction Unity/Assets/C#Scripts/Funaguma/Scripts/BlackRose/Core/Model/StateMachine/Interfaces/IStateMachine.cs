@@ -11,10 +11,10 @@ namespace BlackRose.Core.Models.States
     public interface IStateMachine
     {
         /// <summary>登録済みステート一覧（キー=ステート名）</summary>
-        Dictionary<string, StateComp> StateMap { get; }
+        Dictionary<string, StateInfo> StateMap { get; }
 
         /// <summary>現在のステート（キーとインスタンス）</summary>
-        (string key, StateComp state) CurrentState { get; }
+        StateInfo CurrentState { get; }
 
         // オプション
 
@@ -63,10 +63,10 @@ namespace BlackRose.Core.Models.States
         // ======================
 
         /// <summary>ステートの追加</summary>
-        void AddState(string key, StateComp state);
+        void AddState(string key, StateComp state, params string[] tags);
 
         /// <summary>ステートの追加（Enumキー対応）</summary>
-        void AddState<T>(T key, StateComp state) where T : Enum;
+        void AddState<T>(T key, StateComp state, params string[] tags) where T : Enum;
 
         // ======================
         // 遷移定義（追加）

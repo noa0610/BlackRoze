@@ -11,7 +11,7 @@ namespace BlackRose.Core.Models.States
     {
         [SerializeField] private Vector2 _knockbackDirection = new Vector2(0.78f, 0.9f); // Default knockback direction
         [SerializeField] private TextThrower _thrower;
-        public float StunTimer => _lazyChangeTime; // Expose the stun timer for external checks
+        public float StunTimer => _eventTime; // Expose the stun timer for external checks
 
         public Rigidbody2D Rigidbody2D {  get; private set; }
 
@@ -26,7 +26,7 @@ namespace BlackRose.Core.Models.States
             base.Enter(previousIState, parent);
             if (_thrower != null)
                 _thrower.Create(parent.gameObject, "Stun!", Color.white);
-            parent.Animator.SetFloat("StunTime", _lazyChangeTime);
+            parent.Animator.SetFloat("StunTime", _eventTime);
             Rigidbody2D.velocity = Vector2.zero;
             Rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force
             parent.GetComponent<SpriteEffectPlayer>().AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, 1.5f);

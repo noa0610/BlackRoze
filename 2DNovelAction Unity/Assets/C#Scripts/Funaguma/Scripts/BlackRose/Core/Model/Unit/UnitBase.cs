@@ -18,8 +18,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected UnitStatusData _status;
         protected Animator _animator;
         [Header("StateMachine")]
-        protected IStateMachine _stateMachine; // ステートマシン本体
         [SerializeField] public static bool _isPlaying = true;
+        protected IStateMachine _stateMachine; // ステートマシン本体
         private ReactiveProperty<Vector2> _reactiveDirection = new(new(1, 0));
 #if UNITY_EDITOR
         // エディタからの監視用
@@ -36,6 +36,7 @@ namespace BlackRose.Core.Models.Units
 
         public IObservable<Vector2> ReactiveDirection => _reactiveDirection;
 
+        // 向き（1か-1の値をとる。外部から設定される）
         public Vector2 Direction
         {
             get
@@ -47,6 +48,9 @@ namespace BlackRose.Core.Models.Units
                 _reactiveDirection.Value = value;
             }
         }
+
+        // 移動方向（外部から設定される）
+        public Vector2 MoveDirection { get; set; }
         public Animator Animator
         {
             get

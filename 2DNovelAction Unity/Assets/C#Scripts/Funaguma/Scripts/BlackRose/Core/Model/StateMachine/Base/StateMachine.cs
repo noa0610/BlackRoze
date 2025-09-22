@@ -10,19 +10,19 @@ namespace BlackRose.Core.Models.States
         private readonly UnitBase _parent;
         private readonly IAnimationDriver _anim;
 
-        private readonly Dictionary<string, StateComp> _stateMap = new();
+        private readonly Dictionary<string, StateInfo> _stateMap = new();
         private readonly Dictionary<(string state, string trigger), (string state, string animetrigger)> _transmissionGroup = new();
 
         private readonly Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> _layerTransmissionGroup = new();
 
 
-        private (string key, StateComp state) _currentState;
+        private StateInfo _currentState;
         private readonly Queue<string> _requests = new();
         private readonly Queue<string> _directRequests = new();
 
         public string CurrentLayer { get; private set; } = "Default";
-        public Dictionary<string, StateComp> StateMap => _stateMap;
-        public (string key, StateComp state) CurrentState => _currentState;
+        public Dictionary<string, StateInfo> StateMap => _stateMap;
+        public StateInfo CurrentState => _currentState;
         public Dictionary<(string state, string trigger), (string state, string animetrigger)> TransmissionGroup => _transmissionGroup;
         public Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransmissionGroup => _layerTransmissionGroup;
         public bool UseDefaultLayerIfMissingTransmission { get; set; } = true;
@@ -77,21 +77,6 @@ namespace BlackRose.Core.Models.States
             if (_layerTransmissionGroup.TryGetValue((CurrentLayer, _currentState.key, trigger), out var transByLayer))
             {
                 return Change(transByLayer);
-                //var to = _stateMap[transByLayer.state];
-                //if (_currentState.state.AllowChange(to, _parent) && to.AllowEnter(_currentState.state, _parent))
-                //{
-                //    var from = _currentState.state;
-                //    var fromKey = _currentState.key;
-
-                //    from.Exit(to, _parent);
-                //    _currentState = (transByLayer.state, to);
-
-                //    _anim.OnTransition(fromKey, _currentState.key, transByLayer.animetrigger);
-
-                //    to.Enter(from, _parent);
-                //    return true;
-                //}
-                //return false; // レイヤー指定があるのに不可なら即終了
             }
 
             if (_layerTransmissionGroup.TryGetValue((Layer.COMMON.ToString(), _currentState.key, trigger), out var trs))
@@ -110,17 +95,17 @@ namespace BlackRose.Core.Models.States
         private bool Change((string state, string animetrigger) trs)
         {
             var to = _stateMap[trs.state];
-            if (_currentState.state.AllowChange(to, _parent) && to.AllowEnter(_currentState.state, _parent))
+            if (_currentState.Instance.AllowChange(to.Instance, _parent) && to.Instance.AllowEnter(_currentState.state, _parent))
             {
                 var from = _currentState.state;
                 var fromKey = _currentState.key;
 
-                from.Exit(to, _parent);
-                _currentState = (trs.state, to);
+                from.Exit(to.Instance, _parent);
+                _currentState = to;
 
                 _anim.OnTransition(fromKey, _currentState.key, trs.animetrigger);
 
-                to.Enter(from, _parent);
+                to.Instance.Enter(from, _parent);
                 return true;
             }
             return false;
@@ -166,9 +151,9 @@ namespace BlackRose.Core.Models.States
             }
         }
 
-        public void AddState(string key, StateComp state)
+        public void AddState(string key, StateComp state, params string[] tags)
         {
-            _stateMap[key] = state;
+            _stateMap[key] = new StateInfo(key, state, tags);
             if (state is IRigidbodyUser user)
             {
                 if (_parent.TryGetComponent<Rigidbody2D>(out var rb)) user.SetRB2(rb);
@@ -176,8 +161,8 @@ namespace BlackRose.Core.Models.States
             }
         }
 
-        public void AddState<T>(T key, StateComp state) where T : System.Enum
-            => AddState(key.ToString(), state);
+        public void AddState<T>(T key, StateComp state, params string[] tags) where T : System.Enum
+            => AddState(key.ToString(), state, tags);
 
         public bool SetStateDirect(string target)
         {
@@ -185,7 +170,7 @@ namespace BlackRose.Core.Models.States
             if (_stateMap.TryGetValue(target, out var state))
             {
                 var prevKey = _currentState.key;
-                _currentState = (target, state);
+                _currentState = state;
                 _anim.OnSetState(target); // ★アニメーション委譲（直接セット時）
                 _currentState.state.Enter(tmp, _parent);
                 return true;

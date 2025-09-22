@@ -8,7 +8,7 @@ namespace HighElixir
     /// <summary>
     /// ID 付きクールダウン/タイマー管理。
     /// </summary>
-    [Serializable]
+    [Serializable, Obsolete]
     public sealed class TimeHolders
     {
         public enum CountType

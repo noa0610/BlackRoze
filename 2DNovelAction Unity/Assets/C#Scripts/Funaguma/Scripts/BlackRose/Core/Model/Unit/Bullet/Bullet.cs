@@ -3,13 +3,18 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
+    /// <summary>
+    /// コライダーはTriggerにすること
+    /// </summary>
     public class Bullet : MonoBehaviour
     {
         [SerializeField, Tooltip("常に衝突可能なレイヤー")] private LayerMask _canHitLayer;
         protected LayerMask _targetLayer;
         protected BulletStatus _status;
         protected Vector2 _direction;
+        protected UnitBase _parent;
         public Transform Transform => transform;
+        public UnitBase Parent => _parent;
 
         // 弾のステータス設定（生成時に呼ばれる想定）
         public void SetBulletStatus(BulletData bullet, LayerMask targetLayer)
@@ -20,6 +25,10 @@ namespace BlackRose.Core.Models.Units
         public void SetDirection(Vector2 dir)
         {
             _direction = dir.normalized;
+        }
+        public void SetParent(UnitBase parent)
+        {
+            _parent = parent;
         }
         // 毎フレームの更新処理（弾の移動）
         protected virtual void Update()

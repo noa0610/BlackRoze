@@ -11,17 +11,21 @@ namespace HighElixir
         /// <returns>特定の列挙型の全ての値を格納したリスト</returns>
         public static List<T> GetEnumList<T>() where T : Enum
         {
-            return Enum.GetValues(typeof(T)).Cast<T>().ToList();
+            return GetEnumerable<T>().ToList();
         }
         public static HashSet<T> GetEnumHashSet<T>() where T : Enum
         {
-            return Enum.GetValues(typeof(T)).Cast<T>().ToHashSet();
+            return GetEnumerable<T>().ToHashSet();
         }
 
+        public static string[] GetEnumNames<T>() where T : Enum
+        {
+            return Enum.GetNames(typeof(T));
+        }
         public static Dictionary<T, string> GetDict<T>() where T : Enum
         {
-            var values = Enum.GetValues(typeof(T)).Cast<T>();
-            var names = Enum.GetNames(typeof(T));
+            var values = GetEnumerable<T>();
+            var names = GetEnumNames<T>();
             var dict = new Dictionary<T, string>();
             int i = 0;
             foreach (var v in values)
@@ -30,6 +34,12 @@ namespace HighElixir
                 i++;
             }
             return dict;
+        }
+
+        private static IEnumerable<T> GetEnumerable<T>()
+            where T : Enum
+        {
+            return Enum.GetValues(typeof(T)).Cast<T>();
         }
     }
 }

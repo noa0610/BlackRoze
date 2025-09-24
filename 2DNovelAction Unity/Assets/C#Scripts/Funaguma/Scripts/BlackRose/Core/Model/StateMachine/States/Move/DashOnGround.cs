@@ -8,7 +8,6 @@ namespace BlackRose.Core.Models.States
     [Serializable]
     public class DashOnGround : HolizontalMovingStates
     {
-        [SerializeField] private Rigidbody2D _rigidbody2D;
         [SerializeField] private DynamicAfterImageEffect2DPlayer _afterImagePlayer;
         [SerializeField] private bool _onDashJump = false;
 
@@ -18,20 +17,30 @@ namespace BlackRose.Core.Models.States
         // Exit→着地までの購読を保持しておく（破棄時に保険で解除）
         private Action _onLandingHandler;
 
+        [Obsolete]
         public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent)
+            : base()
         {
-            _rigidbody2D = rigidbody2D;
             if (_afterImagePlayer == null)
                 _afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();
 
             if (_afterImagePlayer != null)
                 _afterImagePlayer.SetActive(false);
         }
+        public DashOnGround(GroundedUnit parent)
+            : base()
+        {
+            if (_afterImagePlayer == null)
+                _afterImagePlayer = parent.gameObject.GetComponent<DynamicAfterImageEffect2DPlayer>();
 
+            if (_afterImagePlayer != null)
+                _afterImagePlayer.SetActive(false);
+        }
         public DashOnGround() { }
 
         public override void Enter(IState previousIState, UnitBase parent)
         {
+            base.Enter(previousIState, parent);
             // Null保険
             if (_afterImagePlayer != null)
                 _afterImagePlayer.SetActive(true);
@@ -39,9 +48,10 @@ namespace BlackRose.Core.Models.States
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             if (parent is not GroundedUnit grounded) return;
             if (!grounded.IsGrounded) return;
-            if (_rigidbody2D == null) return;
+            if (Rigidbody2D == null) return;
 
             // 速度・向き取得（キャッシュ）
             var dashStatus = parent.statusManager.GetStatus(Status.DashSpeed);
@@ -53,9 +63,9 @@ namespace BlackRose.Core.Models.States
 
             // MoveTowardsでスムーズに目標へ近づける
             float dt = Time.deltaTime;
-            float newVx = Mathf.MoveTowards(_rigidbody2D.velocity.x, targetVx, _accel * dt);
+            float newVx = Mathf.MoveTowards(Rigidbody2D.velocity.x, targetVx, _accel * dt);
 
-            _rigidbody2D.velocity = new Vector2(newVx, _rigidbody2D.velocity.y);
+            Rigidbody2D.velocity = new Vector2(newVx, Rigidbody2D.velocity.y);
         }
 
         public override void Exit(IState nextIState, UnitBase parent)

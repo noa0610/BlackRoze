@@ -1,9 +1,11 @@
 ﻿using BlackRose.Core.Models.Units;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 namespace BlackRose.Core.Models.States
 {
+    [Obsolete("廃止予定、今後はEnemy_Turretを参考にアニメーショントリガーをセットしてください")]
     public class StateWithAnime : StateComp
     {
         [SerializeField] public string animeTriggerName;
@@ -79,17 +81,20 @@ namespace BlackRose.Core.Models.States
     }
     public static class StateExtension
     {
+        [Obsolete("廃止予定、今後はEnemy_Turretを参考にアニメーショントリガーをセットしてください")]
         public static T SetAnimeTrigger<T>(this T state, string trigger) where T : StateWithAnime
         {
             state.animeTriggerName = trigger;
             state.ResetTriggerCheck(); // トリガーの存在チェックをリセット
             return state;
         }
+        [Obsolete("廃止予定、今後はEnemy_Turretを参考にアニメーショントリガーをセットしてください")]
         public static T SetNeedWait<T>(this T state, bool isNeed) where T : StateWithAnime
         {
             state.waitForAnimeEnd = isNeed;
             return state;
         }
+        [Obsolete("廃止予定、今後はStateComp.SetWaitTick()を使用してください")]
         public static T SetCancelableProgress<T>(this T state, float progress) where T : StateWithAnime
         {
             state.cancelableProgress = progress;

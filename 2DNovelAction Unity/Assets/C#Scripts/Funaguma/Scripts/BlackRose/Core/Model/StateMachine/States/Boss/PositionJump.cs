@@ -10,11 +10,11 @@ namespace BlackRose.Core.Models.States
         private Rigidbody2D _rb;
         private List<Vector2> _positions;
         private float _savedGravity;
-        private float _jumpSpeed;      // 水平方向の速度
+        private float _jumpSpeed = 1;      // 水平方向の速度
         private Vector2 _startPos;
         public Vector2 TargetPosition { get; private set; }
-        public Action OnArrived { get; private set; } // 到達時のコールバック
-        public PositionJump(List<Vector2> positions, float jumpSpeed)
+        public event Action OnArrived; // 到達時のコールバック
+        public PositionJump(List<Vector2> positions, float jumpSpeed = 1)
         {
             SetPositions(positions);
             _jumpSpeed = jumpSpeed;

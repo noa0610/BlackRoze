@@ -1,12 +1,13 @@
 ﻿using BlackRose.Core.Models.EffectManagers;
 using BlackRose.Core.Models.States;
+using HighElixir;
 using System;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
-    public abstract class UnitBase : MonoBehaviour, IPausable
+    public abstract class UnitBase : MonoBehaviour, IPausable, IUnit
     {
         // === Reference ===
         public SpriteEffectPlayer player;
@@ -44,25 +45,27 @@ namespace BlackRose.Core.Models.Units
         }
         public bool IsInvincible { get; set; }
 
+        public TimeHolders Timer { get; private set; } = new();
+
         // 初期状態のステート
         protected virtual string StartState => "idle";
         protected abstract void RegisterStats();
 
         // ===== ステータス操作 =====
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(IUnit source, float damage)
         {
             if (!BeforeTakeDamage(ref damage)) return;
-            if(statusManager.TakeDamage(damage))
+            if (statusManager.TakeDamage(damage))
                 OnDeath();
-            OnTakeDamage(damage);
+            OnTakeDamage(source, damage);
         }
 
         protected virtual bool BeforeTakeDamage(ref float damage)
         {
             return true;
         }
-        protected virtual void OnTakeDamage(float damage)
+        protected virtual void OnTakeDamage(IUnit s, float damage)
         {
         }
 

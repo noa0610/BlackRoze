@@ -46,9 +46,9 @@ namespace BlackRose.Core.Models.Units
 
 
         private SearchAssistanceMono _searchAssistance;
-
-        private int shootCount = 0;
         [SerializeField] private int maxShootCount = 3;
+        private int shootCount = 0;
+
         [SerializeField] private float shootInterval = 0.5f;
         private float shootTimer = 0f;
 
@@ -57,11 +57,16 @@ namespace BlackRose.Core.Models.Units
 
         private float shootReadyTimer = 0f;
         [SerializeField] private float shootReadyDuration = 0.15f;
+        [SerializeField] private ShootForward attack;
 
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
         }
+        private bool canAttack = false;
+        private float firstAttackDelay = 1.0f; // 最初の攻撃までの待機秒数
+        private float firstAttackTimer = 0f;
+
 
         protected override void OnGrounded() { }
         protected override void OnUnGrounded() { }
@@ -107,7 +112,6 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.Encount, new Idle().SetAnimeTrigger("Contact"));
             _stateMachine.AddState(States.shootReady, new Idle()); // アニメーション専用
 
-            var attack = new ShootForward();
             attack.SetBullet(_bulletData);
             attack.SetMuzzle(_muzzle);
             attack.SetCancelableProgress(0);
@@ -116,7 +120,6 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.knockBack, new Stun(_rb2, 0.6f, false).SetAnimeTrigger("Damage"));
             _stateMachine.AddState(States.dead, new Idle());
         }
-
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
@@ -128,14 +131,55 @@ namespace BlackRose.Core.Models.Units
             if (IsMatchingState(States.idle))//今のステートがidleかつYellowの中に当てはまるオブジェクトが一つでもある
             {
                 if (_searchAssistance.Execute("yellow", list, out _))
-                    _stateMachine.ChangeState(Triggers.FoundPlayer);//ismatchingStatesがidleではないため
+                {
+                    var player = GameObject.FindGameObjectWithTag("Player");
+                    if (player != null)
+                    {
+                        float dir = player.transform.position.x - transform.position.x;
+
+                        // 向きが違っていたら反転
+                        if (dir > 0 && moveDirection < 0)
+                        { // プレイヤーが右側
+                            Flip();
+                        }// ← これでMoveOnGroundの移動方向も変わる
+                        else if (dir < 0 && moveDirection > 0) // プレイヤーが左側
+                        {
+                            Flip();
+                        }
+                    }
+                    _stateMachine.ChangeState(Triggers.FoundPlayer);
+                    //ismatchingStatesがidleではないため
+
+                }
                 else
                     _stateMachine.ChangeState(Triggers.MissingPlayer);
             }
             else if (IsMatchingState(States.move))//いまのすてーとがmove
             {
                 if (found)
-                    _stateMachine.ChangeState(Triggers.FoundPlayer);//ismatchingStatesがidleではないため
+                {
+
+                    var player = GameObject.FindGameObjectWithTag("Player");
+                    if (player != null)
+                    {
+                        float dir = player.transform.position.x - transform.position.x;
+
+                        // 向きが違っていたら反転
+                        if (dir > 0 && moveDirection < 0)
+                        { // プレイヤーが右側
+                            Flip();
+                        }// ← これでMoveOnGroundの移動方向も変わる
+                        else if (dir < 0 && moveDirection > 0) // プレイヤーが左側
+                        {
+                            Flip();
+                        }
+                    }
+
+                    _stateMachine.ChangeState(Triggers.FoundPlayer);
+                }
+
+
+
                 else
                     _stateMachine.ChangeState(Triggers.MissingPlayer);
             }
@@ -167,6 +211,16 @@ namespace BlackRose.Core.Models.Units
 
         protected override void FixedUpdate()
         {
+            // 最初の攻撃待機
+            if (!canAttack)
+            {
+                firstAttackTimer += Time.fixedDeltaTime;
+                if (firstAttackTimer >= firstAttackDelay)
+                {
+                    canAttack = true;
+                }
+                return; // 攻撃サイクルに入らない
+            }
             SearchPlayer();
             if (IsMatchingState(States.move))
 
@@ -178,55 +232,48 @@ namespace BlackRose.Core.Models.Units
             // 既存の処理（攻撃や死亡処理）
 
 
-            // Encount → ShootReady
             if (IsMatchingState(States.Encount))
             {
                 encountTimer += Time.fixedDeltaTime;
                 if (encountTimer >= encountDuration)
                 {
+                    var player = GameObject.FindGameObjectWithTag("Player");
+                    if (player != null)
+                    {
+                        float dir = player.transform.position.x - transform.position.x;
+                        if (dir > 0 && moveDirection < 0) Flip();
+                        else if (dir < 0 && moveDirection > 0) Flip();
+                    }
                     encountTimer = 0f;
-                    _stateMachine.ChangeState(Triggers.AttackRange);
 
-                    // ShootReady アニメーション発火
-                    if (_anim != null)
-                        _anim.SetTrigger("Attack_OneShot");
+                    // ★ ここでshootCountをリセット
+                    shootCount = 0; // プレイヤー発見後、攻撃開始直前にリセット
+                    _stateMachine.ChangeState(Triggers.AttackRange);
                 }
             }
             else encountTimer = 0f;
 
-            // ShootReady → Shoot（溜め時間が終わったら1回だけShootへ）
+            // shootReadyではリセットしない
             if (IsMatchingState(States.shootReady))
             {
                 shootReadyTimer += Time.fixedDeltaTime;
                 if (shootReadyTimer >= shootReadyDuration)
                 {
                     shootReadyTimer = 0f;
-
-                    // ★ 撃つ直前にプレイヤーの位置を確認して向きを固定
-                    var player = GameObject.FindGameObjectWithTag("Player");
-                    if (player != null)
-                    {
-                        float dir = player.transform.position.x - transform.position.x;
-
-                        // 向きが違っていたら反転
-                        if (dir > 0 && moveDirection < 0) // プレイヤーが右側
-                            Flip();
-                        else if (dir < 0 && moveDirection > 0) // プレイヤーが左側
-                            Flip();
-                    }
-
-                    // Shoot ステートへ遷移
+                    _anim.SetTrigger("Attack_OneShot");
+                    attack.SetDirection(Direction);
                     _stateMachine.ChangeState(Triggers.shoot);
                 }
             }
 
 
-
-            if (IsMatchingState(States.shoot) && shootCount < maxShootCount)
+            if (IsMatchingState(States.shoot) && shootCount <= maxShootCount-1)//ここで一回
             {
+                
                 shootTimer += Time.fixedDeltaTime;
-                if (shootTimer >= shootInterval)
+                if (shootTimer >= shootInterval)//ここで3回打っている
                 {
+
                     shootTimer = 0f;
                     var current = _stateMachine.CurrentState;
                     if (current.state is ShootForward shoot)
@@ -234,9 +281,9 @@ namespace BlackRose.Core.Models.Units
                     ;
 
                     shootCount++;
-                    Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount})");
+                    Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount-1})");
 
-                    if (shootCount >= maxShootCount)
+                    if (shootCount >= maxShootCount-1)
                     {
                         shootCount = 0;
                         _stateMachine.ChangeState(Triggers.AttackEnd);
@@ -295,12 +342,14 @@ namespace BlackRose.Core.Models.Units
             Debug.DrawRay(wallCheck.position, Vector2.right * moveDirection * checkDistance, Color.red);
             Debug.DrawRay(groundCheck.position, Vector2.down * checkDistance, Color.blue);
         }
+
         private void Flip()
         {
             moveDirection *= -1; // 方向を反転
             transform.Rotate(0, 180, 0); // 見た目を反転
             Direction = new Vector2(moveDirection, 0); // ← これでMoveOnGroundの移動方向も変わる
         }
+        
 
 
 

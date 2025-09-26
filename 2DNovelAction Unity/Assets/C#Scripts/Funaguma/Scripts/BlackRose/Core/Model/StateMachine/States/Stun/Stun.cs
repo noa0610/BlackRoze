@@ -27,7 +27,7 @@ namespace BlackRose.Core.Models.States
                 _thrower.Create(parent.gameObject, "Stun!", Color.white);
             parent.Animator.SetFloat("StunTime", _lazyChangeTime);
             _rigidbody2D.velocity = Vector2.zero;
-            _rigidbody2D.AddForce(_knockbackDirection * parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force
+            _rigidbody2D.AddForce(_knockbackDirection * -parent.Direction * 15f, ForceMode2D.Impulse); // Apply knockback force
             parent.GetComponent<SpriteEffectPlayer>().AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, 1.5f);
             parent.StatusEffectManager.AddEffect(StatusEffectHolder.instance.Stun.EffectFactory());
         }

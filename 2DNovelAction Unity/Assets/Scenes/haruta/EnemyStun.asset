@@ -9,17 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: ShooterStatus
-  m_EditorClassIdentifier: Assembly-CSharp:BlackRose:UnitStatusData
-  id: 0
-  unitName: 
-  description: 
-  maxHp: 10
-  speed: 2
-  speedInAir: 0
-  dashSpeed: 0
-  power: 0
-  jumpPower: 0
-  damageTakeScale: 1
-  tags: 2
+  m_Script: {fileID: 11500000, guid: bfd00f1902787b840901106003621dd9, type: 3}
+  m_Name: EnemyStun
+  m_EditorClassIdentifier: 
+  _name: EnemyStun
+  _description: 
+  _icon: {fileID: 0}
+  _remainingDuration: 0.2
+  _effects:
+  - target: 5
+    fix: 0.6
+    scale: 0

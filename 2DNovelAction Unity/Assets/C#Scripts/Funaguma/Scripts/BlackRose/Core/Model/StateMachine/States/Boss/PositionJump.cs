@@ -6,7 +6,7 @@ using UnityEngine;
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class PositionJump : StateWithAnime, IRigidbodyUser
+    public class PositionJump : StateWithAnime, IRigidbodyUser, ICompleteEmitter
     {
         [SerializeField]
         private List<Vector2> _positions;
@@ -18,7 +18,10 @@ namespace BlackRose.Core.Models.States
         private float _savedGravity;
 
         public Vector2 TargetPosition { get; private set; }
-        public Action OnArrived { get; private set; } // 到達時のコールバック
+
+        // 既存APIのため、OnCompletedにアタッチする形で実装
+        public event Action OnArrived { add=> OnCompleted += value; remove => OnCompleted -= value; }
+        public event Action OnCompleted;
 
         public Rigidbody2D Rigidbody2D { get; private set; }
 
@@ -59,7 +62,7 @@ namespace BlackRose.Core.Models.States
             if (Vector2.Distance(Rigidbody2D.position, TargetPosition) < 0.1f)
             {
                 Rigidbody2D.velocity = Vector2.zero; // 到達時の速度をゼロにする
-                OnArrived?.Invoke(); // 到達時のコールバックを呼び出す
+                OnCompleted?.Invoke(); // 到達時のコールバックを呼び出す
             }
         }
         public override void Exit(IState nextIState, UnitBase parent)

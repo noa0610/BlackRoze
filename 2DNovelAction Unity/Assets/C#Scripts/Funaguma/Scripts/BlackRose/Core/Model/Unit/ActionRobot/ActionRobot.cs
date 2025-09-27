@@ -60,7 +60,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.falling);
         }
 
-        protected override bool BeforeTakeDamage(ref float damage)
+        protected override bool BeforeTakeDamage(IUnit unit, ref float damage)
         {
             return !IsInvincible;
         }
@@ -199,9 +199,9 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
-            Timer.Register(nameof(_coyoteTime), _coyoteTime);
-            Timer.Register(nameof(_shootBlockTime), _shootBlockTime);
-            Timer.Register(nameof(_invincibleTime), _invincibleTime, false, _ => IsInvincible = false);
+            Timer.CountDownRegister(nameof(_coyoteTime), _coyoteTime);
+            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
+            Timer.CountDownRegister(nameof(_invincibleTime), _invincibleTime, () => IsInvincible = false);
         }
         protected virtual void Start()
         {

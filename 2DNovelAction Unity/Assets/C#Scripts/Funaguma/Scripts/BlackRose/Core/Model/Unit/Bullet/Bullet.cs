@@ -30,6 +30,11 @@ namespace BlackRose.Core.Models.Units
         {
             _parent = parent;
         }
+
+        public void Reflect()
+        {
+            _direction = -_direction;
+        }
         // 毎フレームの更新処理（弾の移動）
         protected virtual void Update()
         {

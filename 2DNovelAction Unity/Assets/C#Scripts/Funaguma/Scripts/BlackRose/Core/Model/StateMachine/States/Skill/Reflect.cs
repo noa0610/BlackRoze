@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using BlackRose.Core.Models.Objects;
+using BlackRose.Core.Models.Units;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {
@@ -21,11 +23,27 @@ namespace BlackRose.Core.Models.States
         public override void Enter(IState previousIState, UnitBase parent)
         {
             base.Enter(previousIState, parent);
-            // 反射エフェクトを再生する
-            var effect = _go.GetComponent<BlackRose.Core.Views.Effects.ReflectEffect>();
-            if (effect != null)
+            if (_go.TryGetComponent<ReflectMono>(out var _))
             {
-                effect.Play();
+                Debug.Log("ReflectMono component found.");
+                OnCompleted?.Invoke();
+            }
+            // 反射エフェクトを再生する
+            //var effect = _go.GetComponent<BlackRose.Core.Views.Effects.ReflectEffect>();
+            //if (effect != null)
+            //{
+            //    effect.Play();
+            //}
+            _go.SetActive(true);
+        }
+
+        public override void Exit(IState nextState, UnitBase parent)
+        {
+            base.Exit(nextState, parent);
+            if (_go.activeInHierarchy)
+            {
+                _go.SetActive(false);
+                OnCompleted?.Invoke();
             }
         }
         /// <summary>

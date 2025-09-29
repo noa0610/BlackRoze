@@ -1,6 +1,5 @@
 ﻿using BlackRose.Core.Models.States;
-using HighElixir;
-using HighElixir.Timer;
+using HighElixir.Timers;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,7 +16,7 @@ namespace BlackRose.Core.Models.Units
         protected AIController _parent;
         public UnitStatusData StatusData => _status;
         protected IStateMachine SM => _parent.StateMachine;
-        protected TimerHolder Timer => _parent.TimeHolders;
+        protected Timer Timer => _parent.Timer;
         public abstract void Register();
 
         // Grounded Event

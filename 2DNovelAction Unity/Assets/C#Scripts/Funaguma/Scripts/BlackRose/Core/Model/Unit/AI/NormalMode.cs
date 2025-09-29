@@ -39,7 +39,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void Register()
         {
-            if (Timer.Register(nameof(_skillCT), _skillCT))
+            if (Timer.CountDownRegister(nameof(_skillCT), _skillCT))
                 Debug.Log("登録！");
 
             // Idle

@@ -150,8 +150,14 @@ namespace HighElixir.Timers
         /// </summary>
         public bool Stop(string id, bool init = false, bool isLazy = false)
         {
+            return Stop(id, out _, init, isLazy);
+        }
+
+        public bool Stop(string id, out float time, bool init = false, bool isLazy = false)
+        {
             if (_timers.TryGetValue(id, out var t))
             {
+                time = t.Current;
                 if (isLazy)
                 {
                     var command = init ? LazyCommand.Init | LazyCommand.Stop : LazyCommand.Stop;
@@ -162,9 +168,9 @@ namespace HighElixir.Timers
                 if (init) t.Initialize();
                 return true;
             }
+            time = 0f;
             return false;
         }
-
         /// <summary>
         /// 終了済みか（登録が無ければ false）。
         /// </summary>

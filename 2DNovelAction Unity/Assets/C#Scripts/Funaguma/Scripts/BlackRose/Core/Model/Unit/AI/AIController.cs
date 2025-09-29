@@ -2,10 +2,7 @@
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
-using Fungus;
 using HighElixir;
-using HighElixir.Timer;
-using HighElixir.UI;
 using System.Collections.Generic;
 using UniRx;
 using UniRx.Triggers;
@@ -39,7 +36,6 @@ namespace BlackRose.Core.Models.Units
         [Header("Reference")]
         [SerializeField] private List<BulletData> _bullets = new();
         [SerializeField] private LayerMask _targetLayer;
-        private TimerHolder _timer = new();
 
         [Header("Option Settings")]
         [SerializeField] private bool _canChargeCount = false;
@@ -58,8 +54,6 @@ namespace BlackRose.Core.Models.Units
         private Mode _currentEnumMode = Mode.Normal;
 
         // ===== State Machine =====
-
-        public TimerHolder TimeHolders => _timer;
         public AIModeBase CurrentMode => _currentEnumMode switch
         {
             Mode.Normal => _normalMode,
@@ -69,7 +63,7 @@ namespace BlackRose.Core.Models.Units
         };
 
         public List<BulletData> Bullets => _bullets;
-        public bool CanJump => !TimeHolders.IsFinished(nameof(_coyoteTime));
+        public bool CanJump => !Timer.IsFinished(nameof(_coyoteTime));
         // 外部からのモード切替 API
         public void SwitchModeLight() => ChangeMode(Mode.Light);
         public void SwitchModeHeavy() => ChangeMode(Mode.Heavy);
@@ -127,7 +121,7 @@ namespace BlackRose.Core.Models.Units
             {
                 Debug.Log("AI Attack Pressed");
                 CurrentMode.OnShoot(value);
-                _timer.Start("chargeTime");
+                Timer.Start("chargeTime");
             }
             else
             {
@@ -142,7 +136,7 @@ namespace BlackRose.Core.Models.Units
         // === GroundedUnit の抽象 ===
         protected override void OnGrounded()
         {
-            _timer.Reset(nameof(_coyoteTime));
+            Timer.Reset(nameof(_coyoteTime));
             _stateMachine.ChangeState(AITriggers.landing);
             CurrentMode.OnGrounded();
         }
@@ -155,7 +149,7 @@ namespace BlackRose.Core.Models.Units
         {
             base.AfterJump();
             // ジャンプしたのでコヨーテタイムを終了させる
-            _timer.Stop(nameof(_coyoteTime));
+            Timer.Stop(nameof(_coyoteTime));
         }
         // === Private ===
 
@@ -181,9 +175,9 @@ namespace BlackRose.Core.Models.Units
         }
         protected override void BeforeAwake()
         {
-            _timer.Register(nameof(_coyoteTime), _coyoteTime);
-            _timer.Register(nameof(_shootBlockTime), _shootBlockTime);
-            _timer.Register("chargeTime");
+            Timer.CountDownRegister(nameof(_coyoteTime), _coyoteTime);
+            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
+            Timer.CountUpRegister("chargeTime");
 
             _normalMode.Bind(this);
             _lightMode.Bind(this);
@@ -264,7 +258,7 @@ namespace BlackRose.Core.Models.Units
                 .Where(_ => _isPlaying)
                 .Subscribe(_ =>
                 {
-                    _timer.Update(dt);
+                    Timer.Update(dt);
                     CurrentMode.Update(dt);
                 })
                 .AddTo(this);

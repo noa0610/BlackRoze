@@ -62,8 +62,7 @@ namespace BlackRose.Core.Models.States
             float targetVx = dirX * maxSpeed;
 
             // MoveTowardsでスムーズに目標へ近づける
-            float dt = Time.deltaTime;
-            float newVx = Mathf.MoveTowards(Rigidbody2D.velocity.x, targetVx, _accel * dt);
+            float newVx = Mathf.MoveTowards(Rigidbody2D.velocity.x, targetVx, _accel * deltaTime);
 
             Rigidbody2D.velocity = new Vector2(newVx, Rigidbody2D.velocity.y);
         }

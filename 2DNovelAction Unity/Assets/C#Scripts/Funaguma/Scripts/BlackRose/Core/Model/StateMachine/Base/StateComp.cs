@@ -9,7 +9,7 @@ namespace BlackRose.Core.Models.States
     public class StateComp : IState, ISerializationCallbackReceiver
     {
         // ステート切り替えを拒否する待機フレーム数
-        private TimerHolder _timeHolders = new TimerHolder();
+        private Timer _timeHolders = new TimerHolder();
         protected int _waitFrame = 0;
 
         protected TimerHolder Timer => _timeHolders;

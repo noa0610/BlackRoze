@@ -147,8 +147,9 @@ namespace BlackRose.Core.Models.Units
             var flashBeamSword = new Idle().SetAnimeTrigger("flashBeamSword").SetCancelableProgress(0);
             _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
         }
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null)
             {

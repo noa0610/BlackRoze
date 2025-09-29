@@ -203,8 +203,9 @@ namespace BlackRose.Core.Models.Units
             Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
             Timer.CountDownRegister(nameof(_invincibleTime), _invincibleTime, () => IsInvincible = false);
         }
-        protected virtual void Start()
+        protected override void Start()
         {
+            base.Start();
             this.UpdateAsObservable()
                 .Where(_ => _canChargeCount)
                 .Subscribe(_ => _shootPressTime += Time.deltaTime)

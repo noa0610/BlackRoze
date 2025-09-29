@@ -1,4 +1,4 @@
-﻿using HighElixir;
+﻿using HighElixir.Timers;
 using HighElixir.Pool;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace BlackRose.Core.Models.Objects
         // ダメージフロアごとにTimeHolder用のキーを持たせる
         private Dictionary<DamageFloor, string> _floorTimerDict = new ();
         private Dictionary<string, DamageFloor> _floorTimerLink = new ();
-        private TimeHolders _timer = new();
+        private Timer _timer = new();
         private int _count = 0;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace BlackRose.Core.Models.Objects
             var key = "damageFloor" + _count++;
             _floorTimerDict.Add(go, key);
             _floorTimerLink.Add(key, go);
-            _timer.Register(key, duration, start:true, s => { DestroyFloor(go); });
+            _timer.CountDownRegister(key, duration, () => { DestroyFloor(go); });
             go.Generate(pos, maxLength);
             return go;
         }

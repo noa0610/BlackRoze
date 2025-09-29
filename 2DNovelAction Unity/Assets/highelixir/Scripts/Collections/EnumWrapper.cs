@@ -33,14 +33,16 @@ namespace HighElixir
                 res.RemoveAll(x => x.Contains("None", StringComparison.OrdinalIgnoreCase));
             return res;
         }
-        public static Dictionary<T, string> GetDict<T>() where T : Enum
+        public static Dictionary<T, string> GetDict<T>(bool skippingNone = true) where T : Enum
         {
             var values = GetEnumerable<T>();
-            var names = GetEnumNames<T>();
+            var names = GetEnumNames<T>(skippingNone);
             var dict = new Dictionary<T, string>();
             int i = 0;
             foreach (var v in values)
             {
+                if (v.ToString().Contains("None", StringComparison.OrdinalIgnoreCase) && skippingNone)
+                    continue;
                 dict[v] = names[i];
                 i++;
             }

@@ -239,12 +239,12 @@ namespace BlackRose.Core.Models.Units
             _stunState = new Stun(_rigidbody, 0.7f, false)
                 .SetKnockback(_stunKnockback)
                 .SetThrower(_thrower);
-            _stunState.LazyEvent.AsObservable().Subscribe(_ =>
+            _stunState.OnCompleted += () =>
             {
                 Debug.Log("スタン終了");
                 _stateMachine.LazyChange(Triggers.finishedStun);
                 IsInvincible = false;
-            }).AddTo(this);
+            };
             _stateMachine.AddState(StateKey.stun, _stunState);
 
             // dead

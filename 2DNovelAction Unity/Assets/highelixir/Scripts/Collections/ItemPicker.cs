@@ -9,7 +9,6 @@ namespace HighElixir
     /// </summary>
     public static class ItemPicker
     {
-        private static Random random = new Random();
         /// <summary>
         /// リストからランダムに1つの要素を選ぶ。
         /// </summary>
@@ -19,7 +18,7 @@ namespace HighElixir
         public static T RandomPick<T>(this List<T> values)
         {
             if (values == null || values.Count == 0) return default;
-            return values[random.Next(0, values.Count)];
+            return values[RandomExtensions.Rand(0, values.Count)];
         }
 
         public static T RandomPick<T>(this List<T> values, HashSet<T> exists)
@@ -60,6 +59,10 @@ namespace HighElixir
                 return true;
             }
             return false;
+        }
+        public static bool TryGetOverItem<T>(this Stack<T> stack, int allowSize, out List<T> res)
+        {
+            return TryGetOverItem(stack.ToList(), allowSize, out res);
         }
     }
 }

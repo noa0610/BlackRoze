@@ -1,4 +1,4 @@
-﻿namespace HighElixir.Timer
+﻿namespace HighElixir.Timers
 {
     public enum CountType
     {

@@ -1,6 +1,5 @@
 ﻿using DG.Tweening;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace HighElixir.UI
 {
@@ -59,21 +58,6 @@ namespace HighElixir.UI
                     .DOLocalMove(new Vector3(_pos2.x, _pos2.y, z), _duration)
                     .SetEase(Ease.InOutSine)
                     .SetLoops(-1, LoopType.Yoyo);
-            }
-        }
-
-        private void SetPos()
-        {
-            if (_useRectTransform && _rectTransform != null)
-            {
-                _pos1 = _rectTransform.anchoredPosition;
-                _pos2 = _pos1;
-            }
-            else
-            {
-                var p = transform.localPosition;
-                _pos1 = new Vector2(p.x, p.y);
-                _pos2 = _pos1;
             }
         }
 

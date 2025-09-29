@@ -72,7 +72,7 @@ namespace BlackRose.Core.Models.Units
 
             // 待機
             //_stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));
-            _stateMachine.AddState(States.idle, new Idle().SetCancelableProgress(0).SetAnimeTrigger("Leave"));
+            _stateMachine.AddState(States.idle, new Idle());
 
             // 発射
             _shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
@@ -80,11 +80,11 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.shoot, _shoot);
 
             // インターバル
-            var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval).SetAnimeTrigger("idle");
+            var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval);
             _stateMachine .AddState(States.shootInterval, interval);
             // 警戒
             //_looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);
-            _looking = new Idle_Looking(_turret).SetCancelableProgress(0).SetAnimeTrigger("Contact");
+            _looking = new Idle_Looking(_turret);
             _stateMachine.AddState(States.inVigilance, _looking);
 
             // 死亡

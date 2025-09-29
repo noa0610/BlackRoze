@@ -221,5 +221,16 @@ namespace BlackRose.Core.Models.Helper
             }
             return machine;
         }
+
+        public static IStateMachine AddTransmissions<Trigger, State>(this IStateMachine machine, State from, params (Trigger trigger, (State state, string animTrigger) to)[] triggers)
+            where Trigger : Enum
+            where State : Enum
+        {
+            foreach (var trg in triggers)
+                machine.TransmissionGroup.Add(
+                    (from.ToString(), trg.trigger.ToString()), (trg.to.state.ToString(), trg.to.animTrigger));
+
+            return machine;
+        }
     }
 }

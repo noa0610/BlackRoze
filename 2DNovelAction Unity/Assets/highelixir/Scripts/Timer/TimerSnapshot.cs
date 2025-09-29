@@ -1,21 +1,22 @@
 ﻿// エディタ監視用のスナップショット。
 using System;
 
-namespace HighElixir.Timer.Internal
+namespace HighElixir.Timers.Internal
 {
     // TODO : スナップショットから復元する機能の実装
     [Serializable]
     public readonly struct TimerSnapshot
     {
         public readonly string Id;
-        public readonly float Max;
-        public readonly float Remaining;
+        public readonly float Initialize;
+        public readonly float Current;
         public readonly float NormalizedElapsed;
-        public readonly bool Running;
-        public readonly bool IsCountUp;
-        public TimerSnapshot(string id, float max, float remaining, float normalized, bool running, bool isCountUp)
+        public readonly bool IsRunning;
+        public readonly string TimerClass;
+        public readonly bool IsTick => TimerClass.Contains("Tick", StringComparison.Ordinal);
+        public TimerSnapshot(string id, float initialize, float current, float normalized, bool isRunning, string timerClass)
         {
-            Id = id; Max = max; Remaining = remaining; NormalizedElapsed = normalized; Running = running; IsCountUp = isCountUp;
+            Id = id; Initialize = initialize; Current = current; NormalizedElapsed = normalized; IsRunning = isRunning; TimerClass = timerClass;
         }
     }
 }

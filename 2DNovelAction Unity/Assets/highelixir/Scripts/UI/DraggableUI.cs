@@ -9,9 +9,11 @@ namespace HighElixir.UI
         IBeginDragHandler,
         IEndDragHandler
     {
-        [SerializeField] private float snapSize = 20f;
-        private RectTransform rt;
-        private Canvas canvas; // Canvasスケール考慮するなら必要
+        [SerializeField] private float _snapSize = 20f;
+        [SerializeField] private bool _clampedInScreen = true;
+        private RectTransform _rt;
+        private RectTransform _parentRt; // 親のRectTransformを保持する
+        private Canvas _canvas;
 
         // UnityEvents
         public UnityEvent OnBeginDragEvent = new();
@@ -35,28 +37,46 @@ namespace HighElixir.UI
         {
             Vector2 localPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                rt.parent as RectTransform,
+                _rt.parent as RectTransform,
                 screenPos,
-                canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+                _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera,
                 out localPoint
             );
+
+            if (_clampedInScreen)
+            {
+                // 親のRectTransformのサイズと、自身のRectTransformのサイズを考慮してクランプ範囲を計算
+                Vector2 parentSize = _parentRt.rect.size;
+                Vector2 selfSize = _rt.rect.size;
+
+                // アンカーポイントが中央(0.5, 0.5)の場合を想定して計算
+                float minX = -parentSize.x / 2f + selfSize.x / 2f;
+                float maxX = parentSize.x / 2f - selfSize.x / 2f;
+                float minY = -parentSize.y / 2f + selfSize.y / 2f;
+                float maxY = parentSize.y / 2f - selfSize.y / 2f;
+
+                localPoint.x = Mathf.Clamp(localPoint.x, minX, maxX);
+                localPoint.y = Mathf.Clamp(localPoint.y, minY, maxY);
+            }
+
             if (snap)
                 localPoint = new Vector2(RoundSnap(localPoint.x), RoundSnap(localPoint.y));
-            rt.anchoredPosition = localPoint;
+            _rt.anchoredPosition = localPoint;
         }
 
         private float RoundSnap(float value)
         {
-            float half = snapSize * 0.5f;
-            float mod = value % snapSize;
+            float half = _snapSize * 0.5f;
+            float mod = value % _snapSize;
             float baseVal = value - mod;
-            return (mod < half) ? baseVal : baseVal + snapSize;
+            return (mod < half) ? baseVal : baseVal + _snapSize;
         }
 
         private void Awake()
         {
-            rt = GetComponent<RectTransform>();
-            canvas = GetComponentInParent<Canvas>();
+            _rt = GetComponent<RectTransform>();
+            _parentRt = _rt.parent.GetComponent<RectTransform>(); // 親のRectTransformを取得
+            _canvas = GetComponentInParent<Canvas>();
         }
     }
 }

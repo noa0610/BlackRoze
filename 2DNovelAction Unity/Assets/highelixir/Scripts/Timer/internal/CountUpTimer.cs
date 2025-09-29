@@ -1,43 +1,26 @@
 ﻿using System;
 
-namespace HighElixir.Timer.Internal
+namespace HighElixir.Timers.Internal
 {
-    internal sealed class CountUpTimer : ITimer
+    internal sealed class CountUpTimer : InternalTimerBase
     {
-        public float InitialTime { get; set; }
-        public float Current { get; set; }
-        public CountType CountType { get; private set; }
-        public bool IsRunning { get; private set; }
-        public float NormalizedElapsed => 0f;
-        public event Action OnFinished; // null 許容
+        public override float NormalizedElapsed => 0f;
 
 
-        public CountUpTimer(CountType type)
+        public CountUpTimer(Action onReset = null)
+            : base(onReset)
         {
             InitialTime = 0f;
-            CountType = type;
         }
 
-        public void Reset()
+        public override void Reset()
         {
-            IsRunning = false;
-            Current = InitialTime;
+            EventInvokeSafely();
+            base.Reset();
         }
 
-        public void Start()
+        public override void Update(float dt)
         {
-            IsRunning = true;
-        }
-
-        public void Stop()
-        {
-            IsRunning = false;
-        }
-
-        public void Update(float dt)
-        {
-            if (CountType == CountType.Tick) dt = 1f;
-            if (InitialTime <= 0f) return;
             if (dt <= 0f) return; // 負やゼロを無視
 
             var next = Current + dt;

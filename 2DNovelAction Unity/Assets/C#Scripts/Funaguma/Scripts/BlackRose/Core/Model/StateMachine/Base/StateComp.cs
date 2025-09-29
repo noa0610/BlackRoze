@@ -1,6 +1,6 @@
 ﻿using BlackRose.Core.Models.Units;
 using HighElixir;
-using HighElixir.Timer;
+using HighElixir.Timers;
 using System;
 using UnityEngine;
 
@@ -9,14 +9,14 @@ namespace BlackRose.Core.Models.States
     public class StateComp : IState, ISerializationCallbackReceiver
     {
         // ステート切り替えを拒否する待機フレーム数
-        private Timer _timeHolders = new TimerHolder();
+        private Timer _timeHolders = new();
         protected int _waitFrame = 0;
 
-        protected TimerHolder Timer => _timeHolders;
+        protected Timer Timer => _timeHolders;
         public StateComp()
         {
             _timeHolders = new();
-            _timeHolders.Register(nameof(_waitFrame), _waitFrame, CountType.Tick);
+            _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
@@ -68,7 +68,7 @@ namespace BlackRose.Core.Models.States
             if (_timeHolders == null)
             {
                 _timeHolders = new();
-                _timeHolders.Register(nameof(_waitFrame), _waitFrame, CountType.Tick);
+                _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
             }
             OnDeserialize();
         }

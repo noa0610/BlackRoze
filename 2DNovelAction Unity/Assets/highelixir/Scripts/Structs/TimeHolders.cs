@@ -20,22 +20,18 @@ namespace HighElixir
         [Serializable]
         private sealed class Timer
         {
-            public bool IsEnable { get; private set; }
-            public float Max { get; private set; }
-            public float Remaining { get; private set; } = 0f;
-            public CountType Type { get; }
-            public event Action Finished; // null 許容
+            public string Key { get; set; }
+            public float Max { get; }
+            public float Remaining { get; private set; }
+            public event Action<string> Finished; // null 許容
             public bool Running => Remaining > 0f;
 
-            // オプション Maxが無視される
-            public bool IsCountUp { get; set; }
-
-            public Timer(float duration, CountType type, bool start, Action onFinished, bool isCountup = false)
+            public Timer(string key, float duration, bool start, Action<string> onFinished)
             {
                 if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
-                Type = type;
-                IsCountUp = isCountup; // 先に代入
-                Max = IsCountUp ? duration : duration;
+                Key = key;
+                Max = duration;
+                Remaining = start ? duration : 0f;
                 if (onFinished != null) Finished += onFinished;
                 if (start)
                 {
@@ -74,8 +70,10 @@ namespace HighElixir
                     if (!IsCountUp)
                         Finished?.Invoke();
                 }
-                // 途中でリターンしてるわけではないのは確認済み
-                //Debug.Log($"current : {Remaining}");
+
+                // ちょうど/下回った → 0 に丸め、完了を 1 回だけ通知
+                Remaining = 0f;
+                Finished?.Invoke(Key);
             }
 
             public void UpdateMaxTime(float newMax)
@@ -113,12 +111,12 @@ namespace HighElixir
         /// <summary>
         /// 新規登録。既に同じ id があれば false。
         /// </summary>
-        public bool Register(string id, float duration, CountType countType = CountType.Time, bool start = false, Action onFinished = null, bool isCountup = false)
+        public bool Register(string id, float duration, bool start = false, Action<string> onFinished = null)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
             if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
 
-            var timer = new Timer(duration, countType, start, onFinished, isCountup);
+            var timer = new Timer(id, duration, start, onFinished);
             return _timers.TryAdd(id, timer);
         }
 
@@ -231,7 +229,7 @@ namespace HighElixir
         /// <summary>
         /// 完了時の Action を追加。存在しない場合 false。
         /// </summary>
-        public bool AddAction(string id, Action action)
+        public bool AddAction(string id, Action<string> action)
         {
             if (action == null) return false;
             if (_timers.TryGetValue(id, out var t))
@@ -245,7 +243,7 @@ namespace HighElixir
         /// <summary>
         /// 完了時の Action を削除。存在しない場合 false。
         /// </summary>
-        public bool RemoveAction(string id, Action action)
+        public bool RemoveAction(string id, Action<string> action)
         {
             if (action == null) return false;
             if (_timers.TryGetValue(id, out var t))

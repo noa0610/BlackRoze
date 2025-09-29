@@ -46,14 +46,14 @@ namespace BlackRose.Core.Models.States
 
             if (cooldownTimer <= 0f)
             {
-                ShootFromPoint(currentFirePointIndex);
+                ShootFromPoint(currentFirePointIndex, parent);
                 currentFirePointIndex = (currentFirePointIndex + 1) % firePoints.Length;
                 cooldownTimer = _attackCooldown;
                 shotCount++;
             }
         }
 
-        private void ShootFromPoint(int index)
+        private void ShootFromPoint(int index, UnitBase parent)
         {
             if (firePoints == null || firePoints.Length == 0) return;
 
@@ -64,10 +64,43 @@ namespace BlackRose.Core.Models.States
             Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
             if (bulletRb != null)
             {
-                bulletRb.velocity = firePoint.right * 10f; // 発射速度
+                // プレイヤーのいる方向に力を加える
+                UnitBase player = FindNearestPlayer(firePoint.position);
+                if (player != null)
+                {
+                    Vector2 dir = (player.Transform.position - firePoint.position).normalized;
+                    bulletRb.velocity = dir * 10f;
+                }
+                else
+                {
+                    // プレイヤーが見つからない場合は右方向
+                    bulletRb.velocity = firePoint.right * 10f;
+                }
             }
 
             Debug.Log($"Shot from firePoint {index + 1}");
+        }
+
+        // プレイヤーを探す補助メソッド
+        private UnitBase FindNearestPlayer(Vector2 from)
+        {
+            var units = UnitManager.instance.GetUnitList();
+            UnitBase nearest = null;
+            float minDist = float.MaxValue;
+            foreach (var unit in units)
+            {
+                // プレイヤーのタグで判定
+                if (unit.gameObject.CompareTag("Player")) // プレイヤーのGameObjectのタグを"Player"に設定してください
+                {
+                    float dist = (unit.Transform.position - (Vector3)from).sqrMagnitude;
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        nearest = unit;
+                    }
+                }
+            }
+            return nearest;
         }
     }
 }

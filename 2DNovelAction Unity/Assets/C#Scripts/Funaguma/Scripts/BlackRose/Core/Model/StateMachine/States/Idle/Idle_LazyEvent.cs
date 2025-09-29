@@ -45,7 +45,7 @@ namespace BlackRose.Core.Models.States
         {
             _eventTime = eventTime;
             _isBlock = isBlock;
-            Timer.Register(nameof(_eventTime), _eventTime);
+            Timer.CountDownRegister(nameof(_eventTime), _eventTime);
         }
 
         public Idle_LazyEvent() : base()
@@ -91,7 +91,7 @@ namespace BlackRose.Core.Models.States
         public override void OnDeserialize()
         {
             base.OnDeserialize();
-            Timer.Register(nameof(_eventTime), _eventTime);
+            Timer.CountDownRegister(nameof(_eventTime), _eventTime);
         }
     }
 }

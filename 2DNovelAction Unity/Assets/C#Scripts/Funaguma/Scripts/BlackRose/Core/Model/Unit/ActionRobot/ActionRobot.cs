@@ -49,7 +49,6 @@ namespace BlackRose.Core.Models.Units
             set => _bullets = value;
         }
 
-        protected override Type ClassType => typeof(ActionRobot);
 
         protected override void OnGrounded()
         {
@@ -59,6 +58,7 @@ namespace BlackRose.Core.Models.Units
         }
         protected override void OnFall()
         {
+            Timer.Start(nameof(_coyoteTime)); // コヨーテタイム開始
             _stateMachine.ChangeState(Triggers.falling);
         }
 
@@ -207,7 +207,7 @@ namespace BlackRose.Core.Models.Units
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             Timer.CountDownRegister(nameof(_coyoteTime), _coyoteTime);
-            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime, () => { Debug.Log("シュート可能"); });
+            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime, () => { Debug.Log("シュート可能"); },initializeTimer: false);
             //Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
             Timer.CountDownRegister(nameof(_invincibleTime), _invincibleTime, () => IsInvincible = false);
         }

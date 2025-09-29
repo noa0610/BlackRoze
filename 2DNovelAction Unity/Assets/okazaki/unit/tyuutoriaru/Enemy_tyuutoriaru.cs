@@ -60,7 +60,6 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private PositionJump _positionJump ;
 
-
         protected override void RegisterStats()
         {
             // トランスミッショングループを作成

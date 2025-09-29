@@ -31,7 +31,6 @@ namespace HighElixir.Editor
             }
         }
 
-
         private enum SortMode
         {
             ParentType,
@@ -46,7 +45,7 @@ namespace HighElixir.Editor
         private Vector2 _scroll;
         private Color _currentColor = Color.clear;
         private Type _lastParentType = null;
-        private Dictionary<Type, Color> _typeColorMap = new Dictionary<Type, Color>();
+        private readonly Dictionary<Type, Color> _typeColorMap = new();
 
         [MenuItem("HighElixir/Timer")]
         public static void ShowWindow()
@@ -54,68 +53,80 @@ namespace HighElixir.Editor
             GetWindow(typeof(TimerWatcher));
         }
 
+        // 1行描画は HorizontalScope を使って確実に Begin/End を合わせる
         private void Print(string one, string two, string three, float four, string five, string six, bool seven, bool isUp, Color color = default)
         {
-            Rect rect = EditorGUILayout.BeginHorizontal();
-
-            // 背景を塗る
-            if (color != default)
-                EditorGUI.DrawRect(rect, color);
-
-            // 行の内容
-            EditorGUILayout.LabelField(one, GUILayout.Width(120));
-            EditorGUILayout.LabelField(two, GUILayout.Width(100));
-            EditorGUILayout.LabelField(three, GUILayout.Width(120));
-            var text = $"{five:0.00}/{six:0.00}";
-            if (isUp)
+            using (new EditorGUILayout.HorizontalScope())
             {
-                four = 1f;
-                text = $"{five:0.00}";
+                // 行の矩形を先に確保（幅は伸ばす）
+                var rowRect = GUILayoutUtility.GetRect(1, EditorGUIUtility.singleLineHeight + 2, GUILayout.ExpandWidth(true));
+
+                // 背景を塗る（必要なら）
+                if (color != default)
+                    EditorGUI.DrawRect(rowRect, color);
+
+                // 同じ行の中にコントロールをレイアウト
+                // ラベル等は上で確保した rowRect と被らないよう、同じ高さで置く
+                // ここから実際のUI
+                var labelRect = new Rect(rowRect.x, rowRect.y, 120, rowRect.height);
+                EditorGUI.LabelField(labelRect, one);
+
+                labelRect.x += 120; labelRect.width = 100;
+                EditorGUI.LabelField(labelRect, two);
+
+                labelRect.x += 100; labelRect.width = 120;
+                EditorGUI.LabelField(labelRect, three);
+
+                // プログレスバー
+                var pbRect = new Rect(labelRect.x + 120, rowRect.y, 200, rowRect.height);
+                var text = $"{five:0.00}/{six:0.00}";
+                var value = four;
+                if (isUp)
+                {
+                    value = 1f;
+                    text = $"{five:0.00}";
+                }
+                EditorGUI.ProgressBar(pbRect, Mathf.Clamp01(value), text);
+
+                // 再生中フラグ
+                var playRect = new Rect(pbRect.x + pbRect.width + 6, rowRect.y, 30, rowRect.height);
+                EditorGUI.LabelField(playRect, seven ? "▶" : "■");
             }
-            EditorGUI.ProgressBar(
-                EditorGUILayout.GetControlRect(GUILayout.Width(200)),
-                four,
-                text
-            );
-            EditorGUILayout.LabelField(seven ? "▶" : "■", GUILayout.Width(30));
-
-            EditorGUILayout.EndHorizontal();
-
         }
+
         private void OnGUI()
         {
-            if (Application.isPlaying)
+            using (var sv = new EditorGUILayout.ScrollViewScope(_scroll))
             {
-                _scroll = EditorGUILayout.BeginScrollView(_scroll);
+                _scroll = sv.scrollPosition;
 
-                // ソートモード管理
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("SortMode:", GUILayout.Width(60));
-                if (GUILayout.Button(_sortMode.ToString(), GUILayout.Width(120)))
+                if (!Application.isPlaying)
                 {
-                    _sortMode++;
-                    if (!Enum.IsDefined(typeof(SortMode), _sortMode))
-                        _sortMode = SortMode.ParentType;
+                    GUILayout.Label("Enter Play Mode to view timers.", EditorStyles.boldLabel);
+                    return; // ← ScrollView は scope が閉じてくれる
                 }
-                var ascText = _sortAscending ? "Ascending" : "Descending";
-                if (GUILayout.Button(ascText, GUILayout.Width(120)))
+
+                // ソートUI
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    _sortAscending = !_sortAscending;
+                    EditorGUILayout.LabelField("SortMode:", GUILayout.Width(60));
+                    if (GUILayout.Button(_sortMode.ToString(), GUILayout.Width(120)))
+                    {
+                        _sortMode++;
+                        if (!Enum.IsDefined(typeof(SortMode), _sortMode))
+                            _sortMode = SortMode.ParentType;
+                    }
+                    var ascText = _sortAscending ? "Ascending" : "Descending";
+                    if (GUILayout.Button(ascText, GUILayout.Width(120)))
+                    {
+                        _sortAscending = !_sortAscending;
+                    }
                 }
-                EditorGUILayout.EndHorizontal();
 
                 // ヘッダー
-                Print(
-                    "ParentType",
-                    "ID",
-                    "Timer",
-                    1f,
-                   "Current",
-                    "",
-                    true,
-                    true);
+                Print("ParentType", "ID", "Timer", 1f, "Current", "", true, true);
 
-                // データ表示
+                // データ集計
                 int count = 0;
                 var rTimers = new List<IReadOnlyTimer>(Timer.AllTimers);
                 List<Wrapper> timers = new();
@@ -129,47 +140,29 @@ namespace HighElixir.Editor
                 switch (_sortMode)
                 {
                     case SortMode.ParentType:
-                        if (_sortAscending)
-                            timers.Sort((a, b) => a.Parent.Name.CompareTo(b.Parent.Name));
-                        else
-                            timers.Sort((a, b) => b.Parent.Name.CompareTo(a.Parent.Name));
+                        timers.Sort((a, b) => _sortAscending ? a.Parent.Name.CompareTo(b.Parent.Name) : b.Parent.Name.CompareTo(a.Parent.Name));
                         break;
                     case SortMode.Id:
-                        if (_sortAscending)
-                            timers.Sort((a, b) => a.Snapshot.Id.CompareTo(b.Snapshot.Id));
-                        else
-                            timers.Sort((a, b) => b.Snapshot.Id.CompareTo(a.Snapshot.Id));
+                        timers.Sort((a, b) => _sortAscending ? a.Snapshot.Id.CompareTo(b.Snapshot.Id) : b.Snapshot.Id.CompareTo(a.Snapshot.Id));
                         break;
                     case SortMode.TimerClass:
-                        if (_sortAscending)
-                            timers.Sort((a, b) => a.Snapshot.TimerClass.CompareTo(b.Snapshot.TimerClass));
-                        else
-                            timers.Sort((a, b) => b.Snapshot.TimerClass.CompareTo(a.Snapshot.TimerClass));
+                        timers.Sort((a, b) => _sortAscending ? a.Snapshot.TimerClass.CompareTo(b.Snapshot.TimerClass) : b.Snapshot.TimerClass.CompareTo(a.Snapshot.TimerClass));
                         break;
                     case SortMode.Current:
-                        if (_sortAscending)
-                            timers.Sort((a, b) => a.Snapshot.Current.CompareTo(b.Snapshot.Current));
-                        else
-                            timers.Sort((a, b) => b.Snapshot.Current.CompareTo(a.Snapshot.Current));
+                        timers.Sort((a, b) => _sortAscending ? a.Snapshot.Current.CompareTo(b.Snapshot.Current) : b.Snapshot.Current.CompareTo(a.Snapshot.Current));
                         break;
                     case SortMode.Initialize:
-                        if (_sortAscending)
-                            timers.Sort((a, b) => a.Snapshot.Initialize.CompareTo(b.Snapshot.Initialize));
-                        else
-                            timers.Sort((a, b) => b.Snapshot.Initialize.CompareTo(a.Snapshot.Initialize));
+                        timers.Sort((a, b) => _sortAscending ? a.Snapshot.Initialize.CompareTo(b.Snapshot.Initialize) : b.Snapshot.Initialize.CompareTo(a.Snapshot.Initialize));
                         break;
                     case SortMode.IsRunning:
-                        if (_sortAscending)
-                            timers.Sort((a, b) => a.Snapshot.IsRunning.CompareTo(b.Snapshot.IsRunning));
-                        else
-                            timers.Sort((a, b) => b.Snapshot.IsRunning.CompareTo(a.Snapshot.IsRunning));
+                        timers.Sort((a, b) => _sortAscending ? a.Snapshot.IsRunning.CompareTo(b.Snapshot.IsRunning) : b.Snapshot.IsRunning.CompareTo(a.Snapshot.IsRunning));
                         break;
                 }
 
                 // 表示
                 foreach (var timer in timers)
                 {
-                    // ParentType が変わったときだけ色を切り替え
+                    // ParentType ごとに色を変える（初登場なら生成）
                     if (_lastParentType != timer.Parent && !_typeColorMap.ContainsKey(timer.Parent))
                     {
                         Color newColor;
@@ -182,10 +175,11 @@ namespace HighElixir.Editor
                         _typeColorMap[timer.Parent] = newColor;
                         _lastParentType = timer.Parent;
                     }
-                    else if (_typeColorMap.ContainsKey(timer.Parent))
+                    else if (_typeColorMap.TryGetValue(timer.Parent, out var col))
                     {
-                        _currentColor = _typeColorMap[timer.Parent];
+                        _currentColor = col;
                     }
+
                     bool isUp = timer.Snapshot.TimerClass.Contains("CountUp");
                     Print(
                         timer.Parent.Name,
@@ -196,15 +190,12 @@ namespace HighElixir.Editor
                         $"{timer.Snapshot.Initialize:0.00}",
                         timer.Snapshot.IsRunning,
                         isUp,
-                        _currentColor);
+                        _currentColor
+                    );
                 }
+
                 Print("LastCommandCount:", count.ToString(), "", 1f, "", "", true, true, _currentColor);
             }
-            else
-            {
-                GUILayout.Label("Enter Play Mode to view timers.", EditorStyles.boldLabel);
-            }
-            EditorGUILayout.EndScrollView();
         }
 
         private void OnInspectorUpdate()
@@ -213,4 +204,3 @@ namespace HighElixir.Editor
         }
     }
 }
-        

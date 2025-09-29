@@ -14,7 +14,19 @@ namespace BlackRose.Core.Models.States
         public Reflect()
             : base()
         {
+            // 反射中は8フレームステート変更を禁止する
+            Timer.ChangeDuration(nameof(_waitFrame), _lockFrame);
+        }
 
+        public override void Enter(IState previousIState, UnitBase parent)
+        {
+            base.Enter(previousIState, parent);
+            // 反射エフェクトを再生する
+            var effect = _go.GetComponent<BlackRose.Core.Views.Effects.ReflectEffect>();
+            if (effect != null)
+            {
+                effect.Play();
+            }
         }
         /// <summary>
         /// 反射の起点となるGameObjectを設定する

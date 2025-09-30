@@ -9,13 +9,13 @@ namespace BlackRose.Core.Models.States
     public class StateComp : IState, ISerializationCallbackReceiver
     {
         // ステート切り替えを拒否する待機フレーム数
-        private Timer _timeHolders = new();
+        private Timer _timeHolders;
         protected int _waitFrame = 0;
 
         protected Timer Timer => _timeHolders;
         public StateComp()
         {
-            _timeHolders = new();
+            _timeHolders = new(this.GetType());
             _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)

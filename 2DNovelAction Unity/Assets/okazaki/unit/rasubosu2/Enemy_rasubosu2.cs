@@ -46,6 +46,8 @@ namespace BlackRose.Core.Models.Units
 
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private Transform playerTransform;
+
+
         protected override void RegisterStats()
         {
             // トランスミッショングループを作成

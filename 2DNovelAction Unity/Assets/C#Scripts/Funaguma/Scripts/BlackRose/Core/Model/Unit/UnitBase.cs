@@ -1,12 +1,15 @@
 ﻿using BlackRose.Core.Models.EffectManagers;
 using BlackRose.Core.Models.States;
+using BlackRose.Core.Models.States.Animators;
+using HighElixir.Timers;
 using System;
+using UniRx;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
-    [RequireComponent(typeof(SpriteEffectPlayer)), Serializable]
-    public abstract class UnitBase : MonoBehaviour, IPausable
+    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Animator)), Serializable]
+    public abstract class UnitBase : MonoBehaviour, IPausable, IUnit
     {
         // === Reference ===
         public SpriteEffectPlayer player;
@@ -14,23 +17,43 @@ namespace BlackRose.Core.Models.Units
         public StatusEffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected Animator _animator;
+        protected Animator _animator;
         [Header("StateMachine")]
-        protected IStateMachine _stateMachine; // ステートマシン本体
         [SerializeField] public static bool _isPlaying = true;
-
+        protected IStateMachine _stateMachine; // ステートマシン本体
+        private ReactiveProperty<Vector2> _reactiveDirection = new(new(1, 0));
+        private SpriteEffectPlayer _spriteEffectPlayer;
 #if UNITY_EDITOR
         // エディタからの監視用
         [Header("Debug")]
         [SerializeField] private string _currentState;
+        [SerializeField] private string _currentMode;
         [SerializeField] private Vector2 _currentDirection;
 #endif
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public Transform Transform => transform;
+        public Timer Timer { get; private set; }
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
-        public Vector2 Direction { get; set; } = new Vector2(1, 0); // ユニットの向き（右方向が1,0）
+        public SpriteEffectPlayer SpriteEffectPlayer => _spriteEffectPlayer;
+        public IObservable<Vector2> ReactiveDirection => _reactiveDirection;
+
+        // 向き（1か-1の値をとる。外部から設定される）
+        public Vector2 Direction
+        {
+            get
+            {
+                return _reactiveDirection.Value;
+            }
+            set
+            {
+                _reactiveDirection.Value = value;
+            }
+        }
+
+        // 移動方向（外部から設定される）
+        public Vector2 MoveDirection { get; set; }
         public Animator Animator
         {
             get
@@ -50,19 +73,19 @@ namespace BlackRose.Core.Models.Units
 
         // ===== ステータス操作 =====
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(IUnit from, float damage)
         {
-            if (!BeforeTakeDamage(ref damage)) return;
-            if(statusManager.TakeDamage(damage))
+            if (!BeforeTakeDamage(from, ref damage)) return;
+            if (statusManager.TakeDamage(damage))
                 OnDeath();
-            OnTakeDamage(damage);
+            OnTakeDamage(from, damage);
         }
 
-        protected virtual bool BeforeTakeDamage(ref float damage)
+        protected virtual bool BeforeTakeDamage(IUnit from, ref float damage)
         {
             return true;
         }
-        protected virtual void OnTakeDamage(float damage)
+        protected virtual void OnTakeDamage(IUnit from, float damage)
         {
         }
 
@@ -81,9 +104,12 @@ namespace BlackRose.Core.Models.Units
 
         protected void Awake()
         {
+            Timer = new Timer(this.GetType());
             BeforeAwake();
+            _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
+            _animator = GetComponent<Animator>();
             UnitManager.instance.AddUnit(this);
-            _stateMachine = new StateMachine(this);
+            _stateMachine = new StateMachine(this, new AnimatorAnimationDriver(_animator));
             statusManager = new StatusManager();
             effectManager = new(this);
 
@@ -100,6 +126,13 @@ namespace BlackRose.Core.Models.Units
         protected virtual void BeforeAwake() { }
         protected virtual void AfterAwake() { }
         protected virtual void BeforeRegisterStats() { }
+
+        protected virtual void Start()
+        {
+#if UNITY_EDITOR
+            ReactiveDirection.Subscribe(v => _currentDirection = v).AddTo(this);
+#endif
+        }
         // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
         protected void Update()
         {
@@ -111,7 +144,7 @@ namespace BlackRose.Core.Models.Units
             AfterUpdate();
 # if UNITY_EDITOR
             _currentState = _stateMachine.CurrentState.key;
-            _currentDirection = Direction;
+            _currentMode = _stateMachine.CurrentLayer;
 #endif
         }
         // _isPlayingの判定の前に呼ばれる（常に呼ばれる）

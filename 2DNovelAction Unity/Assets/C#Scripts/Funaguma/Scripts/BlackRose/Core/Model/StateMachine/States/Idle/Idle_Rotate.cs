@@ -20,6 +20,7 @@ namespace BlackRose.Core.Models.States
         public Idle_Rotate() { }
         public override void Stay(UnitBase parent, float deltaTime)
         {
+            base.Stay(parent, deltaTime);
             _transform.Rotate(Vector3.forward, _rotateSpeed * Time.deltaTime);
         }
     }

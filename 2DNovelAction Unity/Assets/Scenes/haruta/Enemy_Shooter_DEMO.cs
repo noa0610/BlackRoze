@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 /*動き確認用の簡易版*/
 public class Enemy_Shooter_DEMO : MonoBehaviour

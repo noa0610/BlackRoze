@@ -4,19 +4,18 @@ using UnityEngine;
 
 namespace HighElixir.Pool
 {
-    public class Pool<T> where T : UnityEngine.Object
+    public class Pool<T> : IDisposable where T : UnityEngine.Object
     {
         private readonly T _original;
-        private readonly int _maxPoolSize;
         private readonly Stack<T> _available = new();
         private readonly HashSet<T> _inUse = new();
-
-        private readonly Transform _container;
+        private int _maxPoolSize;
+        private Transform _container;
 
         public Transform Container => _container;
         public List<T> InUse => new List<T>(_inUse);
-
-        public Pool(T original, int maxPoolSize, Transform container = null)
+        public bool Initialized { get; private set; } = false;
+        public Pool(T original, int maxPoolSize, Transform container = null, bool LazeCreate = false)
         {
             if (original == null) throw new ArgumentNullException(nameof(original));
             if (maxPoolSize <= 0) throw new ArgumentOutOfRangeException(nameof(maxPoolSize));
@@ -24,15 +23,15 @@ namespace HighElixir.Pool
             _original = original;
             _maxPoolSize = maxPoolSize;
             _container = container;
-
-            for (int i = 0; i < maxPoolSize; i++)
-            {
-                var obj = CreateInstance();
-                SetActive(obj, false);
-                _available.Push(obj);
-            }
+            if (!LazeCreate) Initialize();
         }
 
+        public void Initialize()
+        {
+            Dispose();
+            CreateInstances(_maxPoolSize);
+            Initialized = true;
+        }
         public T Get()
         {
             T obj = _available.Count > 0
@@ -46,6 +45,11 @@ namespace HighElixir.Pool
             return obj;
         }
 
+        public PooledObject<T> GetPooled()
+        {
+            var pooled = new PooledObject<T>(Get(), this);
+            return pooled;
+        }
         public void Release(T obj)
         {
             if (obj == null) return;
@@ -58,7 +62,7 @@ namespace HighElixir.Pool
                 if (_available.Count < _maxPoolSize)
                     _available.Push(obj);
                 else
-                    UnityEngine.Object.Destroy(obj);
+                    DestroyObject(obj);
             }
             else
             {
@@ -69,12 +73,46 @@ namespace HighElixir.Pool
         public void Dispose()
         {
             foreach (var obj in _available)
-                UnityEngine.Object.Destroy(obj);
+                DestroyObject(obj);
             foreach (var obj in _inUse)
-                UnityEngine.Object.Destroy(obj);
+                DestroyObject(obj);
+            _available.Clear();
+            _inUse.Clear();
         }
-
+        public void SetPoolSize(int poolSize)
+        {
+            _maxPoolSize = poolSize;
+            var extra = _available.Count - _maxPoolSize;
+            var need = _maxPoolSize - (_available.Count + _inUse.Count);
+            if (extra > 0)
+            {
+                for (int i = 0; i < extra; i++)
+                {
+                    var g = _available.Pop();
+                    DestroyObject(g);
+                }
+            }
+            else if (need > 0)
+            {
+                CreateInstances(need);
+            }
+        }
+        public void SetContainer(Transform container)
+        {
+            _container = container;
+            foreach (var obj in _available)
+                SetParent(obj, _container);
+        }
         // 👅 GameObject / Component 両対応の生成処理
+        private void CreateInstances(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var obj = CreateInstance();
+                SetActive(obj, false);
+                _available.Push(obj);
+            }
+        }
         private T CreateInstance()
         {
             if (_original is GameObject go)
@@ -105,6 +143,12 @@ namespace HighElixir.Pool
                 go.transform.SetParent(parent, false);
             else if (obj is Component comp)
                 comp.transform.SetParent(parent, false);
+        }
+        private static void DestroyObject(T obj)
+        {
+            if (obj is GameObject go) UnityEngine.Object.Destroy(go);
+            else if (obj is Component comp) UnityEngine.Object.Destroy(comp.gameObject);
+            else UnityEngine.Object.Destroy(obj); // 念のため
         }
     }
 }

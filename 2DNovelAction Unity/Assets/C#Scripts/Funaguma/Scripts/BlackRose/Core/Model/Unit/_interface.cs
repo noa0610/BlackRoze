@@ -10,5 +10,9 @@
         void Pause();
         void Play();
     }
+
+    public interface IUnit
+    {
+    }
 }
 // unicode

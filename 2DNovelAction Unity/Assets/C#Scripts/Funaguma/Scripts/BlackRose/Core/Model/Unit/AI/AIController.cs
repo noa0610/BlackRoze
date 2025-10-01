@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -19,6 +20,8 @@ namespace BlackRose.Core.Models.Units
         private IAIState _rightMode;
         private IAIState _heavyMode;
         private IAIState _currentMode;
+
+
         protected override void OnGrounded()
         {
             throw new System.NotImplementedException();

@@ -25,9 +25,9 @@ namespace BlackRose.Core.Models.Units
             return _unitList;
         }
 
-        public void AddDamage(UnitBase target, UnitBase from, float damage)
+        public void AddDamage(UnitBase target, IUnit from, float damage)
         {
-            target.TakeDamage(damage);
+            target.TakeDamage(from, damage);
         }
 
         public void Pause(bool pause, bool isTimeStop = true)

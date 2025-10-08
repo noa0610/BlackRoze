@@ -172,5 +172,15 @@ namespace BlackRose.Core.Models.Units
             if (Timer.TryGetRemaining(nameof(_skillCT), out var rm)) _ct = rm;
 #endif
         }
+
+        public override void ModeChange_C()
+        {
+            _parent.SwitchModeLight();
+        }
+
+        public override void ModeChange_V()
+        {
+            _parent.SwitchModeHeavy();
+        }
     }
 }

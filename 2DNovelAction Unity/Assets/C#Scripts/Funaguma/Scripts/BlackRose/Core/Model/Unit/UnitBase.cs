@@ -6,6 +6,9 @@ using System;
 using UniRx;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SpriteEffectPlayer), typeof(Animator)), Serializable]
@@ -28,6 +31,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private string _currentState;
         [SerializeField] private string _currentMode;
         [SerializeField] private Vector2 _currentDirection;
+
+        public string CurrentState => _currentState;
 #endif
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
@@ -162,5 +167,12 @@ namespace BlackRose.Core.Models.Units
 
         // _isPlayingがtrueのときのみ呼ばれる
         protected virtual void AfterFixedUpdate() { }
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            var pos = transform.position + new Vector3(0, 1, 0);
+            Handles.Label(pos, _currentState);
+        }
+#endif
     }
 }

@@ -84,9 +84,10 @@ namespace HighElixir.Editor
         }
         private void OnGUI()
         {
+            _scroll = EditorGUILayout.BeginScrollView(_scroll);
             if (Application.isPlaying)
             {
-                _scroll = EditorGUILayout.BeginScrollView(_scroll);
+
 
                 // ソートモード管理
                 EditorGUILayout.BeginHorizontal();
@@ -213,4 +214,4 @@ namespace HighElixir.Editor
         }
     }
 }
-        
+

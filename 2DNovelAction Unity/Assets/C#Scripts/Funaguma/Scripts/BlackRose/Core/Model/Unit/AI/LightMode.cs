@@ -75,5 +75,15 @@ namespace BlackRose.Core.Models.Units
         {
             throw new NotImplementedException();
         }
+
+        public override void ModeChange_C()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ModeChange_V()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

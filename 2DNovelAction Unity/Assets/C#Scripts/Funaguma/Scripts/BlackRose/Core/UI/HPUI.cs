@@ -15,6 +15,7 @@ namespace BlackRose.Core.UI
     public class HPUI : SingletonBehavior<HPUI>
     {
         [SerializeField] private Camera _camera;
+        [SerializeField] private Canvas _canvas;
         [Header("Pool")]
         [SerializeField] private Image _prefab;
         [SerializeField] private RectTransform _containar;
@@ -35,17 +36,23 @@ namespace BlackRose.Core.UI
                  {
                      // ワールド → スクリーン座標
                      Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(_camera, owner.transform.position);
-
+                     Vector2 localPos;
                      // スクリーン → コンテナのローカル座標
-                     RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                         _containar,          // 親RectTransform
-                         screenPos,           // スクリーン座標
-                         _camera,             // カメラ（Screen Space - Camera の場合）
-                         out Vector2 localPos // 出力されるローカル座標
-                     );
-
+                     if (_canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                     {
+                         localPos = screenPos;
+                     }
+                     else
+                     {
+                         RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                             _containar,          // 親RectTransform
+                             screenPos,           // スクリーン座標
+                             _camera,             // カメラ（Screen Space - Camera の場合）
+                             out localPos // 出力されるローカル座標
+                         );
+                     }
                      // ローカル座標にオフセットを足して配置
-                     i.rectTransform.anchoredPosition = localPos + _delta;
+                     i.rectTransform.anchoredPosition = screenPos + _delta;
 
                      // HP比率更新
                      var current = owner.StatusManager.ReadValue(Status.HP);

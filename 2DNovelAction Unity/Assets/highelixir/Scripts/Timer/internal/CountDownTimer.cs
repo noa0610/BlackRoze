@@ -10,7 +10,7 @@ namespace HighElixir.Timers.Internal
         public CountDownTimer(float duration, Action onFinished) :
             base(onFinished)
         {
-            if (duration <= 0f) throw new ArgumentOutOfRangeException(nameof(duration));
+            if (duration <= 0f) duration =0;
             InitialTime = duration;
         }
 

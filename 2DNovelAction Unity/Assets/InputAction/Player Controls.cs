@@ -64,12 +64,21 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Mode Change"",
-                    ""type"": ""Value"",
+                    ""name"": ""Mode Change1"",
+                    ""type"": ""Button"",
                     ""id"": ""d7f2d73c-7671-475b-9c57-60d500f78e93"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """",
+                    ""interactions"": ""Press(behavior=1)"",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Mode Change2"",
+                    ""type"": ""Button"",
+                    ""id"": ""77cbf135-57cc-4951-bdb9-c6038e7b5c88"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=1)"",
                     ""initialStateCheck"": true
                 },
                 {
@@ -211,7 +220,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Mode Change"",
+                    ""action"": ""Mode Change1"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -222,7 +231,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Mode Change"",
+                    ""action"": ""Mode Change1"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -311,6 +320,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""231644bf-717d-48ca-ad84-d323213c5157"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Mode Change2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fff14fe8-9a84-44e2-a175-6392f907034d"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Mode Change2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -520,7 +551,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
         m_Player_Skill = m_Player.FindAction("Skill", throwIfNotFound: true);
-        m_Player_ModeChange = m_Player.FindAction("Mode Change", throwIfNotFound: true);
+        m_Player_ModeChange1 = m_Player.FindAction("Mode Change1", throwIfNotFound: true);
+        m_Player_ModeChange2 = m_Player.FindAction("Mode Change2", throwIfNotFound: true);
         m_Player_Special = m_Player.FindAction("Special", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
@@ -592,7 +624,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Attack;
     private readonly InputAction m_Player_Skill;
-    private readonly InputAction m_Player_ModeChange;
+    private readonly InputAction m_Player_ModeChange1;
+    private readonly InputAction m_Player_ModeChange2;
     private readonly InputAction m_Player_Special;
     public struct PlayerActions
     {
@@ -602,7 +635,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @Attack => m_Wrapper.m_Player_Attack;
         public InputAction @Skill => m_Wrapper.m_Player_Skill;
-        public InputAction @ModeChange => m_Wrapper.m_Player_ModeChange;
+        public InputAction @ModeChange1 => m_Wrapper.m_Player_ModeChange1;
+        public InputAction @ModeChange2 => m_Wrapper.m_Player_ModeChange2;
         public InputAction @Special => m_Wrapper.m_Player_Special;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
@@ -625,9 +659,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Skill.started += instance.OnSkill;
             @Skill.performed += instance.OnSkill;
             @Skill.canceled += instance.OnSkill;
-            @ModeChange.started += instance.OnModeChange;
-            @ModeChange.performed += instance.OnModeChange;
-            @ModeChange.canceled += instance.OnModeChange;
+            @ModeChange1.started += instance.OnModeChange1;
+            @ModeChange1.performed += instance.OnModeChange1;
+            @ModeChange1.canceled += instance.OnModeChange1;
+            @ModeChange2.started += instance.OnModeChange2;
+            @ModeChange2.performed += instance.OnModeChange2;
+            @ModeChange2.canceled += instance.OnModeChange2;
             @Special.started += instance.OnSpecial;
             @Special.performed += instance.OnSpecial;
             @Special.canceled += instance.OnSpecial;
@@ -647,9 +684,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Skill.started -= instance.OnSkill;
             @Skill.performed -= instance.OnSkill;
             @Skill.canceled -= instance.OnSkill;
-            @ModeChange.started -= instance.OnModeChange;
-            @ModeChange.performed -= instance.OnModeChange;
-            @ModeChange.canceled -= instance.OnModeChange;
+            @ModeChange1.started -= instance.OnModeChange1;
+            @ModeChange1.performed -= instance.OnModeChange1;
+            @ModeChange1.canceled -= instance.OnModeChange1;
+            @ModeChange2.started -= instance.OnModeChange2;
+            @ModeChange2.performed -= instance.OnModeChange2;
+            @ModeChange2.canceled -= instance.OnModeChange2;
             @Special.started -= instance.OnSpecial;
             @Special.performed -= instance.OnSpecial;
             @Special.canceled -= instance.OnSpecial;
@@ -756,7 +796,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnSkill(InputAction.CallbackContext context);
-        void OnModeChange(InputAction.CallbackContext context);
+        void OnModeChange1(InputAction.CallbackContext context);
+        void OnModeChange2(InputAction.CallbackContext context);
         void OnSpecial(InputAction.CallbackContext context);
     }
     public interface IUIActions

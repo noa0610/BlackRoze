@@ -60,7 +60,9 @@ namespace BlackRose.Core.Models.Units
 
         public abstract void OnSkill(InputValue value);
 
-
+        // モードチェンジはボタンを離した瞬間に呼ばれる
+        public abstract void ModeChange_C();
+        public abstract void ModeChange_V();
         /// <summary>
         /// asdwを入力されたときにだけ呼ばれる
         /// </summary>

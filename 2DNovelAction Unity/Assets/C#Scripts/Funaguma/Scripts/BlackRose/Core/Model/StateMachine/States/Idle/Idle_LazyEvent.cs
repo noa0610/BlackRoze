@@ -88,10 +88,10 @@ namespace BlackRose.Core.Models.States
             _blocked = isBlock;
         }
 
-        public override void OnDeserialize()
-        {
-            base.OnDeserialize();
-            Timer.CountDownRegister(nameof(_eventTime), _eventTime);
-        }
+        //public override void OnDeserialize()
+        //{
+        //    base.OnDeserialize();
+        //    Timer.CountDownRegister(nameof(_eventTime), _eventTime);
+        //}
     }
 }

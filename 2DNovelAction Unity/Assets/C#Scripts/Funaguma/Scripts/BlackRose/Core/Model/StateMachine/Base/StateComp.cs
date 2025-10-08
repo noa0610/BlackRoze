@@ -65,11 +65,11 @@ namespace BlackRose.Core.Models.States
 
         public void OnAfterDeserialize()
         {
-            if (_timeHolders == null)
-            {
-                _timeHolders = new();
-                _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
-            }
+            //if (_timeHolders == null)
+            //{
+            //    _timeHolders = new();
+            //    _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
+            //}
             OnDeserialize();
         }
 

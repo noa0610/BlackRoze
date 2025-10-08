@@ -43,7 +43,7 @@ namespace BlackRose.Core.Models.Units
         // 時間管理
         [SerializeField] private float _shootBlockTime = 0.6f;
         [SerializeField] private float _coyoteTime = 0.2f;
-        private float _shootPressTime = 0f;
+        private string _chargeID = "chargeTime";
         private Vector2 _shootDirection = Vector2.right;
 
         // ===== モード関連 =====
@@ -133,6 +133,15 @@ namespace BlackRose.Core.Models.Units
         {
             CurrentMode.OnSkill(value);
         }
+
+        private void OnModeChange1(InputValue value)
+        {
+            CurrentMode.ModeChange_C();
+        }
+        private void OnModeChange2()
+        {
+            CurrentMode.ModeChange_V();
+        }
         // === GroundedUnit の抽象 ===
         protected override void OnGrounded()
         {
@@ -172,12 +181,14 @@ namespace BlackRose.Core.Models.Units
 
             // ★ 必要に応じてモード専用 Entry を走らせるなら Trigger で
             _stateMachine.LazyChange(AITriggers.modeChanged);
+
+            Debug.Log("ModeChanged");
         }
         protected override void BeforeAwake()
         {
             Timer.CountDownRegister(nameof(_coyoteTime), _coyoteTime);
             Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
-            Timer.CountUpRegister("chargeTime");
+            Timer.CountUpRegister(_chargeID);
 
             _normalMode.Bind(this);
             _lightMode.Bind(this);
@@ -244,20 +255,11 @@ namespace BlackRose.Core.Models.Units
         }
         protected override void Start()
         {
-            ReactiveDirection.Subscribe(d =>
-            {
-                if (d.x > 0) transform.localScale = Vector3.one;
-                else if (d.x < 0) transform.localScale = new Vector3(-1, 1, 1);
-            }).AddTo(this);
-            float dt = Time.deltaTime;
-            this.UpdateAsObservable()
-                .Where(_ => _canChargeCount && _isPlaying)
-                .Subscribe(_ => _shootPressTime += dt)
-                .AddTo(this);
             this.UpdateAsObservable()
                 .Where(_ => _isPlaying)
                 .Subscribe(_ =>
                 {
+                    var dt = Time.deltaTime;    
                     Timer.Update(dt);
                     CurrentMode.Update(dt);
                 })

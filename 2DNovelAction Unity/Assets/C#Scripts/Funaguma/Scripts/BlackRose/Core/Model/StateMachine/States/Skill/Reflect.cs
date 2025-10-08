@@ -1,5 +1,6 @@
 ﻿using BlackRose.Core.Models.Objects;
 using BlackRose.Core.Models.Units;
+using System;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.States
@@ -7,9 +8,11 @@ namespace BlackRose.Core.Models.States
     /// <summary>
     /// Reflect State
     /// </summary>
+    [Serializable]
     public class Reflect : StateComp, ICompleteEmitter, IGameObjectUser
     {
         private GameObject _go;
+        [SerializeField]
         private float _lockFrame = 8f;
         public event System.Action OnCompleted;
 
@@ -37,6 +40,11 @@ namespace BlackRose.Core.Models.States
             _go.SetActive(true);
         }
 
+        public override void Stay(UnitBase parent, float deltaTime)
+        {
+            base.Stay(parent, deltaTime);
+            _go.transform.position = parent.transform.position;
+        }
         public override void Exit(IState nextState, UnitBase parent)
         {
             base.Exit(nextState, parent);

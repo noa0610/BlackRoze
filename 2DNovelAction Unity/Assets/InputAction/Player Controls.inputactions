@@ -42,12 +42,21 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Mode Change",
-                    "type": "Value",
+                    "name": "Mode Change1",
+                    "type": "Button",
                     "id": "d7f2d73c-7671-475b-9c57-60d500f78e93",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Press(behavior=1)",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Mode Change2",
+                    "type": "Button",
+                    "id": "77cbf135-57cc-4951-bdb9-c6038e7b5c88",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press(behavior=1)",
                     "initialStateCheck": true
                 },
                 {
@@ -189,7 +198,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mode Change",
+                    "action": "Mode Change1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -200,7 +209,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mode Change",
+                    "action": "Mode Change1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -289,6 +298,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "231644bf-717d-48ca-ad84-d323213c5157",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Mode Change2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fff14fe8-9a84-44e2-a175-6392f907034d",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Mode Change2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

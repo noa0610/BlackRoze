@@ -118,6 +118,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.firewall, firewall);
         }
         private SearchAssistanceMono _searchAssistance;
+
+
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();

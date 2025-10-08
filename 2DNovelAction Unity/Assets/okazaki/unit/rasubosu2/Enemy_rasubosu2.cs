@@ -46,6 +46,8 @@ namespace BlackRose.Core.Models.Units
 
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private Transform playerTransform;
+
+
         protected override void RegisterStats()
         {
             // トランスミッショングループを作成
@@ -147,8 +149,9 @@ namespace BlackRose.Core.Models.Units
             var flashBeamSword = new Idle().SetAnimeTrigger("flashBeamSword").SetCancelableProgress(0);
             _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
         }
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null)
             {

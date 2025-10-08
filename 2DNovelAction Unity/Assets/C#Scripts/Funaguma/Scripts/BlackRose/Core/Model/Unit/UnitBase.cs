@@ -25,6 +25,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] public static bool _isPlaying = true;
         protected IStateMachine _stateMachine; // ステートマシン本体
         private ReactiveProperty<Vector2> _reactiveDirection = new(new(1, 0));
+        private SpriteEffectPlayer _spriteEffectPlayer;
 #if UNITY_EDITOR
         // エディタからの監視用
         [Header("Debug")]
@@ -37,10 +38,10 @@ namespace BlackRose.Core.Models.Units
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public Transform Transform => transform;
-        public Timer Timer { get; } = new Timer();
+        public Timer Timer { get; private set; }
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
-
+        public SpriteEffectPlayer SpriteEffectPlayer => _spriteEffectPlayer;
         public IObservable<Vector2> ReactiveDirection => _reactiveDirection;
 
         // 向き（1か-1の値をとる。外部から設定される）
@@ -108,7 +109,9 @@ namespace BlackRose.Core.Models.Units
 
         protected void Awake()
         {
+            Timer = new Timer(this.GetType());
             BeforeAwake();
+            _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
             _animator = GetComponent<Animator>();
             UnitManager.instance.AddUnit(this);
             _stateMachine = new StateMachine(this, new AnimatorAnimationDriver(_animator));

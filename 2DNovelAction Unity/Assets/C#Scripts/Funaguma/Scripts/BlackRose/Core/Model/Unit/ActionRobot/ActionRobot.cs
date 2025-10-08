@@ -49,6 +49,7 @@ namespace BlackRose.Core.Models.Units
             set => _bullets = value;
         }
 
+
         protected override void OnGrounded()
         {
             Timer.Reset(nameof(_coyoteTime));
@@ -57,6 +58,7 @@ namespace BlackRose.Core.Models.Units
         }
         protected override void OnFall()
         {
+            Timer.Start(nameof(_coyoteTime)); // コヨーテタイム開始
             _stateMachine.ChangeState(Triggers.falling);
         }
 
@@ -113,7 +115,9 @@ namespace BlackRose.Core.Models.Units
         private void OnMove(InputValue value)
         {
             var d = value.Get<Vector2>();
-            Direction = d.normalized;
+            if (d != Vector2.zero)
+                Direction = d.normalized;
+            MoveDirection = d.normalized;
             if (d == Vector2.zero)
             {
                 _stateMachine.ChangeState(Triggers.cancelMove);
@@ -121,7 +125,9 @@ namespace BlackRose.Core.Models.Units
                 return;
             }
             else if (d.x != 0)
+            {
                 _shootDirection = d; // 横入力がある場合は攻撃方向を更新
+            }
             _stateMachine.ChangeState(Triggers.moveInput);
         }
         private void OnAttack(InputValue value)
@@ -129,10 +135,11 @@ namespace BlackRose.Core.Models.Units
             if (value.isPressed)
             {
                 _normal.SetDirection(_shootDirection); // 攻撃方向を設定
-                //Debug.Log("Shoot");
+                Debug.Log("Shoot");
                 // 入力時に一度通常攻撃を行い、その後チャージを行う
                 if (IsMatchState(StateKey.shootWait) && _successionCount >= _maxSuccession)
                 {
+                    Debug.Log("連射ブロック中");
                     return;
                 }
                 else if (!IsMatchState(StateKey.shootWait))
@@ -200,11 +207,13 @@ namespace BlackRose.Core.Models.Units
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             Timer.CountDownRegister(nameof(_coyoteTime), _coyoteTime);
-            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
+            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime, () => { Debug.Log("シュート可能"); },initializeTimer: false);
+            //Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
             Timer.CountDownRegister(nameof(_invincibleTime), _invincibleTime, () => IsInvincible = false);
         }
-        protected virtual void Start()
+        protected override void Start()
         {
+            base.Start();
             this.UpdateAsObservable()
                 .Where(_ => _canChargeCount)
                 .Subscribe(_ => _shootPressTime += Time.deltaTime)

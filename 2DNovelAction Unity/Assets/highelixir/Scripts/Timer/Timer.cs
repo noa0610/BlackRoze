@@ -39,7 +39,7 @@ namespace HighElixir.Timers
         /// <summary>
         /// \カウントダウンタイマー。既に同じ id があれば false。
         /// </summary>
-        public bool CountDownRegister(string id, float duration, Action onFinished = null, CountType type = CountType.Time)
+        public bool CountDownRegister(string id, float duration, Action onFinished = null, CountType type = CountType.Time, bool initializeTimer = true)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
             if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
@@ -48,7 +48,8 @@ namespace HighElixir.Timers
                 timer = new CountDownTimer(duration, onFinished);
             else
                 timer = new TickCountDownTimer(duration, onFinished);
-            timer.Initialize();
+            if (initializeTimer)
+                timer.Initialize();
             return _timers.TryAdd(id, timer);
         }
 

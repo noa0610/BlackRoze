@@ -1,7 +1,8 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using HighElixir;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -85,6 +86,8 @@ namespace BlackRose.Core.Models.Units
         }
         // 実装
         private SearchAssistanceMono _searchAssistance;
+
+
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();

@@ -33,7 +33,7 @@ namespace BlackRose.Core.Models.Units
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public Transform Transform => transform;
-        public Timer Timer { get; } = new Timer();
+        public Timer Timer { get; private set; }
         public StatusManager StatusManager => statusManager;
         public StatusEffectManager StatusEffectManager => effectManager;
         public SpriteEffectPlayer SpriteEffectPlayer => _spriteEffectPlayer;
@@ -104,6 +104,7 @@ namespace BlackRose.Core.Models.Units
 
         protected void Awake()
         {
+            Timer = new Timer(this.GetType());
             BeforeAwake();
             _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
             _animator = GetComponent<Animator>();

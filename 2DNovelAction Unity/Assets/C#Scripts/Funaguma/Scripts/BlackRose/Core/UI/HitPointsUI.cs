@@ -20,6 +20,8 @@ namespace BlackRose.Core.UI
         private void FixedUpdate()
         {
             if (!_text) Debug.LogError("textがnull");
+            if (!unit) return;
+            if (unit.StatusManager == null) return;
             var c = unit.StatusManager.ReadValue(Status.HP);
             var m = unit.StatusManager.ReadValue(Status.MaxHP);
             var t = $"<color=red>{c}</color> / <color=blue>{m}</color>";

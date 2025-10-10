@@ -1,10 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using System.Collections.Generic;
 using HighElixir;
+using System;
 
 namespace BlackRose.Core.Models.Units
 {

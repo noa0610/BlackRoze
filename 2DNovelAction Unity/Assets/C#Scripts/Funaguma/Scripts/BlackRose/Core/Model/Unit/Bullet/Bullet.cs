@@ -10,6 +10,7 @@ namespace BlackRose.Core.Models.Units
         protected BulletStatus _status;
         protected Vector2 _direction;
         public Transform Transform => transform;
+       public BulletData bulletData;
 
         // 弾のステータス設定（生成時に呼ばれる想定）
         public void SetBulletStatus(BulletData bullet, LayerMask targetLayer)

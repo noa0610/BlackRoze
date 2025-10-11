@@ -63,6 +63,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void ModeChange_V()
         {
+            _parent.SwitchModeLight();
         }
     }
 }

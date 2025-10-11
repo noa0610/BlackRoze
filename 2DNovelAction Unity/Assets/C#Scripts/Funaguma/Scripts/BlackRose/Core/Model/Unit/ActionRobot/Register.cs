@@ -153,19 +153,19 @@ namespace BlackRose.Core.Models.Units
                 // 死亡ステートからはトリガー無し or シーンリロードなど
             };
 
-            // === TransmissionGroup に登録 ===
+            // === TransitionGroup に登録 ===
             _stateMachine
-                .AddTransmissions(StateKey.idle, idleTriggers)
-                .AddTransmissions(StateKey.shootWait, waitTriggers)
-                .AddTransmissions(StateKey.shoot, shootTriggers)
-                .AddTransmissions(StateKey.chargeShoot, chargeShootTriggers)
-                .AddTransmissions(StateKey.fullChargeShoot, fullChargeShootTriggers)
-                .AddTransmissions(StateKey.move, moveTriggers)
-                .AddTransmissions(StateKey.dash, dashTriggers)
-                .AddTransmissions(StateKey.jump, jumpTriggers)
-                .AddTransmissions(StateKey.fall, fallTriggers)
-                .AddTransmissions(StateKey.stun, stunTriggers)
-                .AddTransmissions(StateKey.dead, deadTriggers);
+                .AddTransitions(StateKey.idle, idleTriggers)
+                .AddTransitions(StateKey.shootWait, waitTriggers)
+                .AddTransitions(StateKey.shoot, shootTriggers)
+                .AddTransitions(StateKey.chargeShoot, chargeShootTriggers)
+                .AddTransitions(StateKey.fullChargeShoot, fullChargeShootTriggers)
+                .AddTransitions(StateKey.move, moveTriggers)
+                .AddTransitions(StateKey.dash, dashTriggers)
+                .AddTransitions(StateKey.jump, jumpTriggers)
+                .AddTransitions(StateKey.fall, fallTriggers)
+                .AddTransitions(StateKey.stun, stunTriggers)
+                .AddTransitions(StateKey.dead, deadTriggers);
 
             // === ステートコンポーネント登録 ===
             // idle

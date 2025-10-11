@@ -54,9 +54,9 @@ namespace BlackRose.Core.Models.Units
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.move, moveTrigger)
-                .AddTransmissions(States.explosion, explosionTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.move, moveTrigger)
+                .AddTransitions(States.explosion, explosionTrigger);
             // 死んだときに何もしないならDeadの設定はいらない
 
             // 待機

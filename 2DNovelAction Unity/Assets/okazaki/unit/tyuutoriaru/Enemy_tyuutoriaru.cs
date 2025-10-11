@@ -113,14 +113,14 @@ namespace BlackRose.Core.Models.Units
 
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.lasershot, lasershotTrigger)
-                .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
-                .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
-                .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
-                .AddTransmissions(States.stun, stunTrigger)
-                .AddTransmissions(States.shockwave, shockwaveTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.attackidle, attackidleTrigger)
+                .AddTransitions(States.lasershot, lasershotTrigger)
+                .AddTransitions(States.beamswordattackmove, beamswordattackmoveTrigger)
+                .AddTransitions(States.beamswordattack, beamswordattackTrigger)
+                .AddTransitions(States.fixedpositionjump, fixedpositionjumpTrigger)
+                .AddTransitions(States.stun, stunTrigger)
+                .AddTransitions(States.shockwave, shockwaveTrigger);
 
             // 死んだときに何もしないならDeadの設定はいらない
 

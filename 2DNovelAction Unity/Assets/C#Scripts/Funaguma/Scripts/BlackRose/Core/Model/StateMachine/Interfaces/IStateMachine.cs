@@ -22,20 +22,24 @@ namespace BlackRose.Core.Models.States
         /// もし現在のレイヤーで指定された遷移先が見つからなかった場合、
         /// デフォルトレイヤーから探すかどうか (デフォルトはtrue)
         /// </summary>
-        bool UseDefaultLayerIfMissingTransmission { get; set; }
+        bool UseDefaultLayerIfMissingTransition { get; set; }
 
         /// <summary>
         /// デフォルトの遷移表。（fromState, trigger）→ toState  
         /// ※モード依存の定義が無い場合のフォールバックとして利用される
         /// </summary>
-        Dictionary<(string state, string trigger), (string state, string animetrigger)> TransmissionGroup { get; }
+        Dictionary<(string state, string trigger), (string state, string animetrigger)> TransitionGroup { get; }
 
         /// <summary>
         /// モード依存の遷移表。（layer, fromState, trigger）→ toState  
         /// ※定義がある場合は必ずこちらが優先される
         /// </summary>
-        Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransmissionGroup { get; }
+        Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransitionGroup { get; }
 
+        /// <summary>
+        /// どの状態からでも遷移できるステートのグループ
+        /// </summary>
+        Dictionary<(string layer, string trigger), (string toState, string animeTrigger)> AnyTransitionGroup { get; }
         /// <summary>現在モード（必要なら実装側で enum ラップ可）</summary>
         string CurrentLayer { get; }
 
@@ -91,6 +95,13 @@ namespace BlackRose.Core.Models.States
         /// <summary>Enum対応の糖衣：Layer依存遷移</summary>
         void AddTransitionForLayer<TLayer, TState, TTrig>(TLayer mode, TState fromState, TTrig trigger, string toState, string animationTrigger = "")
             where TLayer : Enum where TState : Enum where TTrig : Enum;
+
+        void AddAnyTransition(string trigger, string toState, string mode = LayerChar.COMMON, string animationTrigger = "");
+
+        void AddAnyTransition<TMode, TState, TTrig>(TTrig trig, TState state, TMode mode = default, string animationTrigger = "")
+            where TMode : Enum
+            where TState : Enum
+            where TTrig : Enum;
 
         /// <summary>現在Layerを設定</summary>
         void SetLayer(string layer);

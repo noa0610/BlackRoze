@@ -65,10 +65,10 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Died, States.dead)
             };
             _stateMachine
-             .AddTransmissions(States.idle, idleTrigger)
-             .AddTransmissions(States.shoot, shootTrigger)
-             .AddTransmissions(States.inVigilance, vigilanceTrigger)
-             .AddTransmissions(States.shootInterval, intervalTrigger);
+             .AddTransitions(States.idle, idleTrigger)
+             .AddTransitions(States.shoot, shootTrigger)
+             .AddTransitions(States.inVigilance, vigilanceTrigger)
+             .AddTransitions(States.shootInterval, intervalTrigger);
 
             // 待機
             //_stateMachine.AddState(States.idle, new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0));

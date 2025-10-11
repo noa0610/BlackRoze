@@ -78,11 +78,11 @@ namespace BlackRose.Core.Models.Units
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.armpunch, armpunchTrigger)
-                .AddTransmissions(States.diffusebeamgun, diffusebeamgunTrigger)
-                .AddTransmissions(States.firewall, firewallTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.attackidle, attackidleTrigger)
+                .AddTransitions(States.armpunch, armpunchTrigger)
+                .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
+                .AddTransitions(States.firewall, firewallTrigger);
             // 待機
             var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.idle, idle);

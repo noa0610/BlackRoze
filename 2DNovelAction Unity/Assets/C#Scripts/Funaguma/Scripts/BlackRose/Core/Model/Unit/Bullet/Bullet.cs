@@ -10,12 +10,15 @@ namespace BlackRose.Core.Models.Units
         protected BulletStatus _status;
         protected Vector2 _direction;
         public Transform Transform => transform;
-       public BulletData bulletData;
+        public BulletData bulletData;
+       
 
         // 弾のステータス設定（生成時に呼ばれる想定）
         public void SetBulletStatus(BulletData bullet, LayerMask targetLayer)
         {
+
             _status = bullet.originalstatus; // 初期ステータスを設定
+            bulletData = bullet;
             _targetLayer = targetLayer;
         }
         public void SetDirection(Vector2 dir)
@@ -43,7 +46,7 @@ namespace BlackRose.Core.Models.Units
         // 目的じゃないオブジェクトにヒットした場合に呼ばれる
         protected virtual void Hitted_Another(Collider2D collision)
         {
-            Destroy(gameObject);
+            Destroy(gameObject);//盾に命中したときに呼び出される処理も実装してほしい
         }
         // 目的のオブジェクトにヒットした場合に呼ばれる
         protected virtual void Hitted_Target(Collider2D collision)

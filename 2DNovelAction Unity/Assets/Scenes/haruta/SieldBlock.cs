@@ -6,10 +6,12 @@ namespace BlackRose.Core.Models.Units
         private void OnCollisionEnter2D(Collision2D collision)
         {
             // タグがplayerBulletなら判定
-            if (collision.gameObject.CompareTag("playerBullet"))
+            if (collision.gameObject.CompareTag("Playerbullet"))
             {
+                Debug.Log("bullet取得");
                 Bullet bullet = collision.gameObject.GetComponent<Bullet>();
 
+                Debug.Log(bullet.bulletData.originalstatus.damage);
                 if (bullet != null && bullet.bulletData != null)
                 {
                     // ダメージ値を参照
@@ -26,7 +28,16 @@ namespace BlackRose.Core.Models.Units
                     // 3を超える場合はシールドが破壊されるなどの処理を追加
                     Debug.Log("シールド貫通！ ダメージ：" + damage);
                 }
+                else
+                {
+                    Debug.LogError("bulletDateがnullです");
+                }
             }
+            else
+            {
+                Debug.Log("玉以外に当たりました");
+            }
+            
         }
     }
 }

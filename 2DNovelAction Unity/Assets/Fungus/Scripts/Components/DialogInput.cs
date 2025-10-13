@@ -28,11 +28,11 @@ namespace Fungus
     public class DialogInput : MonoBehaviour
     {
 
-//=============================================================
+        //=============================================================
         [Header("追加機能；オートモード")]
+        [SerializeField] private bool _UseAuto;
         [SerializeField] private bool _autoModeEnabled = false;
         [SerializeField] private float _autoDelay = 2.0f; // 自動で次に進むまでの秒数
-        [SerializeField] private Button _AutoButton;
         private float _autoTimer = 0f;
 //=============================================================
 
@@ -103,49 +103,37 @@ namespace Fungus
                 if (Input.GetButtonDown(currentStandaloneInputModule.submitButton) ||
                     (cancelEnabled && Input.GetButton(currentStandaloneInputModule.cancelButton)))
                 {
-                    if(_isKey)
+                    if (_isKey)
                     {
                         SetNextLineFlag();
                     }
-                    
+
                 }
 
 
-//=============================================================
+                //=============================================================
                 // オートモードが有効なとき自動で次の行へ
-            if (_autoModeEnabled && writer != null)
-            {
-                if (writer.IsWaitingForInput) // 入力待ちの状態
+                if (_UseAuto == true)
                 {
-                    _autoTimer += Time.deltaTime;
-                    if (_autoTimer >= _autoDelay)
+                    if (_autoModeEnabled && writer != null)
                     {
-                        SetNextLineFlag();
-                        _autoTimer = 0f;
+                        if (writer.IsWaitingForInput) // 入力待ちの状態
+                        {
+                            _autoTimer += Time.deltaTime;
+                            if (_autoTimer >= _autoDelay)
+                            {
+                                SetNextLineFlag();
+                                _autoTimer = 0f;
+                            }
+                        }
+                        else
+                        {
+                            _autoTimer = 0f; // テキスト出力中はタイマーリセット
+                        }
+
+                        //ここにUIの画像を変える処理を追加する
                     }
-                }
-                else
-                {
-                    _autoTimer = 0f; // テキスト出力中はタイマーリセット
-                }
             }
-                var ButtonColor = _AutoButton.colors;
-                if (_autoModeEnabled == true)
-                {
-                    ButtonColor.normalColor = new Color(1f, 1f, 0.5f, 1f);
-                    ButtonColor.highlightedColor = new Color(1f, 1f, 0.6f, 1f);
-                    ButtonColor.pressedColor = new Color(1f, 0.9f, 0.3f, 1f);
-                    ButtonColor.selectedColor = new Color(1f, 1f, 0.6f, 1f);
-                    _AutoButton.colors = ButtonColor;
-                }
-                else
-                {
-                    ButtonColor.normalColor = Color.white;
-                    ButtonColor.highlightedColor = Color.white;
-                    ButtonColor.pressedColor = Color.white;
-                    ButtonColor.selectedColor = Color.white;
-                    _AutoButton.colors = ButtonColor;
-                }
 //=============================================================
 
 

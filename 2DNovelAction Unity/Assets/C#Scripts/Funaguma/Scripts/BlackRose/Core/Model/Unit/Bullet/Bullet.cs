@@ -3,61 +3,87 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
+    [RequireComponent(typeof(Collider2D))]
     public class Bullet : MonoBehaviour
     {
-        [SerializeField, Tooltip("常に衝突可能なレイヤー")] private LayerMask _canHitLayer;
+        [SerializeField, Tooltip("常に衝突可能なレイヤー")]
+        private LayerMask _canHitLayer;
+
         protected LayerMask _targetLayer;
         protected BulletStatus _status;
         protected Vector2 _direction;
-        public Transform Transform => transform;
-        public BulletData bulletData;
-       
+        protected UnitBase _parent;
 
-        // 弾のステータス設定（生成時に呼ばれる想定）
+        public Transform Transform => transform;
+        public UnitBase Parent => _parent;
+        public LayerMask TargetLayer { get => _targetLayer; set => _targetLayer = value; }
+        public float Damage => _status.damage;
+
         public void SetBulletStatus(BulletData bullet, LayerMask targetLayer)
         {
-
-            _status = bullet.originalstatus; // 初期ステータスを設定
-            bulletData = bullet;
+            _status = bullet.originalstatus;
             _targetLayer = targetLayer;
         }
-        public void SetDirection(Vector2 dir)
+
+        public void SetDirection(Vector2 dir) => _direction = dir.normalized;
+        public void SetParent(UnitBase parent) => _parent = parent;
+        public void Reflect(Vector2 normal = default)
         {
-            _direction = dir.normalized;
+            if (normal != default)
+                _direction = Vector2.Reflect(_direction, normal);
+            else
+                _direction = -_direction;
         }
-        // 毎フレームの更新処理（弾の移動）
-        protected virtual void Update()
+        public virtual void DestroyThis()
         {
-            transform.position = transform.position + (Vector3)_direction * _status.speed * Time.deltaTime;
+            Destroy(gameObject);
         }
 
-        // 2D衝突検知（敵や壁に当たったら発動）
+        protected virtual void FixedUpdate()
+        {
+            transform.position += (Vector3)_direction * _status.speed * Time.fixedDeltaTime;
+        }
+
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
-            if (((1 << collision.gameObject.layer) & _canHitLayer) == 1)
+            int layer = collision.gameObject.layer;
+
+            // Target と CanHit に同時に同じレイヤーが指定されている場合、
+            // 常にTargetを優先する
+            if (Has(layer, _targetLayer))
+            {
+                Hitted_Target(collision);
+            }
+            else if (Has(layer, _canHitLayer))
             {
                 Hitted_Another(collision);
             }
-            if (((1 << collision.gameObject.layer) & _targetLayer) == 0)
-                return;
-            Hitted_Target(collision);
         }
 
-        // 目的じゃないオブジェクトにヒットした場合に呼ばれる
+        protected bool Has(int layer, LayerMask mask)
+        {
+            return (mask & (1 << layer)) != 0;
+        }
+
         protected virtual void Hitted_Another(Collider2D collision)
         {
-            Destroy(gameObject);//盾に命中したときに呼び出される処理も実装してほしい
+            if (collision.gameObject.layer == LayerMask.NameToLayer("Throughable"))
+                return;
+
+            DestroyThis();
         }
-        // 目的のオブジェクトにヒットした場合に呼ばれる
+
         protected virtual void Hitted_Target(Collider2D collision)
         {
-            if (collision.transform.TryGetComponent<UnitBase>(out var target))
+            if (collision.TryGetComponent<UnitBase>(out var target))
             {
-                Debug.Log("Hit to Target. Name : " + target.UnitStatusData.unitName); // ログ出力（当たった！）
-                if (target.IsInvincible) return;
-                UnitManager.instance.AddDamage(target, null, _status.damage);
+                if (target.IsInvincible)
+                    return;
+
+                UnitManager.instance.AddDamage(target, _parent, _status.damage);
             }
-            Destroy(gameObject); // 弾を破壊（寿命）
+
+            DestroyThis();
         }
     }
 }

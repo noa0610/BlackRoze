@@ -10,7 +10,6 @@ namespace BlackRose.Core.Models.States
     [Serializable]
     public class FreeMove : MovingStateBase
     {
-        [SerializeField] private Rigidbody2D _rigidbody2D;
         [SerializeField] private bool _isStopInExit = false;
 
         [Header("Tuning")]
@@ -20,21 +19,28 @@ namespace BlackRose.Core.Models.States
 
         public bool IsStopInExit { get => _isStopInExit; set => _isStopInExit = value; }
 
+        [Obsolete]
         public FreeMove(Rigidbody2D rigidbody2D, bool isStopInExit = false)
+            :base()
         {
-            _rigidbody2D = rigidbody2D;
             _isStopInExit = isStopInExit;
         }
-
+        public FreeMove(bool isStopInExit = false)
+            : base()
+        {
+            _isStopInExit = isStopInExit;
+        }
         public override void Exit(IState nextIState, UnitBase parent)
         {
-            if (_isStopInExit && _rigidbody2D != null)
-                _rigidbody2D.velocity = Vector2.zero;
+            base.Enter(nextIState, parent);
+            if (_isStopInExit && Rigidbody2D != null)
+                Rigidbody2D.velocity = Vector2.zero;
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
-            if (_rigidbody2D == null) return;
+            base.Stay(parent, deltaTime);
+            if (Rigidbody2D == null) return;
 
             var input = parent.Direction;                   // 期待：(-1..1, -1..1)
             var hasInput = input.sqrMagnitude > (_deadZone * _deadZone);
@@ -45,7 +51,7 @@ namespace BlackRose.Core.Models.States
             // 速度ベクトルをターゲットに滑らかに寄せる（ベクトル版 MoveTowards）
             var changePerSec = hasInput ? _accel : _decel;  // 入力時は加速、無入力時は減速
             var maxDelta = changePerSec * Mathf.Max(deltaTime, 0f);
-            _rigidbody2D.velocity = Vector2.MoveTowards(_rigidbody2D.velocity, targetVel, maxDelta);
+            Rigidbody2D.velocity = Vector2.MoveTowards(Rigidbody2D.velocity, targetVel, maxDelta);
         }
 
         public FreeMove SetAccel(float accel)

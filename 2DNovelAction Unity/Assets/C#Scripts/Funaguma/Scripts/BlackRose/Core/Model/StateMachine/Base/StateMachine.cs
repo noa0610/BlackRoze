@@ -1,77 +1,137 @@
-﻿using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models.States.Animators;
+using BlackRose.Core.Models.Units;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {
-    // ===============================
-    // 汎用ステートマシン（IStateMachine）
-    // ===============================
     public class StateMachine : IStateMachine
     {
-        private UnitBase _parent;
-        private Dictionary<string, StateComp> _stateMap = new(); // ステートの登録一覧（名前とステート）
-        private Dictionary<(string state, string trigger), string> _transmissionGroup = new();
-        private (string key, StateComp state) _currentState; // 現在のステート
-        private string _request = string.Empty; // ステート遷移の予約
-        private Queue<string> _requests = new();
+        private readonly UnitBase _parent;
+        private readonly IAnimationDriver _anim;
 
-        public Dictionary<string, StateComp> StateMap => _stateMap;
-        public (string key, StateComp state) CurrentState => _currentState;
-        public Dictionary<(string state, string trigger), string> TransmissionGroup => _transmissionGroup;
+        private readonly Dictionary<string, StateInfo> _stateMap = new();
+        private readonly Dictionary<(string state, string trigger), (string state, string animetrigger)> _transmissionGroup = new();
 
-        public StateMachine(UnitBase parent)
+        private readonly Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> _layerTransmissionGroup = new();
+
+
+        private StateInfo _currentState;
+        private readonly Queue<string> _requests = new();
+        private readonly Queue<string> _directRequests = new();
+
+        public string CurrentLayer { get; private set; } = "Default";
+        public Dictionary<string, StateInfo> StateMap => _stateMap;
+        public StateInfo CurrentState => _currentState;
+        public Dictionary<(string state, string trigger), (string state, string animetrigger)> TransmissionGroup => _transmissionGroup;
+        public Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransmissionGroup => _layerTransmissionGroup;
+        public bool UseDefaultLayerIfMissingTransmission { get; set; } = true;
+
+        public StateMachine(UnitBase parent) : this(parent, new NullAnimationDriver()) { }
+
+        public StateMachine(UnitBase parent, IAnimationDriver animationDriver)
         {
             _parent = parent;
+            _anim = animationDriver ?? new NullAnimationDriver();
+            _anim.CurrentLayer = CurrentLayer;
         }
 
-
+        // ===============================
+        // モード操作
+        // ===============================
+        public void SetLayer(string layer)
+        {
+            if (!string.IsNullOrEmpty(layer))
+            {
+                CurrentLayer = layer;
+                _anim.CurrentLayer = layer;
+            }
+        }
 
         // ===============================
-        // ステートを変更
+        // 遷移追加API
+        // ===============================
+        public void AddTransition(string fromState, string trigger, string toState, string animationTrigger = "")
+        {
+            _transmissionGroup[(fromState, trigger)] = (toState, animationTrigger);
+        }
+
+        public void AddTransitionForLayer(string mode, string fromState, string trigger, string toState, string animationTrigger = "")
+        {
+            _layerTransmissionGroup[(mode, fromState, trigger)] = (toState, animationTrigger);
+        }
+
+        public void AddTransition<TState, TTrig>(TState fromState, TTrig trigger, string toState, string animationTrigger = "")
+            where TState : System.Enum where TTrig : System.Enum
+            => AddTransition(fromState.ToString(), trigger.ToString(), toState, animationTrigger); // ★fix: animationTriggerを渡す
+
+        public void AddTransitionForLayer<TMode, TState, TTrig>(TMode mode, TState fromState, TTrig trigger, string toState, string animationTrigger = "")
+            where TMode : System.Enum where TState : System.Enum where TTrig : System.Enum
+            => AddTransitionForLayer(mode.ToString(), fromState.ToString(), trigger.ToString(), toState, animationTrigger); // ★fix
+
+        // ===============================
+        // ステート変更
         // ===============================
         public bool ChangeState(string trigger)
         {
-            if (_transmissionGroup.TryGetValue((_currentState.key, trigger), out string key))
+            if (_layerTransmissionGroup.TryGetValue((CurrentLayer, _currentState.key, trigger), out var transByLayer))
             {
-                var to = _stateMap[key];
-                if (_currentState.state.AllowChange(to, _parent))
-                {
-                    var from = _currentState.state;
-                    from.Exit(to, _parent);
-                    _currentState = (key, to);
-                    to.Enter(from, _parent);
-                    return true;
-                }
+                return Change(transByLayer);
+            }
+
+            if (_layerTransmissionGroup.TryGetValue((Layer.COMMON.ToString(), _currentState.key, trigger), out var trs))
+            {
+                if (Change(trs)) return true;
+            }
+            if (!UseDefaultLayerIfMissingTransmission) return false;
+
+            if (_transmissionGroup.TryGetValue((_currentState.key, trigger), out var trans))
+            {
+                return Change(trans);
             }
             return false;
         }
-        public bool ChangeState(object trigger)
-        {
-            return ChangeState(trigger.ToString());
-        }
 
-        /// <summary>
-        /// 次のフレームまで更新を遅延（最後のものだけ有効）
-        /// </summary>
+        private bool Change((string state, string animetrigger) trs)
+        {
+            var to = _stateMap[trs.state];
+            if (_currentState.Instance.AllowChange(to.Instance, _parent) && to.Instance.AllowEnter(_currentState.state, _parent))
+            {
+                var from = _currentState.state;
+                var fromKey = _currentState.key;
+
+                from.Exit(to.Instance, _parent);
+                _currentState = to;
+
+                _anim.OnTransition(fromKey, _currentState.key, trs.animetrigger);
+
+                to.Instance.Enter(from, _parent);
+                return true;
+            }
+            return false;
+        }
+        public bool ChangeState<T>(T trigger) where T : System.Enum
+            => ChangeState(trigger.ToString());
+
         public void LazyChange(string trigger)
         {
             if (!string.IsNullOrEmpty(trigger))
                 _requests.Enqueue(trigger);
         }
-        public void LazyChange(object request)
-        {
-            LazyChange(request.ToString());
-        }
 
-        // ===============================
-        // 毎フレーム呼び出して状態更新（Update内で呼ぶ）
-        // ===============================
+        public void LazyChange<T>(T request) where T : System.Enum
+            => LazyChange(request.ToString());
+
         public void UpdateMachine(float deltaTime)
         {
+            while (_directRequests.Count > 0)
+            {
+                var direct = _directRequests.Dequeue();
+                if (SetStateDirect(direct)) return;
+            }
             while (_requests.Count > 0)
             {
                 var trig = _requests.Dequeue();
-                // 成功したらその時点で抜けて次フレームへ
                 if (ChangeState(trig)) return;
             }
             _currentState.state.Stay(_parent, deltaTime);
@@ -87,40 +147,43 @@ namespace BlackRose.Core.Models.States
                 if (_stateMap.ContainsKey(startStateKey))
                     SetStateDirect(startStateKey);
                 else
-                {
-                    throw new System.ArgumentException();
-                }
+                    throw new System.ArgumentException($"Unknown start state: {startStateKey}");
             }
-
         }
 
-        // ===============================
-        // ステートの登録（事前にAddして使う）
-        // ===============================
-        public void AddState(string key, StateComp state)
+        public void AddState(string key, StateComp state, params string[] tags)
         {
-            _stateMap[key] = state;
+            _stateMap[key] = new StateInfo(key, state, tags);
+            if (state is IRigidbodyUser user)
+            {
+                if (_parent.TryGetComponent<Rigidbody2D>(out var rb)) user.SetRB2(rb);
+                else Debug.LogWarning("RigitBody が未設定");
+            }
         }
-        public void AddState(object key, StateComp state)
-        {
-            AddState(key.ToString(), state);
-        }
-        // ===============================
-        // Exit、AllowChangeを無視して遷移を行う
-        // ===============================
-        public void SetStateDirect(string target)
+
+        public void AddState<T>(T key, StateComp state, params string[] tags) where T : System.Enum
+            => AddState(key.ToString(), state, tags);
+
+        public bool SetStateDirect(string target)
         {
             var tmp = _currentState.state;
             if (_stateMap.TryGetValue(target, out var state))
             {
-                _currentState = (target, state);
+                var prevKey = _currentState.key;
+                _currentState = state;
+                _anim.OnSetState(target); // ★アニメーション委譲（直接セット時）
                 _currentState.state.Enter(tmp, _parent);
+                return true;
             }
+            return false;
         }
 
-        public override string ToString()
+        public void SetStateDirectLazy(string target)
         {
-            return $"CurrentState: {_currentState.key ?? "None"}";
+            if (!string.IsNullOrEmpty(target))
+                _directRequests.Enqueue(target);
         }
+
+        public override string ToString() => $"CurrentState: {_currentState.key ?? "None"} (Layer: {CurrentLayer})";
     }
 }

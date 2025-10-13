@@ -44,11 +44,15 @@ namespace BlackRose.Core.Models.Units
             fullChargeInAir,
             watingTimeHasElapsed, // 攻撃待機中に攻撃しなかった場合に呼ばれる
         }
+        [Header("States")]
         [SerializeField] private Jump _jump;
         private ShootForward _normal;
         private ShootForward _halfCharge;
         private ShootForward _fullCharge;
         private Dictionary<StateKey, string> _states = EnumWrapper.GetDict<StateKey>();
+
+        [Header("Objects")]
+        [SerializeField] private GameObject _muzzle;
         protected override void RegisterStats()
         {
             // === 各ステートのトリガー一覧定義 ===
@@ -171,18 +175,17 @@ namespace BlackRose.Core.Models.Units
             );
 
             var time = new Idle_LazyEvent(0.3f, false);
-            time.LazyEvent.AsObservable().Subscribe(_ =>
+            time.OnCompleted += () =>
             {
                 //Debug.Log("攻撃待機終了");
                 _successionCount = 0;
                 _stateMachine.LazyChange(Triggers.watingTimeHasElapsed);
-            }).AddTo(this);
+            };
             _stateMachine.AddState(StateKey.shootWait, time);
 
             // shoot
             _normal = new ShootForward(_bullets[0], _targetLayer)
-                .SetAnimeTrigger("Attack")
-                .SetMuzzle(gameObject);
+                .SetMuzzle(_muzzle);
             _normal.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -191,7 +194,6 @@ namespace BlackRose.Core.Models.Units
 
             // chargeShoot
             _halfCharge = new ShootForward(_bullets[1], _targetLayer)
-                .SetAnimeTrigger("Attack")
                 .SetMuzzle(gameObject);
             _halfCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
@@ -201,7 +203,6 @@ namespace BlackRose.Core.Models.Units
 
             // fullChargeShoot
             _fullCharge = new ShootForward(_bullets[2], _targetLayer)
-                .SetAnimeTrigger("Attack")
                 .SetMuzzle(gameObject);
             _fullCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
@@ -211,22 +212,17 @@ namespace BlackRose.Core.Models.Units
             // move
             _stateMachine.AddState(
                 StateKey.move,
-                new MoveOnGround(
-                    _rigidbody
-                )
+                new MoveOnGround()
             );
 
             // dash
             _stateMachine.AddState(
                 StateKey.dash,
-                new DashOnGround(
-                    _rigidbody,
-                    this
-                )
+                new DashOnGround(this)
             );
 
             // jump
-            _jump = new Jump(_rigidbody);
+            _jump = new Jump();
             _stateMachine.AddState(
                 StateKey.jump,
                 _jump
@@ -235,23 +231,20 @@ namespace BlackRose.Core.Models.Units
             // fall
             _stateMachine.AddState(
                 StateKey.fall,
-                new MoveOnAir(
-                    _rigidbody
-                )
-                .SetAccel(40f)
+                new MoveOnAir()
+                .SetAccel(20f)
                 .SetAirFriction(-20f)
             );
 
             // stun
             _stunState = new Stun(_rigidbody, 0.7f, false)
-                .SetKnockback(_stunKnockback)
-                .SetThrower(_thrower);
-            _stunState.LazyEvent.AsObservable().Subscribe(_ =>
+                .SetKnockback(_stunKnockback);
+            _stunState.OnCompleted += () =>
             {
                 Debug.Log("スタン終了");
                 _stateMachine.LazyChange(Triggers.finishedStun);
                 IsInvincible = false;
-            }).AddTo(this);
+            };
             _stateMachine.AddState(StateKey.stun, _stunState);
 
             // dead

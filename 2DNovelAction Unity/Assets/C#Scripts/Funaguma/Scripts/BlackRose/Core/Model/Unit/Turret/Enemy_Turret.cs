@@ -4,7 +4,6 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Datas.Definitions;
 using System;
 using UnityEngine;
-using HighElixir;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -26,7 +25,6 @@ namespace BlackRose.Core.Models.Units
 
         // === Reference ===
         private SearchAssistanceMono _searchAssistance;
-        private TimeHolders _timeHolders = new TimeHolders();
 
         // === Internal ===
         [SerializeField] private float _shootIntervalCount = 0f;  // 待機タイマー

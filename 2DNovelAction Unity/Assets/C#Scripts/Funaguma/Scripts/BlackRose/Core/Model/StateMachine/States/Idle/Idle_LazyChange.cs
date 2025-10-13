@@ -1,4 +1,5 @@
 ﻿using BlackRose.Core.Models.Units;
+using System;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.States
@@ -24,44 +25,28 @@ namespace BlackRose.Core.Models.States
     /// </code>
     /// </example>
     /// </summary>
-    public class Idle_LazyChange : Idle
+    public class Idle_LazyChange : Idle_LazyEvent
     {
-        private readonly string _lazyChange;
-        private readonly float _lazyChangeTime;
-        private readonly bool _isBlock;
-        private float _time;
-        private bool _blocked;
-
+        private string _lazyChange;
         /// <param name="lazyChange">一定時間後に遷移するステート</param>
         /// <param name="lazyChangeTime">遷移の遅延</param>
         /// <param name="isBlock">遅延時間が終わるまで遷移を阻むかどうか</param>
         public Idle_LazyChange(string lazyChange, float lazyChangeTime, bool isBlock = false)
+            : base(lazyChangeTime, isBlock)
         {
             _lazyChange = lazyChange;
-            _lazyChangeTime = lazyChangeTime;
-            _isBlock = isBlock;
         }
 
         public override void Enter(IState previousIState, UnitBase parent)
         {
-            _blocked = _isBlock;
-            _time = _lazyChangeTime;
-        }
-
-        public override void Stay(UnitBase parent, float deltaTime)
-        {
-            _time -= Time.deltaTime;
-            if (_time <= 0)
+            base.Enter(previousIState, parent);
+            Action evt = null;
+            evt = () =>
             {
                 parent.StateMachine.LazyChange(_lazyChange);
-                _blocked = false;
-            }
-        }
-
-        public override bool AllowChange(IState nextState, UnitBase parent)
-        {
-            if (_blocked) return false;
-            return base.AllowChange(nextState, parent);
+                OnCompleted -= evt;
+            };
+            OnCompleted += evt;
         }
     }
 }

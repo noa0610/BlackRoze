@@ -13,9 +13,10 @@ namespace BlackRose.Core.Models.States
         [SerializeField] private Vector2 _direction = Vector2.right;
         [SerializeField] private GameObject _muzzle;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
-        public ShootForward() { }
+        public ShootForward() :base() { }
         public override void Enter(IState preview, UnitBase parent)
         {
+            base.Enter(preview, parent);
             _ = Shoot(parent);
         }
 

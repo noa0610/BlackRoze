@@ -3,12 +3,11 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
-using BlackRose.Core.Models.Units;
 
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class SuicideBombing : StateWithAnime
+    public class SuicideBombing : StateWithAnime, ICompleteEmitter
     {
         [Header("爆発")]
         [Tooltip("爆風のノックバック")]
@@ -25,6 +24,9 @@ namespace BlackRose.Core.Models.States
         [SerializeField] private CircleCollider2D _collider;
         private bool _isExploding = false;
 
+        public event Action OnCompleted;
+
+        [Obsolete]
         public UnityEvent OnExplode { get; set; } = new UnityEvent();
 
         public override void Enter(IState previousIState, UnitBase parent)
@@ -76,6 +78,7 @@ namespace BlackRose.Core.Models.States
             _isExploding = false;
 
             OnExplode?.Invoke(); // 爆発イベントを呼び出す
+            OnCompleted.Invoke();
         }
     }
 }

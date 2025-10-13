@@ -1,7 +1,8 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using HighElixir;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -85,6 +86,8 @@ namespace BlackRose.Core.Models.Units
         }
         // 実装
         private SearchAssistanceMono _searchAssistance;
+
+
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
@@ -111,6 +114,14 @@ namespace BlackRose.Core.Models.Units
             if (_player != null)
             {
                 Direction = (_player.Transform.position - transform.position).normalized;
+
+                // 見た目の向きを変更（左右反転）
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
             }
         }
 

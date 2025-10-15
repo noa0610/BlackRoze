@@ -88,9 +88,10 @@ namespace BlackRose.Core.Models.Units
             // 死亡
             _stateMachine.AddState(States.dead, new Idle());
             // 攻撃待機
-            var attackidle = new Idle_LazyEvent(3f);
-            attackidle.LazyEvent.AddListener(Attackjudgement);
-            _stateMachine.AddState(States.attackidle, attackidle);
+            var attackIdle = new Idle_LazyEvent(5f);
+            // 遅延完了時に呼びたい処理をOnCompletedで登録
+            attackIdle.OnCompleted += Attackjudgement;
+            _stateMachine.AddState(States.attackidle, attackIdle);
             // アームパンチ
             _stateMachine.AddState(States.armpunch, new Idle());
             // 拡散ビーム砲

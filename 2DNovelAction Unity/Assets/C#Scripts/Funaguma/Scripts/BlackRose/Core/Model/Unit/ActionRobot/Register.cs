@@ -49,7 +49,7 @@ namespace BlackRose.Core.Models.Units
         private ShootForward _normal;
         private ShootForward _halfCharge;
         private ShootForward _fullCharge;
-        private Dictionary<StateKey, string> _states = EnumWrapper.GetDict<StateKey>();
+        private Dictionary<StateKey, string> _states = EnumWrapper.GetValueNameMap<StateKey>();
 
         [Header("Objects")]
         [SerializeField] private GameObject _muzzle;
@@ -184,8 +184,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(StateKey.shootWait, time);
 
             // shoot
-            _normal = new ShootForward(_bullets[0], _targetLayer)
-                .SetMuzzle(_muzzle);
+            _normal = new ShootForward(_bullets[0], _targetLayer);
+            _normal.SetGameObject(_muzzle);
             _normal.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -193,8 +193,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(StateKey.shoot, _normal);
 
             // chargeShoot
-            _halfCharge = new ShootForward(_bullets[1], _targetLayer)
-                .SetMuzzle(gameObject);
+            _halfCharge = new ShootForward(_bullets[1], _targetLayer);
+            _halfCharge.SetGameObject(gameObject);
             _halfCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -202,8 +202,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(StateKey.chargeShoot, _halfCharge);
 
             // fullChargeShoot
-            _fullCharge = new ShootForward(_bullets[2], _targetLayer)
-                .SetMuzzle(gameObject);
+            _fullCharge = new ShootForward(_bullets[2], _targetLayer);
+            _fullCharge.SetGameObject(gameObject);
             _fullCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -233,7 +233,7 @@ namespace BlackRose.Core.Models.Units
                 StateKey.fall,
                 new MoveOnAir()
                 .SetAccel(20f)
-                .SetAirFriction(-20f)
+                .SetFriction(-20f)
             );
 
             // stun

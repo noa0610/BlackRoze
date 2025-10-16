@@ -18,7 +18,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _bulletData;
         [SerializeField] private Rigidbody2D _rb2;
 
-        private static readonly Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _states = EnumWrapper.GetValueNameMap<States>();
 
         public enum States
         {
@@ -114,7 +114,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.shootReady, new Idle()); // アニメーション専用
 
             attack.SetBullet(_bulletData);
-            attack.SetMuzzle(_muzzle);
+            attack.SetGameObject(_muzzle);
             attack.SetCancelableProgress(0);
 
             _stateMachine.AddState(States.shoot, attack);

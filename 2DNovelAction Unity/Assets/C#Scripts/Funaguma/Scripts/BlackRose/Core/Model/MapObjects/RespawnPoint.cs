@@ -10,8 +10,10 @@ namespace BlackRose.Core.Models.Objects
         [SerializeField, ReadOnly] public static List<RespawnPoint> points = new();
         [SerializeField] private bool _enable = true;
         [SerializeField] private string _tag = "Player";
-        public bool isStart = false; // スタート地点かどうか
-        public int count = 0; // スタート地点のカウント
+        [SerializeField] private bool _isStart = false; // スタート地点かどうか
+#if UNITY_EDITOR
+        [SerializeField] private int count = 0; // スタート地点のカウント
+#endif
         public void SetEnable(bool enable)
         {
             _enable = enable;
@@ -23,7 +25,7 @@ namespace BlackRose.Core.Models.Objects
             {
                 if (point.Equals(this))
                     continue;
-                point.isStart = false;
+                point._isStart = false;
             }
             PlayerSpawnner.SetRespawnPoint(this);
         }
@@ -31,7 +33,7 @@ namespace BlackRose.Core.Models.Objects
         private void Awake()
         {
             if (!points.Contains(this)) points.Add(this);
-            if (isStart)
+            if (_isStart)
             {
                 _enable = false; // スタート地点は初期化時に無効化
                 SetStart();
@@ -47,29 +49,25 @@ namespace BlackRose.Core.Models.Objects
             }
         }
 
-        private void OnValidate()
-        {
-            if (!gameObject.activeInHierarchy) return;
-            if (!points.Contains(this))
-                points.Add(this);
-            if (isStart)
-            {
-                SetStart();
-            }
-        }
         private void OnDestroy()
         {
             points.Remove(this);
         }
-
+#if UNITY_EDITOR
         private void Reset()
         {
-            if (!points.Contains(this))
-                points.Add(this);
+            if (!points.Contains(this)) points.Add(this);
             count = points.Count; // カウントを更新
             _enable = true;
             _tag = "Player";
-            if (isStart) SetStart(); // スタート地点なら初期化時に設定
+            if (_isStart) SetStart(); // スタート地点なら初期化時に設定
         }
+        private void OnValidate()
+        {
+            if (!gameObject.activeInHierarchy) return;
+            if (!points.Contains(this)) points.Add(this);
+            if (_isStart) SetStart();
+        }
+#endif
     }
 }

@@ -13,6 +13,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected Jump _jump;
         [SerializeField] protected float[] _chargeTime = new float[2] { 1.2f, 2.3f };
+        protected TimerTicket _chargeTicket;
         protected AIController _parent;
         public UnitStatusData StatusData => _status;
         protected IStateMachine SM => _parent.StateMachine;
@@ -32,7 +33,7 @@ namespace BlackRose.Core.Models.Units
         }
         public virtual void OnReleaseShoot(InputValue value)
         {
-            if (!Timer.Stop("chargeTime", out var t)) return;
+            if (!Timer.Stop(_chargeTicket, out var t)) return;
 
             if (t > _chargeTime[1])
             {

@@ -1,4 +1,6 @@
 ﻿using BlackRose.Datas.Definitions;
+using HighElixir.Timers;
+using UniRx;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
@@ -15,7 +17,7 @@ namespace BlackRose.Core.Models.Units
         protected BulletStatus _status;
         protected Vector2 _direction;
         protected UnitBase _parent;
-
+        protected TimerTicket _ticket;
         public Transform Transform => transform;
         public UnitBase Parent => _parent;
         public LayerMask TargetLayer { get => _targetLayer; set => _targetLayer = value; }
@@ -42,11 +44,23 @@ namespace BlackRose.Core.Models.Units
             _direction = -_direction;
         }
 
-        protected virtual void Update()
+        protected virtual void Move(float deltaTime)
         {
-            transform.position += (Vector3)_direction * _status.speed * Time.deltaTime;
+            Debug.Log($"Move. delta:{deltaTime}");
+            transform.position += (Vector3)_direction * _status.speed * deltaTime;
         }
 
+        public virtual void Invoke()
+        {
+            var gt = GlobalTimer.FixedUpdate;
+            _ticket = gt.CountDownRegister(_status.time, $"[{name}] duration", () => Destroy(gameObject));
+            gt.GetReactiveProperty(_ticket).Subscribe(dt => Move(dt));
+            gt.Start(_ticket);
+        }
+        protected virtual void OnDestroy()
+        {
+            GlobalTimer.FixedUpdate.Unregister(_ticket);
+        }
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
             int layerBit = 1 << collision.gameObject.layer;

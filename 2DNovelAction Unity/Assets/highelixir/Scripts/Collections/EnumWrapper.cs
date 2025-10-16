@@ -12,17 +12,13 @@ namespace HighElixir
         /// <returns>特定の列挙型の全ての値を格納したリスト</returns>
         public static List<T> GetEnumList<T>(bool skippingNone = true) where T : Enum
         {
-            var res = GetEnumerable<T>().ToList();
-            if (skippingNone)
-                res.RemoveAll(x => x.ToString().Contains("None", StringComparison.OrdinalIgnoreCase));
+            var res = GetEnumerable<T>(skippingNone).ToList();
             return res;
         }
 
         public static HashSet<T> GetEnumHashSet<T>(bool skippingNone = true) where T : Enum
         {
-            var res = GetEnumerable<T>().ToHashSet();
-            if (skippingNone)
-                res.RemoveWhere(x => x.ToString().Contains("None", StringComparison.OrdinalIgnoreCase));
+            var res = GetEnumerable<T>(skippingNone).ToHashSet();
             return res;
         }
 
@@ -33,19 +29,14 @@ namespace HighElixir
                 res.RemoveAll(x => x.Contains("None", StringComparison.OrdinalIgnoreCase));
             return res;
         }
-        public static Dictionary<T, string> GetDict<T>(bool skippingNone = true) where T : Enum
+        public static Dictionary<T, string> GetValueNameMap<T>(bool skippingNone = true) where T : Enum
         {
-            var values = GetEnumerable<T>();
-            var names = GetEnumNames<T>();
+            var values = GetEnumerable<T>(skippingNone);
+            var names = GetEnumNames<T>(skippingNone);
             var dict = new Dictionary<T, string>();
             int i = 0;
             foreach (var v in values)
             {
-                if (skippingNone && v.ToString().Contains("None", StringComparison.OrdinalIgnoreCase))
-                {
-                    i++;
-                    continue;
-                }
                 dict[v] = names[i];
                 i++;
             }
@@ -53,11 +44,15 @@ namespace HighElixir
         }
 
         private static IEnumerable<T> GetEnumerable<T>(bool skippingNone = true)
-            where T : Enum
+    where T : Enum
         {
-            return Enum.GetValues(typeof(T))
-                       .Cast<T>()
-                       .Where(x => !skippingNone || !x.ToString().Contains("None", StringComparison.OrdinalIgnoreCase));
+            var res = Enum.GetValues(typeof(T)).Cast<T>();
+            if (skippingNone)
+            {
+                res = res.Where(v => !v.ToString().Contains("None", StringComparison.OrdinalIgnoreCase));
+            }
+            return res;
         }
+
     }
 }

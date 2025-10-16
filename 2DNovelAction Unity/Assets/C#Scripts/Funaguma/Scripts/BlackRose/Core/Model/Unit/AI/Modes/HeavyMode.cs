@@ -38,22 +38,26 @@ namespace BlackRose.Core.Models.Units
 
         public override void OnSkill(InputValue value)
         {
-            SM.ChangeState(Triggers.skillInput);
+            if (value.isPressed)
+            {
+                SM.ChangeState(Triggers.skillInput);
+            }
+            else
+            {
+                SM.ChangeState(Triggers.skillFinished);
+            }
         }
 
         public override void InvokeShoot()
         {
-            throw new NotImplementedException();
         }
 
         public override void InvokeHalfShoot()
         {
-            throw new NotImplementedException();
         }
 
         public override void InvokeFullShoot()
         {
-            throw new NotImplementedException();
         }
 
         public override void ModeChange_C()

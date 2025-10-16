@@ -109,7 +109,7 @@ namespace BlackRose.Core.Models.Units
 
         protected void Awake()
         {
-            Timer = new Timer(this.GetType());
+            Timer = new Timer(gameObject.name);
             BeforeAwake();
             _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
             _animator = GetComponent<Animator>();
@@ -134,10 +134,15 @@ namespace BlackRose.Core.Models.Units
 
         protected virtual void Start()
         {
+            BeforeStart();
 #if UNITY_EDITOR
             ReactiveDirection.Subscribe(v => _currentDirection = v).AddTo(this);
 #endif
+            AfterStart();
         }
+
+        protected virtual void BeforeStart() { }
+        protected virtual void AfterStart() { }
         // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
         protected void Update()
         {

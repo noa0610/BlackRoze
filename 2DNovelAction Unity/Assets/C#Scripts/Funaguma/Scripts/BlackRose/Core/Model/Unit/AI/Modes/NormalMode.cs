@@ -1,5 +1,6 @@
 ﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using HighElixir.Timers;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,6 +27,7 @@ namespace BlackRose.Core.Models.Units
         // プレイヤーの中央になるように調整
         [SerializeField] private Vector3 _warpDemoDelta = new(0, 1, 0);
         [SerializeField] private float _skillCT = 4f;
+        private TimerTicket _skillTicket;
 
         [Header("States")]
         [SerializeField] private Warp _warpState = new Warp();
@@ -39,8 +41,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void Register()
         {
-            if (Timer.CountDownRegister(nameof(_skillCT), _skillCT))
-                Debug.Log("登録！");
+            _skillTicket = Timer.CountDownRegister(_skillCT, "ワープCT", initZero:true);
 
             // Idle
             SM.AddTransitionsForLayer(
@@ -89,13 +90,6 @@ namespace BlackRose.Core.Models.Units
                     (Triggers.skillFinished, AIStates.Idle, "")
                 );
 
-            // Shoot
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                NormalState.N_Shoot,
-                    (Triggers.shootCompleted, AIStates.ShootInterval, "")
-                );
-
             // Interval
             SM.AddTransitionsForLayer(
                 AIController.Mode.Normal,
@@ -125,7 +119,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void OnSkill(InputValue value)
         {
-            if (!Timer.IsFinished(nameof(_skillCT))) return;
+            if (!Timer.IsFinished(_skillTicket)) return;
 
             if (value.isPressed)
             {
@@ -136,7 +130,7 @@ namespace BlackRose.Core.Models.Units
                 // TODO : ワープ実行
                 _preWarpDemo.SetActive(false);
                 SM.ChangeState(Triggers.skillInput);
-                Timer.Start(nameof(_skillCT));
+                Timer.Start(_skillTicket);
             }
         }
         public override void OnInputMove(Vector2 dir)
@@ -169,7 +163,7 @@ namespace BlackRose.Core.Models.Units
         public override void Update(float deltaTime)
         {
 #if UNITY_EDITOR
-            if (Timer.TryGetRemaining(nameof(_skillCT), out var rm)) _ct = rm;
+            if (Timer.TryGetRemaining(_skillTicket, out var rm)) _ct = rm;
 #endif
         }
 

@@ -11,16 +11,18 @@ namespace BlackRose.Core.Models.States
         // ステート切り替えを拒否する待機フレーム数
         private Timer _timeHolders;
         protected int _waitFrame = 0;
-
+        protected TimerTicket _tickTicket;
         protected Timer Timer => _timeHolders;
-        public StateComp()
+
+        public event Action OnComplete;
+        public StateComp(string parentName = "")
         {
-            _timeHolders = new(this.GetType());
-            _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
+            _timeHolders = new(parentName);
+            _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", OnComplete, true);
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
-            return _timeHolders.IsFinished(nameof(_waitFrame));
+            return _timeHolders.IsFinished(_tickTicket);
         }
 
         public virtual bool AllowEnter(IState previousState, UnitBase parent)
@@ -35,7 +37,7 @@ namespace BlackRose.Core.Models.States
         public virtual void Enter(IState previousIState, UnitBase parent)
         {
             if (_waitFrame > 0)
-                _timeHolders.Start(nameof(_waitFrame));
+                _timeHolders.Start(_tickTicket);
         }
 
         public virtual void Exit(IState nextIState, UnitBase parent)
@@ -55,7 +57,7 @@ namespace BlackRose.Core.Models.States
         public T SetWaitTick<T>(int frame, Action onFinished = null) where T : StateComp
         {
             _waitFrame = frame;
-            _timeHolders.ChangeDuration(nameof(_waitFrame), _waitFrame);
+            _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
             return this as T;
         }
 

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using BlackRose.Core.Models.Units;
+using HighElixir.Timers;
 
 namespace BlackRose
 {
@@ -12,25 +13,22 @@ namespace BlackRose
         [SerializeField] private float _groundCheckRadius = 0.1f;  // チェック半径
         [SerializeField] private LayerMask _groundLayer;           // 地面Layer
         [SerializeField] private float _disableCheckTime = 0.2f; // 地面判定を無効にする
-
+        private TimerTicket _ticket;
         public bool IsGrounded { get; private set; }
         public Action OnAirToGround { get; set; } = null; // 地面に着地したときのコールバック
-        protected override void AfterFixedUpdate()
-        {
-            GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
-        }
 
+
+        public virtual void AfterJump()
+        {
+            Timer.Start(_ticket, true, true);
+        }
         private void GroundCheck()
         {
-            if (_disableCheckTime > 0f)
-            {
-                _disableCheckTime -= Time.fixedDeltaTime; // 地面判定を無効にする時間を減らす
-                return; // 無効な場合は地面チェックを行わない
-            }
+            if (!Timer.IsFinished(_ticket)) return;
             Collider2D hit = Physics2D.OverlapCircle(
                 _groundCheck.position,
                 _groundCheckRadius,
-                _groundLayer.value       // LayerMaskをIntに変換して渡す
+                _groundLayer
             );
             bool beforeGrounded = IsGrounded; // 前回の地面状態を保存
             bool grounded = hit != null;
@@ -70,8 +68,17 @@ namespace BlackRose
         {
         }
 
+        protected override void AfterFixedUpdate()
+        {
+            GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
+        }
+        protected override void AfterAwake()
+        {
+            _ticket = Timer.CountDownRegister(_disableCheckTime, "DisableCheckTime");
+        }
+#if UNITY_EDITOR
         // デバッグ用にGizmos表示
-        private void OnDrawGizmosSelected()
+        protected virtual void OnDrawGizmosSelected()
         {
             if (_groundCheck != null)
             {
@@ -79,10 +86,6 @@ namespace BlackRose
                 Gizmos.DrawWireSphere(_groundCheck.position, _groundCheckRadius);
             }
         }
-
-        public virtual void AfterJump()
-        {
-            _disableCheckTime = 0.2f; // ジャンプしたら地面判定を無効にする
-        }
+#endif
     }
 }

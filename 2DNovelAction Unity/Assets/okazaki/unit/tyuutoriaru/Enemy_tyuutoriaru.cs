@@ -48,7 +48,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private int currentAttack = 1; // 初期値は1（アタック1）
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         [SerializeField] private Transform[] _firePoints;
         [SerializeField] private Transform[] _swordfirePoints;
         [SerializeField] private GameObject _bulletPrefab;
@@ -58,7 +58,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _beamswordTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private PositionJump _positionJump ;
+        [SerializeField] private PositionJump _positionJump;
 
         protected override void RegisterStats()
         {
@@ -140,10 +140,10 @@ namespace BlackRose.Core.Models.Units
             var fixedpositionjump = new PositionJump(jumpPositions, 10f)
                 .SetAnimeTrigger("fixedpositionjump")
                 .SetCancelableProgress(0);
-                fixedpositionjump.OnArrived += () =>
-                {
-                   _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
-                };
+            fixedpositionjump.OnArrived += () =>
+            {
+                _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
+            };
             _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
             // 攻撃待機
             var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
@@ -158,9 +158,9 @@ namespace BlackRose.Core.Models.Units
             // ビームソード攻撃
             var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
             .SetDirection(Vector2.down) // プレイヤー方向など、必要に応じてセット
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
             .SetAnimeTrigger("beamswordattack")
             .SetCancelableProgress(0);
+            beamswordattack.SetGameObject(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
                 _stateMachine.LazyChange(Triggers.Attack2end);
@@ -172,9 +172,9 @@ namespace BlackRose.Core.Models.Units
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
             .SetDirection(Vector2.left)
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
             .SetAnimeTrigger("beamswordattack")
             .SetCancelableProgress(0);
+            shockwave.SetGameObject(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject);
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {

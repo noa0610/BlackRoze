@@ -5,9 +5,10 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.Systems
 {
-    [DefaultExecutionOrder(-1)]
+    [DefaultExecutionOrder(-10)]
     public class PlayerManager : MonoBehaviour
     {
+        [Tooltip("Awakeのタイミングで、IPlayerFollowerを実装したすべてのコンポーネントにアタッチします")]
         [SerializeField] private UnitBase _playerUnit;
 
         private void Awake()

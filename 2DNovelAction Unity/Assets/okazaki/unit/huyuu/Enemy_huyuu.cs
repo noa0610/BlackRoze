@@ -15,7 +15,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private FreeMove _freeMove;
         [SerializeField] private Rigidbody2D _RB2;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         public enum States
         {
             none,

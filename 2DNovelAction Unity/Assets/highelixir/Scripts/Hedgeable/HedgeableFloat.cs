@@ -1,6 +1,7 @@
-﻿using System;
+﻿using HighElixir.Implements;
+using System;
 
-namespace HighElixir
+namespace HighElixir.Hedgeable
 {
     public class HedgeableFloat : IHedgeable<float, HedgeableFloat>
     {

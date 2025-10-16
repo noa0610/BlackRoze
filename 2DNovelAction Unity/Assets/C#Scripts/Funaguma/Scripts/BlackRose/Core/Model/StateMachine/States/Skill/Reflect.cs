@@ -16,11 +16,11 @@ namespace BlackRose.Core.Models.States
         private float _lockFrame = 8f;
         public event System.Action OnCompleted;
 
-        public Reflect()
-            : base()
+        public Reflect(string parentName = "")
+            : base(parentName)
         {
             // 反射中は8フレームステート変更を禁止する
-            Timer.ChangeDuration(nameof(_waitFrame), _lockFrame);
+            Timer.ChangeDuration(_tickTicket, _lockFrame);
         }
 
         public override void Enter(IState previousIState, UnitBase parent)

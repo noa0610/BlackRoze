@@ -13,10 +13,14 @@ namespace BlackRose.Core.Models.Units
         public enum LightStates
         {
             L_Shoot,
+            L_Half,
+            L_Full,
             L_Jump,
             L_Skill,
         }
-
+        [SerializeField] private MultiShoot _shoot;
+        [SerializeField] private MultiShoot _half;
+        [SerializeField] private MultiShoot _full;
         public override void Register()
         {
             SM.AddTransitionsForLayer(
@@ -28,6 +32,22 @@ namespace BlackRose.Core.Models.Units
                 );
 
             SM.AddState(LightStates.L_Jump, _jump);
+            SM.AddState(LightStates.L_Shoot, _shoot);
+            SM.AddState(LightStates.L_Half, _half);
+            SM.AddState(LightStates.L_Full, _full);
+
+            _shoot.onShootComplete.AddListener(() =>
+            {
+                SM.LazyChange(Triggers.shootCompleted);
+            });
+            _half.onShootComplete.AddListener(() =>
+            {
+                SM.LazyChange(Triggers.shootCompleted);
+            });
+            _full.onShootComplete.AddListener(() =>
+            {
+                SM.LazyChange(Triggers.shootCompleted);
+            });
         }
 
         public override void OnSkill(InputValue value)
@@ -45,14 +65,17 @@ namespace BlackRose.Core.Models.Units
 
         public override void InvokeShoot()
         {
+            SM.ChangeState(LightStates.L_Shoot);
         }
 
         public override void InvokeHalfShoot()
         {
+            SM.ChangeState(LightStates.L_Half);
         }
 
         public override void InvokeFullShoot()
         {
+            SM.ChangeState(LightStates.L_Full);
         }
 
         public override void ModeChange_C()

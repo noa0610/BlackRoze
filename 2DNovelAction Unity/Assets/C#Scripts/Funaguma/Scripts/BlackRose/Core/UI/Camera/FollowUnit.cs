@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace BlackRose.Core.UI
 {
-    [RequireComponent(typeof(Camera))]
     public class FollowUnit : MonoBehaviour, IPlayerFollower
     {
         [Header("References")]
@@ -15,7 +14,7 @@ namespace BlackRose.Core.UI
         [SerializeField, Tooltip("追従スピード (大きいほど速い)")] private float _smoothSpeed = 5f;
         [SerializeField, Tooltip("カメラの Z 座標")] private float _cameraZ = -10f;
 
-        private Transform _camT;
+        [SerializeField] private Transform _camT;
 
         private void Reset()
         {

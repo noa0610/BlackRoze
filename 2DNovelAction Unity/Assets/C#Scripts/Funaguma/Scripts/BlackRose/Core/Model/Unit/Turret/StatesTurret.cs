@@ -10,7 +10,7 @@ namespace BlackRose.Core.Models.Units
     {
         [SerializeField] private ShootForward _shoot;
         private Idle_Looking _looking;
-        private static Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
+        private static Dictionary<States, string> _states = EnumWrapper.GetValueNameMap<States>();
         private enum States
         {
             none = 0,

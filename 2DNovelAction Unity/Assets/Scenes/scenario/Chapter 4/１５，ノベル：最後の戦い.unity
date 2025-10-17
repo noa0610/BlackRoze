@@ -1201,6 +1201,7 @@ GameObject:
   - component: {fileID: 878160382}
   - component: {fileID: 878160381}
   - component: {fileID: 878160380}
+  - component: {fileID: 878160427}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -2442,7 +2443,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 66.633484
     y: 98.32672
-    width: 106.8
+    width: 106
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -2495,6 +2496,7 @@ MonoBehaviour:
   - {fileID: 878160380}
   - {fileID: 878160381}
   - {fileID: 878160382}
+  - {fileID: 878160427}
   suppressAllAutoSelections: 0
 --- !u!114 &878160426
 MonoBehaviour:
@@ -2522,7 +2524,8 @@ MonoBehaviour:
     height: 859
   selectedBlocks:
   - {fileID: 878160425}
-  selectedCommands: []
+  selectedCommands:
+  - {fileID: 878160427}
   variables: []
   description: 
   stepPause: 0
@@ -2534,6 +2537,51 @@ MonoBehaviour:
   hideCommands: []
   luaEnvironment: {fileID: 0}
   luaBindingName: flowchart
+--- !u!114 &878160427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 878160378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688e35811870d403f9e2b1ab2a699d98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 45
+  indentLevel: 0
+  description: 
+  targetObject: {fileID: 539531718}
+  targetComponentAssemblyName: SceneSelectLoad, Assembly-CSharp, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  targetComponentFullname: UnityEngine.Component[]
+  targetComponentText: SceneSelectLoad
+  targetMethod: OnButtonClick
+  targetMethodText: 'OnButtonClick (String): Void'
+  methodParameters:
+  - objValue:
+      typeAssemblyname: System.String, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      typeFullname: System.String
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+      stringValue: "\uFF11\uFF16\uFF0C\u30D0\u30C8\u30EB\uFF1A\uFF15\u30B9\u30C6\u30FC\u30B8\u30FB\u30E9\u30B9\u30DC\u30B9"
+      colorValue: {r: 0, g: 0, b: 0, a: 0}
+      gameObjectValue: {fileID: 0}
+      materialValue: {fileID: 0}
+      objectValue: {fileID: 0}
+      spriteValue: {fileID: 0}
+      textureValue: {fileID: 0}
+      vector2Value: {x: 0, y: 0}
+      vector3Value: {x: 0, y: 0, z: 0}
+    variableKey: 
+  saveReturnValue: 0
+  returnValueVariableKey: 
+  returnValueType: System.Void
+  showInherited: 0
+  callMode: 0
 --- !u!114 &914852692 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3018817602858839108, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}

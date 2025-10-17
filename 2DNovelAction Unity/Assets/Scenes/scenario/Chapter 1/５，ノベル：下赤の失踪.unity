@@ -504,6 +504,7 @@ GameObject:
   - component: {fileID: 288934795}
   - component: {fileID: 288934794}
   - component: {fileID: 288934793}
+  - component: {fileID: 288934841}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -1772,7 +1773,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 66.633484
     y: 98.32672
-    width: 107.87234
+    width: 106.38298
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -1826,6 +1827,7 @@ MonoBehaviour:
   - {fileID: 288934797}
   - {fileID: 288934798}
   - {fileID: 288934799}
+  - {fileID: 288934841}
   suppressAllAutoSelections: 0
 --- !u!114 &288934840
 MonoBehaviour:
@@ -1843,7 +1845,7 @@ MonoBehaviour:
   scrollPos: {x: 123.11972, y: 80.68391}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
-  blockViewHeight: 398.75
+  blockViewHeight: 232
   zoom: 0.94000006
   scrollViewRect:
     serializedVersion: 2
@@ -1854,7 +1856,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 288934839}
   selectedCommands:
-  - {fileID: 288934817}
+  - {fileID: 288934841}
   variables: []
   description: 
   stepPause: 0
@@ -1866,6 +1868,52 @@ MonoBehaviour:
   hideCommands: []
   luaEnvironment: {fileID: 0}
   luaBindingName: flowchart
+--- !u!114 &288934841
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288934791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688e35811870d403f9e2b1ab2a699d98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 137
+  indentLevel: 0
+  description: 
+  targetObject: {fileID: 539531718}
+  targetComponentAssemblyName: SceneSelectLoad, Assembly-CSharp, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  targetComponentFullname: UnityEngine.Component[]
+  targetComponentText: SceneSelectLoad
+  targetMethod: OnButtonClick
+  targetMethodText: 'OnButtonClick (String): Void'
+  methodParameters:
+  - objValue:
+      typeAssemblyname: System.String, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      typeFullname: System.String
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+      stringValue: "\uFF16\uFF0C\u30CE\u30D9\u30EB\uFF1A\u773C\u93E1\u306E\u4E2D\u306EAI
+        \u30A2\u30A4"
+      colorValue: {r: 0, g: 0, b: 0, a: 0}
+      gameObjectValue: {fileID: 0}
+      materialValue: {fileID: 0}
+      objectValue: {fileID: 0}
+      spriteValue: {fileID: 0}
+      textureValue: {fileID: 0}
+      vector2Value: {x: 0, y: 0}
+      vector3Value: {x: 0, y: 0, z: 0}
+    variableKey: 
+  saveReturnValue: 0
+  returnValueVariableKey: 
+  returnValueType: System.Void
+  showInherited: 0
+  callMode: 0
 --- !u!1 &388907663
 GameObject:
   m_ObjectHideFlags: 0

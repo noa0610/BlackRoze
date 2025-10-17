@@ -181,8 +181,8 @@ GameObject:
   - component: {fileID: 85311478}
   - component: {fileID: 85311477}
   - component: {fileID: 85311476}
-  - component: {fileID: 85311475}
   - component: {fileID: 85311474}
+  - component: {fileID: 85311525}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -232,25 +232,6 @@ MonoBehaviour:
   stopVoiceover: 1
   waitForVO: 0
   setSayDialog: {fileID: 0}
---- !u!114 &85311475
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 85311472}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00d03ae0919f04264b018681ed534177, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemId: 52
-  indentLevel: 0
-  _sceneName:
-    stringRef: {fileID: 0}
-    stringVal: "\uFF12\uFF0C\u30D0\u30C8\u30EB\uFF1A\uFF11\u30B9\u30C6\u30FC\u30B8"
-  loadingImage: {fileID: 0}
-  sceneNameOLD: 
 --- !u!114 &85311476
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -1525,8 +1506,8 @@ MonoBehaviour:
   nodeRect:
     serializedVersion: 2
     x: 68.77558
-    y: 70
-    width: 137.80487
+    y: 72.439026
+    width: 141.4634
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 1
@@ -1582,7 +1563,7 @@ MonoBehaviour:
   - {fileID: 85311477}
   - {fileID: 85311478}
   - {fileID: 85311479}
-  - {fileID: 85311475}
+  - {fileID: 85311525}
   suppressAllAutoSelections: 0
 --- !u!114 &85311524
 MonoBehaviour:
@@ -1597,10 +1578,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 106.90779, y: 80.90986}
+  scrollPos: {x: 287.3219, y: 89.878006}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
-  blockViewHeight: 398.75
+  blockViewHeight: 120
   zoom: 0.8200002
   scrollViewRect:
     serializedVersion: 2
@@ -1611,7 +1592,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 85311523}
   selectedCommands:
-  - {fileID: 85311475}
+  - {fileID: 85311525}
   variables: []
   description: 
   stepPause: 0
@@ -1623,6 +1604,51 @@ MonoBehaviour:
   hideCommands: []
   luaEnvironment: {fileID: 0}
   luaBindingName: flowchart
+--- !u!114 &85311525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 85311472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688e35811870d403f9e2b1ab2a699d98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 55
+  indentLevel: 0
+  description: 
+  targetObject: {fileID: 539531718}
+  targetComponentAssemblyName: SceneSelectLoad, Assembly-CSharp, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  targetComponentFullname: UnityEngine.Component[]
+  targetComponentText: SceneSelectLoad
+  targetMethod: OnButtonClick
+  targetMethodText: 'OnButtonClick (String): Void'
+  methodParameters:
+  - objValue:
+      typeAssemblyname: System.String, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      typeFullname: System.String
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+      stringValue: "\uFF12\uFF0C\u30D0\u30C8\u30EB\uFF1A\uFF11\u30B9\u30C6\u30FC\u30B8"
+      colorValue: {r: 0, g: 0, b: 0, a: 0}
+      gameObjectValue: {fileID: 0}
+      materialValue: {fileID: 0}
+      objectValue: {fileID: 0}
+      spriteValue: {fileID: 0}
+      textureValue: {fileID: 0}
+      vector2Value: {x: 0, y: 0}
+      vector3Value: {x: 0, y: 0, z: 0}
+    variableKey: 
+  saveReturnValue: 0
+  returnValueVariableKey: 
+  returnValueType: System.Void
+  showInherited: 0
+  callMode: 0
 --- !u!1 &193962749
 GameObject:
   m_ObjectHideFlags: 0

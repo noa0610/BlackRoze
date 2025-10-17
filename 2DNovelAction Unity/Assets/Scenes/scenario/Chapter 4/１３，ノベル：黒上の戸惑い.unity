@@ -367,7 +367,7 @@ GameObject:
   - component: {fileID: 297741937}
   - component: {fileID: 297741936}
   - component: {fileID: 297741935}
-  - component: {fileID: 297741934}
+  - component: {fileID: 297741963}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -390,25 +390,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 38494258}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &297741934
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 297741932}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00d03ae0919f04264b018681ed534177, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemId: 230
-  indentLevel: 0
-  _sceneName:
-    stringRef: {fileID: 0}
-    stringVal: Battle_4
-  loadingImage: {fileID: 0}
-  sceneNameOLD: 
 --- !u!114 &297741935
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -1115,7 +1096,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 66.633484
     y: 98.32672
-    width: 118.8
+    width: 118
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -1149,7 +1130,7 @@ MonoBehaviour:
   - {fileID: 297741957}
   - {fileID: 297741958}
   - {fileID: 297741959}
-  - {fileID: 297741934}
+  - {fileID: 297741963}
   suppressAllAutoSelections: 0
 --- !u!114 &297741962
 MonoBehaviour:
@@ -1175,7 +1156,8 @@ MonoBehaviour:
     y: -340
     width: 1114
     height: 859
-  selectedBlocks: []
+  selectedBlocks:
+  - {fileID: 297741961}
   selectedCommands: []
   variables: []
   description: 
@@ -1188,6 +1170,51 @@ MonoBehaviour:
   hideCommands: []
   luaEnvironment: {fileID: 0}
   luaBindingName: flowchart
+--- !u!114 &297741963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 297741932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688e35811870d403f9e2b1ab2a699d98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 224
+  indentLevel: 0
+  description: 
+  targetObject: {fileID: 539531718}
+  targetComponentAssemblyName: SceneSelectLoad, Assembly-CSharp, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  targetComponentFullname: UnityEngine.Component[]
+  targetComponentText: SceneSelectLoad
+  targetMethod: OnButtonClick
+  targetMethodText: 'OnButtonClick (String): Void'
+  methodParameters:
+  - objValue:
+      typeAssemblyname: System.String, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      typeFullname: System.String
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+      stringValue: "\uFF11\uFF14\uFF0C\u30D0\u30C8\u30EB\uFF1A\uFF14\u30B9\u30C6\u30FC\u30B8"
+      colorValue: {r: 0, g: 0, b: 0, a: 0}
+      gameObjectValue: {fileID: 0}
+      materialValue: {fileID: 0}
+      objectValue: {fileID: 0}
+      spriteValue: {fileID: 0}
+      textureValue: {fileID: 0}
+      vector2Value: {x: 0, y: 0}
+      vector3Value: {x: 0, y: 0, z: 0}
+    variableKey: 
+  saveReturnValue: 0
+  returnValueVariableKey: 
+  returnValueType: System.Void
+  showInherited: 0
+  callMode: 0
 --- !u!1 &388907663
 GameObject:
   m_ObjectHideFlags: 0

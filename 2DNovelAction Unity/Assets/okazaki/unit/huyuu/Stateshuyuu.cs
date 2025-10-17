@@ -60,8 +60,6 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.move, move);
 
             //爆発
-            var _suicideBombing = new SuicideBombing();      // キャンセル可能度
-
             // 爆発イベント（OnExplode）で死亡トリガーを発火
             _suicideBombing.OnCompleted += () =>
             {

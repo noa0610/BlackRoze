@@ -1,8 +1,5 @@
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using HighElixir;
-using System.Collections.Generic;
-using UniRx;
 using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
@@ -36,14 +33,14 @@ namespace BlackRose.Core.Models.Units
             };
             var moveTrigger = new[]
             {
-                (Triggers.MissingPlayer, States.idle),
-                (Triggers.AttackRange, States.explosion),
-                (Triggers.Died, States.dead)
+                (Triggers.MissingPlayer, States.idle,""),
+                (Triggers.AttackRange, States.explosion,"Explosion"),
+                (Triggers.Died, States.dead,"")
             };
             var explosionTrigger = new[]
             {
-                (Triggers.Explosion, States.dead),
-                (Triggers.Died, States.dead)
+                (Triggers.Explosion, States.dead, ""),
+                (Triggers.Died, States.dead,"")
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine

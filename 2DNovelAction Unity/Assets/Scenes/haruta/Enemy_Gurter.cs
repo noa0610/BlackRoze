@@ -81,6 +81,11 @@ namespace BlackRose.Core.Models.Units
             TakeDamage((int)damage); // 必要ならfloat→int変換
             _stateMachine.ChangeState(Triggers.HitWhileShield);
         }
+        [SerializeField, Header("スタン設定")]
+        private float stunDuration = 2f;          // スタン時間（_eventTimeに渡す）
+        [SerializeField] private float stunKnockbackForce = 15f; // ノックバックの強さ
+        [SerializeField] private Vector2 stunKnockbackDir = new Vector2(0.78f, 0.9f); // ノックバック方向
+
 
 
         protected override void RegisterStats()
@@ -88,50 +93,40 @@ namespace BlackRose.Core.Models.Units
             _stateMachine
                 .AddTransmissions(States.Idle, new[]
                 {
-                    (Triggers.StartBattle, States.ShieldIdle),
-(Triggers.HitWhileShield, States.Stun), // ← ここでスタン遷移
-(Triggers.Died,States.Dead)
+            (Triggers.StartBattle, States.ShieldIdle),
+            (Triggers.HitWhileShield, States.Stun),
+            (Triggers.Died, States.Dead)
                 })
                 .AddTransmissions(States.ShieldIdle, new[]
                 {
-                    (Triggers.FoundPlayer, States.AttackWait),
-                    (Triggers.HitWhileShield, States.Stun), // ← ここでスタン遷移
-                    (Triggers.Died,States.Dead)
+            (Triggers.FoundPlayer, States.AttackWait),
+            (Triggers.HitWhileShield, States.Stun),
+            (Triggers.Died, States.Dead)
                 })
                 .AddTransmissions(States.AttackWait, new[]
                 {
-                    (Triggers.LostPlayer, States.ShieldIdle),
-                    (Triggers.NearAttack, States.ShieldTackle),
-                    (Triggers.FarAttack, States.ShoulderGrenade),
-(Triggers.HitWhileShield, States.Stun), // ← ここでスタン遷移
-(Triggers.Died,States.Dead)
+            (Triggers.LostPlayer, States.ShieldIdle),
+            (Triggers.NearAttack, States.ShieldTackle),
+            (Triggers.FarAttack, States.ShoulderGrenade),
+            (Triggers.HitWhileShield, States.Stun),
+            (Triggers.Died, States.Dead)
                 })
                 .AddTransmissions(States.ShieldTackle, new[]
                 {
-                    (Triggers.CooldownEnd, States.AttackWait),
-                    (Triggers.HitWhileShield, States.Stun), // ← ここでスタン遷移
-                    (Triggers.Died,States.Dead)
+            (Triggers.CooldownEnd, States.AttackWait),
+            (Triggers.HitWhileShield, States.Stun),
+            (Triggers.Died, States.Dead)
                 })
                 .AddTransmissions(States.ShoulderGrenade, new[]
                 {
-                    (Triggers.CooldownEnd, States.AttackWait),
-                    (Triggers.HitWhileShield, States.Stun), // ← ここでスタン遷移
-                    (Triggers.Died,States.Dead)
+            (Triggers.CooldownEnd, States.AttackWait),
+            (Triggers.HitWhileShield, States.Stun),
+            (Triggers.Died, States.Dead)
                 })
                 .AddTransmissions(States.Stun, new[]
                 {
-
-                    (Triggers.StartBattle, States.ShieldIdle), // ← ここでスタン遷移
-                    (Triggers.Died,States.Dead)
-                })
-                 .AddTransmissions(States.ShieldIdle, new[]
-        {
-            (Triggers.HitWhileShield, States.Stun) // ← ここでスタン遷移
-        })
-                .AddTransmissions(States.AttackWait, new[]
-                {
-                    (Triggers.Died, States.Dead)
-
+            (Triggers.StartBattle, States.ShieldIdle),
+            (Triggers.Died, States.Dead)
                 });
 
             // 各ステート登録
@@ -144,15 +139,23 @@ namespace BlackRose.Core.Models.Units
             shoot.SetMuzzle(_muzzle);
             shoot.SetDirection(Direction);
             _stateMachine.AddState(States.ShoulderGrenade, shoot);
-            _stateMachine.AddState(States.Stun, new Stun(_rb2, 1, true));
+
+            // ✅ スタンステートをインスペクタ値で設定
+            var stunState = new Stun(_rb2, stunDuration, true)
+                .SetKnockback(stunKnockbackDir); // ノックバック方向設定
+            stunState.KnockbackForce = stunKnockbackForce; // ノックバック力設定
+
+            _stateMachine.AddState(States.Stun, stunState);
+
             _stateMachine.AddState(States.Dead, new Idle());
         }
+
 
         protected override void Start()
         {
             base.Start();
             _stateMachine.ChangeState(States.Idle);
-            Debug.Log("初期状態: Idle（待機中）");
+
         }
 
         protected override void FixedUpdate()
@@ -165,13 +168,12 @@ namespace BlackRose.Core.Models.Units
                 {
                     hasStarted = true;
                     _stateMachine.ChangeState(Triggers.StartBattle);
-                    Debug.Log("Idle待機完了 → ShieldIdleへ移行");
                 }
                 return; // Idle中は他の処理をしない
             }
             if (IsMatchingState(States.Stun))
             {
-                Debug.Log("ガーターがスタン → シールドOFFイベント発火");
+
                 OnStunStart?.Invoke(); // シールドを無効化
 
                 // 2秒後にスタン解除
@@ -181,7 +183,7 @@ namespace BlackRose.Core.Models.Units
 
             if (IsMatchingState(States.Dead))
             {
-                Debug.Log("死亡しました");
+
                 Destroy(gameObject);
             }
 
@@ -192,7 +194,7 @@ namespace BlackRose.Core.Models.Units
             }
             SearchPlayer();
 
-            Debug.Log("現在のステート: " + _stateMachine.CurrentState.key);
+
 
             if (cooldownTimer > 0)
                 cooldownTimer -= Time.fixedDeltaTime;
@@ -217,7 +219,7 @@ namespace BlackRose.Core.Models.Units
         }
         private void RecoverFromStun()
         {
-            Debug.Log("スタン終了 → シールドONイベント発火");
+
             OnStunEnd?.Invoke(); // シールドを再有効化
             _stateMachine.ChangeState(Triggers.StartBattle);
         }
@@ -268,7 +270,7 @@ namespace BlackRose.Core.Models.Units
                 // --- 発射方向をセット ---
                 shoot.SetDirection(shootDir);
 
-                Debug.Log($"向きを変更しました。発射方向: {shootDir} (角度: {angleDeg}°)");
+
             }
 
 
@@ -305,7 +307,7 @@ namespace BlackRose.Core.Models.Units
             if (hp <= 0)
             {
                 _stateMachine.ChangeState(Triggers.Died);
-                Debug.Log("敵死亡");
+
             }
         }
     }

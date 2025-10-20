@@ -1,4 +1,5 @@
 ﻿
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BlackRose.Core.Models.Units
@@ -8,13 +9,13 @@ namespace BlackRose.Core.Models.Units
         UnitStatusData StatusData { get; }
         void Register();
         void Bind(AIController parent);
-
+        void SetMuzzle(GameObject obj);
         //
         void OnGrounded();
 
         // === Input Action ===
         void OnShoot(InputValue value);
-        void OnReleaseShoot(InputValue value);
+        void OnReleaseShoot(float chargeTime);
         void OnJump(InputValue value);
         void CanceldJump(InputValue value);
         void OnSkill(InputValue value);

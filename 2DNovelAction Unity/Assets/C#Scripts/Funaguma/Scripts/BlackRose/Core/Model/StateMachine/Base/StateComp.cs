@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {
-    public class StateComp : IState, ISerializationCallbackReceiver
+    public class StateComp : IState
     {
         // ステート切り替えを拒否する待機フレーム数
         private Timer _timeHolders;
@@ -14,11 +14,11 @@ namespace BlackRose.Core.Models.States
         protected TimerTicket _tickTicket;
         protected Timer Timer => _timeHolders;
 
-        public event Action OnComplete;
+        public event Action WaitTickHasCompleted;
         public StateComp(string parentName = "")
         {
             _timeHolders = new(parentName);
-            _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", OnComplete, true);
+            _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
@@ -54,24 +54,11 @@ namespace BlackRose.Core.Models.States
             _timeHolders.Update(deltaTime);
         }
 
-        public T SetWaitTick<T>(int frame, Action onFinished = null) where T : StateComp
+        public T SetWaitTick<T>(int frame) where T : StateComp
         {
             _waitFrame = frame;
             _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
             return this as T;
-        }
-
-        public virtual void OnBeforeSerialize()
-        {
-        }
-
-        public void OnAfterDeserialize()
-        {
-            OnDeserialize();
-        }
-
-        public virtual void OnDeserialize()
-        {
         }
     }
 }

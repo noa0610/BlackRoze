@@ -1,9 +1,9 @@
 ﻿using BlackRose.Core.Models.Helper;
-using UnityEngine;
-using System;
-using UnityEngine.InputSystem;
-using Triggers = BlackRose.Core.Models.Units.AIController.AITriggers;
 using BlackRose.Core.Models.States;
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static BlackRose.Core.Models.Units.AIController;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -23,12 +23,58 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private MultiShoot _full;
         public override void Register()
         {
+            // Idle
             SM.AddTransitionsForLayer(
-                AIController.Mode.Light,
-                AIController.AIStates.Idle,
-                    (Triggers.shootInput, LightStates.L_Shoot, ""),
-                    (Triggers.jumpInput, LightStates.L_Jump, ""),
-                    (Triggers.skillInput, LightStates.L_Skill, "")
+                Mode.Light,
+                AIStates.Idle,
+                    (AITriggers.shootInput, LightStates.L_Shoot, ""),
+                    (AITriggers.halfCharge, LightStates.L_Half, ""),
+                    (AITriggers.fullCharge, LightStates.L_Full, ""),
+                    (AITriggers.jumpInput, LightStates.L_Jump, ""),
+                    (AITriggers.skillInput, LightStates.L_Skill, "")
+                );
+            SM.AddTransitionsForLayer(
+                Mode.Light,
+                AIStates.ShootInterval,
+                    (AITriggers.shootInput, LightStates.L_Shoot, ""),
+                    (AITriggers.halfCharge, LightStates.L_Half, ""),
+                    (AITriggers.fullCharge, LightStates.L_Full, ""),
+                    (AITriggers.skillInput, LightStates.L_Skill, "")
+                );
+            // Move
+            SM.AddTransitionsForLayer(
+                Mode.Light,
+                AIStates.Move,
+                    (AITriggers.jumpInput, LightStates.L_Jump, ""),
+                    (AITriggers.skillInput, LightStates.L_Skill, "")
+                );
+
+            // Jump
+            SM.AddTransitionsForLayer(
+                Mode.Light,
+                LightStates.L_Jump,
+                    (AITriggers.falling, AIStates.Fall, ""),
+                    (AITriggers.landing, AIStates.Idle, "")
+                );
+            SM.AddTransitionsForLayer(
+                Mode.Light,
+                LightStates.L_Jump,
+                    (AITriggers.shootInput, LightStates.L_Shoot, ""),
+                    (AITriggers.skillInput, LightStates.L_Skill, "")
+                );
+
+            // Skill
+            SM.AddTransitionsForLayer(
+                Mode.Light,
+                LightStates.L_Skill,
+                    (AITriggers.skillFinished, AIStates.Idle, "")
+                );
+
+            // Interval
+            SM.AddTransitionsForLayer(
+                Mode.Light,
+                AIStates.ShootInterval,
+                    (AITriggers.shootInput, LightStates.L_Shoot, "")
                 );
 
             SM.AddState(LightStates.L_Jump, _jump);
@@ -38,15 +84,15 @@ namespace BlackRose.Core.Models.Units
 
             _shoot.onShootComplete.AddListener(() =>
             {
-                SM.LazyChange(Triggers.shootCompleted);
+                SM.LazyChange(AITriggers.shootCompleted);
             });
             _half.onShootComplete.AddListener(() =>
             {
-                SM.LazyChange(Triggers.shootCompleted);
+                SM.LazyChange(AITriggers.shootCompleted);
             });
             _full.onShootComplete.AddListener(() =>
             {
-                SM.LazyChange(Triggers.shootCompleted);
+                SM.LazyChange(AITriggers.shootCompleted);
             });
         }
 
@@ -65,17 +111,20 @@ namespace BlackRose.Core.Models.Units
 
         public override void InvokeShoot()
         {
-            SM.ChangeState(LightStates.L_Shoot);
+            _shoot.SetDirection(_parent.Direction);
+            SM.ChangeState(AITriggers.shootInput);
         }
 
         public override void InvokeHalfShoot()
         {
-            SM.ChangeState(LightStates.L_Half);
+            _half.SetDirection(_parent.Direction);
+            SM.ChangeState(AITriggers.halfCharge);
         }
 
         public override void InvokeFullShoot()
         {
-            SM.ChangeState(LightStates.L_Full);
+            _full.SetDirection(_parent.Direction);
+            SM.ChangeState(AITriggers.fullCharge);
         }
 
         public override void ModeChange_C()
@@ -86,6 +135,13 @@ namespace BlackRose.Core.Models.Units
         public override void ModeChange_V()
         {
             _parent.SwitchModeNormal();
+        }
+
+        public override void SetMuzzle(GameObject obj)
+        {
+            _shoot.SetGameObject(obj);
+            _half.SetGameObject(obj);
+            _full.SetGameObject(obj);
         }
     }
 }

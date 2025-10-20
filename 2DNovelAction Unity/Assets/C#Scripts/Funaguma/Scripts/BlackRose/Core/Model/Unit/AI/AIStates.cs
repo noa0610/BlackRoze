@@ -87,6 +87,7 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterAwake()
         {
             base.AfterAwake();
+            GetComponent<AIMuzzleSetter>().Set(_normalMode, _lightMode, _heavyMode);
             ChangeMode(Mode.Normal);
         }
 
@@ -123,14 +124,15 @@ namespace BlackRose.Core.Models.Units
                 (AITriggers.jumpInput, AIStates.Jump, "")
                 );
             // Fall
-            _stateMachine.AddTransitionsForLayer(
-                Layer.COMMON,
-                AIStates.Fall,
-                (AITriggers.landing, AIStates.Idle, "")
-                );
+            //_stateMachine.AddTransitionsForLayer(
+            //    Layer.COMMON,
+            //    AIStates.Fall,
+            //    (AITriggers.landing, AIStates.Idle, "")
+            //    );
 
             // 任意遷移
             _stateMachine.AddAnyTransition(AITriggers.landing, AIStates.Idle, Layer.COMMON);
+            _stateMachine.AddAnyTransition(AITriggers.falling, AIStates.Fall, Layer.COMMON);
             _stateMachine.AddAnyTransition(AITriggers.modeChanged, AIStates.Idle, Layer.COMMON);
             _stateMachine.AddAnyTransition(AITriggers.skillFinished, AIStates.Idle, Layer.COMMON);
             _stateMachine.AddAnyTransition(AITriggers.shootCompleted, AIStates.ShootInterval, Layer.COMMON);

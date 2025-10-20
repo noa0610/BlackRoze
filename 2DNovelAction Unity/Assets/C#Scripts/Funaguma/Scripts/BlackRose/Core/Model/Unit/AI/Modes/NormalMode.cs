@@ -30,7 +30,7 @@ namespace BlackRose.Core.Models.Units
         private TimerTicket _skillTicket;
 
         [Header("States")]
-        [SerializeField] private Warp _warpState = new Warp();
+        private Warp _warpState = new Warp();
         [SerializeField] private ShootForward _shoot = new ShootForward();
 
 #if UNITY_EDITOR
@@ -148,7 +148,6 @@ namespace BlackRose.Core.Models.Units
         public override void InvokeShoot()
         {
             _shoot.SetDirection(_parent.Direction);
-            _shoot.SetBullet(_parent.Bullets[0]);
             SM.ChangeState(Triggers.shootInput);
         }
 
@@ -160,13 +159,13 @@ namespace BlackRose.Core.Models.Units
         {
         }
 
+#if UNITY_EDITOR
         public override void Update(float deltaTime)
         {
-#if UNITY_EDITOR
             if (Timer.TryGetRemaining(_skillTicket, out var rm)) _ct = rm;
-#endif
-        }
 
+        }
+#endif
         public override void ModeChange_C()
         {
             _parent.SwitchModeLight();
@@ -175,6 +174,11 @@ namespace BlackRose.Core.Models.Units
         public override void ModeChange_V()
         {
             _parent.SwitchModeHeavy();
+        }
+
+        public override void SetMuzzle(GameObject obj)
+        {
+            _shoot.SetGameObject(obj);
         }
     }
 }

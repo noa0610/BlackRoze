@@ -69,5 +69,10 @@ namespace BlackRose.Core.Models.Units
         {
             _parent.SwitchModeLight();
         }
+
+        public override void SetMuzzle(GameObject obj)
+        {
+
+        }
     }
 }

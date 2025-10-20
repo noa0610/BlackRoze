@@ -149,7 +149,9 @@ namespace BlackRose.Core.Models.Units
             BeforeUpdate();
             if (!_isPlaying) return;
             OnUpdate();
-            _stateMachine.UpdateMachine(Time.deltaTime);
+            var dt = Time.deltaTime;
+            _stateMachine.UpdateMachine(dt);
+            Timer.Update(dt);
             effectManager.Update();
             AfterUpdate();
 # if UNITY_EDITOR

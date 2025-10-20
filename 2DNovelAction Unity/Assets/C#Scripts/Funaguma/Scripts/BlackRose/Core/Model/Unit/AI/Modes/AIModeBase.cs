@@ -13,11 +13,11 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected Jump _jump;
         [SerializeField] protected float[] _chargeTime = new float[2] { 1.2f, 2.3f };
-        protected TimerTicket _chargeTicket;
         protected AIController _parent;
         public UnitStatusData StatusData => _status;
         protected IStateMachine SM => _parent.StateMachine;
         protected Timer Timer => _parent.Timer;
+        protected TimerTicket ChargeTime => _parent.ChargeTime;
         public abstract void Register();
 
         // Grounded Event
@@ -31,15 +31,13 @@ namespace BlackRose.Core.Models.Units
         {
             InvokeShoot();
         }
-        public virtual void OnReleaseShoot(InputValue value)
+        public virtual void OnReleaseShoot(float chargeTime)
         {
-            if (!Timer.Stop(_chargeTicket, out var t)) return;
-
-            if (t > _chargeTime[1])
+            if (chargeTime > _chargeTime[1])
             {
                 InvokeFullShoot();
             }
-            else if (t > _chargeTime[0])
+            else if (chargeTime > _chargeTime[0])
             {
                 InvokeHalfShoot();
             }
@@ -80,6 +78,10 @@ namespace BlackRose.Core.Models.Units
         public void Bind(AIController parent)
         {
             _parent = parent;
+        }
+
+        public virtual void SetMuzzle(GameObject obj)
+        {
         }
     }
 }

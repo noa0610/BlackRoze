@@ -18,11 +18,12 @@ namespace BlackRose.Core.Models.States
         public StateComp(string parentName = "")
         {
             _timeHolders = new(parentName);
-            _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
+            if (_waitFrame > 0)
+                _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
-            return _timeHolders.IsFinished(_tickTicket);
+            return !_timeHolders.Contains(_tickTicket) || _timeHolders.IsFinished(_tickTicket);
         }
 
         public virtual bool AllowEnter(IState previousState, UnitBase parent)
@@ -57,6 +58,8 @@ namespace BlackRose.Core.Models.States
         public T SetWaitTick<T>(int frame) where T : StateComp
         {
             _waitFrame = frame;
+            if (!_timeHolders.Contains(_tickTicket))
+                _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
             _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
             return this as T;
         }

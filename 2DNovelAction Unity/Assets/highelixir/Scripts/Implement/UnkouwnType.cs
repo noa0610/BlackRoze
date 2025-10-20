@@ -5,9 +5,9 @@ namespace HighElixir
     /// <summary>
     /// ダミーの型
     /// </summary>
-    public sealed class UnkouwnType 
+    public sealed class UnknownType 
     { 
-        public static Type Type => typeof(UnkouwnType);
-        public static string Name => nameof(UnkouwnType);
+        public static Type Type => typeof(UnknownType);
+        public static string Name => nameof(UnknownType);
     }
 }

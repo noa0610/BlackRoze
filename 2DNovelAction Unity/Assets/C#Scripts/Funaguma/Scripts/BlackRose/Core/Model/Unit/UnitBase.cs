@@ -34,6 +34,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private Vector2 _currentDirection;
 
         public string CurrentState => _currentState;
+        public virtual bool ShoudBeLogging => false;
 #endif
         public UnitStatusData UnitStatusData => _status;
         public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
@@ -124,7 +125,11 @@ namespace BlackRose.Core.Models.Units
             RegisterStats();
 
             // ステートマシン起動
-            _stateMachine.Awake(StartState);
+#if UNITY_EDITOR
+            _stateMachine.Awake(StartState, ShoudBeLogging);
+#else
+            _stateMachine.Awake(StartState, false);
+#endif
             AfterAwake();
         }
 
@@ -154,7 +159,7 @@ namespace BlackRose.Core.Models.Units
             Timer.Update(dt);
             effectManager.Update();
             AfterUpdate();
-# if UNITY_EDITOR
+#if UNITY_EDITOR
             _currentState = _stateMachine.CurrentState.key;
             _currentMode = _stateMachine.CurrentLayer;
 #endif

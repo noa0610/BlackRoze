@@ -46,7 +46,7 @@ namespace BlackRose.Core.Models.Units
 
         protected virtual void Move(float deltaTime)
         {
-            Debug.Log($"Move. delta:{deltaTime}");
+            //Debug.Log($"Move. delta:{deltaTime}");
             transform.position += (Vector3)_direction * _status.speed * deltaTime;
         }
 
@@ -54,12 +54,12 @@ namespace BlackRose.Core.Models.Units
         {
             var gt = GlobalTimer.FixedUpdate;
             _ticket = gt.CountDownRegister(_status.time, $"[{name}] duration", () => Destroy(gameObject));
-            gt.GetReactiveProperty(_ticket).Subscribe(dt => Move(dt));
+            gt.GetReactiveProperty(_ticket).Subscribe(td => Move(-td.Delta));
             gt.Start(_ticket);
         }
         protected virtual void OnDestroy()
         {
-            GlobalTimer.FixedUpdate.Unregister(_ticket);
+            GlobalTimer.FixedUpdate.UnRegister(_ticket);
         }
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {

@@ -34,7 +34,7 @@ namespace BlackRose.Core.Models.States
         {
             get
             {
-                if (Timer.TryGetRemaining(_ticket, out var t))
+                if (Timer.TryGetCurrentTime(_ticket, out var t))
                 {
                     return t;
                 }

@@ -77,7 +77,7 @@ namespace BlackRose.Core.Models.States
             if (mode.Equals(default))
                 AddAnyTransition(trig.ToString(), state.ToString(), animationTrigger: animationTrigger);
             else
-                AddAnyTransition(mode.ToString(), trig.ToString(), state.ToString(), animationTrigger);
+                AddAnyTransition(trig.ToString(), state.ToString(), mode.ToString(), animationTrigger);
         }
         public void AddTransition<TState, TTrig>(TState fromState, TTrig trigger, string toState, string animationTrigger = "")
             where TState : System.Enum where TTrig : System.Enum
@@ -168,10 +168,12 @@ namespace BlackRose.Core.Models.States
             _currentState.state.Stay(_parent, deltaTime);
         }
 
-        public void Awake(string startStateKey = "idle")
+        public void Awake(string startStateKey = "idle", bool log = false)
         {
             if (_stateMap.ContainsKey(startStateKey))
+            {
                 SetStateDirect(startStateKey);
+            }
             else
             {
                 startStateKey = char.ToUpper(startStateKey[0]) + startStateKey.Substring(1);
@@ -179,6 +181,21 @@ namespace BlackRose.Core.Models.States
                     SetStateDirect(startStateKey);
                 else
                     throw new System.ArgumentException($"Unknown start state: {startStateKey}");
+            }
+            if (!log) return;
+            // ログ
+            Debug.Log($"[StateMachine] Start State: {_currentState.key}");
+            foreach (var t in _transitionGroup)
+            {
+                Debug.Log($"[StateMachine] Transition added: {t.Key.state} --({t.Key.trigger})-> {t.Value.state}");
+            }
+            foreach (var t in _layerTransitionGroup)
+            {
+                Debug.Log($"[StateMachine] Layer Transition added: [Layer:{t.Key.layer}] {t.Key.state} --({t.Key.trigger})-> {t.Value.state}");
+            }
+            foreach (var t in _anyTransitionGroup)
+            {
+                Debug.Log($"[StateMachine] Any Transition added: [Layer:{t.Key.layer}] --({t.Key.trigger})-> {t.Value.toState}");
             }
         }
 

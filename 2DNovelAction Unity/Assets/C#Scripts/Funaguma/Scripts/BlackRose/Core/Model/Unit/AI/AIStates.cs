@@ -29,6 +29,9 @@ namespace BlackRose.Core.Models.Units
         private AISpriteResolver _spriteResolver;
 
         // ===== State Machine =====
+#if UNITY_EDITOR
+        public override bool ShoudBeLogging => true;
+#endif
         public AIModeBase CurrentMode => _currentEnumMode switch
         {
             Mode.Normal => _normalMode,
@@ -124,14 +127,14 @@ namespace BlackRose.Core.Models.Units
                 (AITriggers.jumpInput, AIStates.Jump, "")
                 );
             // Fall
-            //_stateMachine.AddTransitionsForLayer(
-            //    Layer.COMMON,
-            //    AIStates.Fall,
-            //    (AITriggers.landing, AIStates.Idle, "")
-            //    );
+            _stateMachine.AddTransitionsForLayer(
+                Layer.COMMON,
+                AIStates.Fall,
+                (AITriggers.landing, AIStates.Idle, "")
+                );
 
             // 任意遷移
-            _stateMachine.AddAnyTransition(AITriggers.landing, AIStates.Idle, Layer.COMMON);
+            //_stateMachine.AddAnyTransition(AITriggers.landing, AIStates.Idle, Layer.COMMON);
             _stateMachine.AddAnyTransition(AITriggers.falling, AIStates.Fall, Layer.COMMON);
             _stateMachine.AddAnyTransition(AITriggers.modeChanged, AIStates.Idle, Layer.COMMON);
             _stateMachine.AddAnyTransition(AITriggers.skillFinished, AIStates.Idle, Layer.COMMON);

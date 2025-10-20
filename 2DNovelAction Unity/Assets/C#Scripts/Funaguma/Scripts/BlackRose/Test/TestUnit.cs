@@ -18,7 +18,7 @@ namespace BlackRose.Test
             TestState,
         }
         [SerializeReference, SubclassSelector]
-        private IState _state = new Idle();
+        private IState _state;
 
         [SerializeField] private Vector2 _basePos = Vector2.zero;
         [SerializeField] private bool _enabledGravity = true;

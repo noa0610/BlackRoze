@@ -125,6 +125,6 @@ namespace BlackRose.Core.Models.States
         /// <summary>
         /// ステートマシンを起動。既定は "idle"（大文字小文字無視で探索）
         /// </summary>
-        void Awake(string startStateKey = "idle");
+        void Awake(string startStateKey = "idle", bool log = false);
     }
 }

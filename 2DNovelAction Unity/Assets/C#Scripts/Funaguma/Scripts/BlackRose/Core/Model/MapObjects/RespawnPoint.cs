@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using BlackRose.Core.Models.Systems;
+using BlackRose.Core.Models.Units;
+using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Objects
 {
     [DefaultExecutionOrder(-3)]
-    public class RespawnPoint : MonoBehaviour
+    public class RespawnPoint : MonoBehaviour, IPlayerFollower
     {
         [SerializeField, ReadOnly] public static List<RespawnPoint> points = new();
         [SerializeField] private bool _enable = true;
-        [SerializeField] private string _tag = "Player";
         [SerializeField] private bool _isStart = false; // スタート地点かどうか
+        private UnitBase _target;
 #if UNITY_EDITOR
         [SerializeField] private int count = 0; // スタート地点のカウント
 #endif
@@ -41,7 +43,7 @@ namespace BlackRose.Core.Models.Objects
         }
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (_enable && collision.gameObject.CompareTag(_tag))
+            if (_enable && collision.gameObject.Equals(_target.gameObject))
             {
                 PlayerSpawnner.SetRespawnPoint(this);
                 SetEnable(false);
@@ -59,7 +61,6 @@ namespace BlackRose.Core.Models.Objects
             if (!points.Contains(this)) points.Add(this);
             count = points.Count; // カウントを更新
             _enable = true;
-            _tag = "Player";
             if (_isStart) SetStart(); // スタート地点なら初期化時に設定
         }
         private void OnValidate()
@@ -67,6 +68,11 @@ namespace BlackRose.Core.Models.Objects
             if (!gameObject.activeInHierarchy) return;
             if (!points.Contains(this)) points.Add(this);
             if (_isStart) SetStart();
+        }
+
+        public void SetTarget(UnitBase target)
+        {
+            _target = target;
         }
 #endif
     }

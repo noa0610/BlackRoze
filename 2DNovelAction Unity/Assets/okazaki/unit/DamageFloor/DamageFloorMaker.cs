@@ -42,7 +42,7 @@ namespace BlackRose.Core.Models.Objects
             {
                 _floorTimerDict.Remove(go);
                 _floorTimerLink.Remove(key);
-                GlobalTimer.Update.Unregister(key);
+                GlobalTimer.Update.UnRegister(key);
                 _pool.Release(go); // プールに返す
             }
         }

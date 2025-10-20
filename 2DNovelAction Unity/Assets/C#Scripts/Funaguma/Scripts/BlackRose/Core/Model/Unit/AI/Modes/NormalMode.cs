@@ -41,7 +41,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void Register()
         {
-            _skillTicket = Timer.CountDownRegister(_skillCT, "ワープCT", initZero:true);
+            _skillTicket = Timer.CountDownRegister(_skillCT, "ワープCT", initZero: true);
 
             // Idle
             SM.AddTransitionsForLayer(
@@ -97,6 +97,12 @@ namespace BlackRose.Core.Models.Units
                     (Triggers.shootInput, NormalState.N_Shoot, "")
                 );
 
+            SM.AddTransitionForLayer(
+                AIController.Mode.Normal.ToString(), 
+                AIStates.Fall.ToString(), 
+                Triggers.skillInput.ToString(), 
+                NormalState.N_Skill.ToString(), "");
+
             SM.AddState(NormalState.N_Jump, _jump);
             SM.AddState(NormalState.N_Skill, _warpState);
             SM.AddState(NormalState.N_Shoot, _shoot);
@@ -107,8 +113,10 @@ namespace BlackRose.Core.Models.Units
             _warpState.OnCompleted += () =>
             {
                 Debug.Log("==================");
-                SM.ChangeState(Triggers.skillFinished);
-                Debug.Log("Current State: " + SM.CurrentState.key);
+                if (SM.ChangeState(Triggers.skillFinished))
+                    Debug.Log("Warp Completed and State Changed");
+                else
+                    Debug.Log("Warp Completed but State Change Blocked");
             };
 
             _shoot.onShootComplete.AddListener(() =>
@@ -162,7 +170,7 @@ namespace BlackRose.Core.Models.Units
 #if UNITY_EDITOR
         public override void Update(float deltaTime)
         {
-            if (Timer.TryGetRemaining(_skillTicket, out var rm)) _ct = rm;
+            if (Timer.TryGetCurrentTime(_skillTicket, out var rm)) _ct = rm;
 
         }
 #endif

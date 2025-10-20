@@ -53,7 +53,9 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.idle, new Idle());
 
             // 移動
-            var move = new FreeMove();
+            var move = new FreeMove(true);
+            move.SetAccel(30.0f);
+            move.SetDecel(20.0f);
             _stateMachine.AddState(States.move, move);
 
             //爆発

@@ -505,8 +505,8 @@ MonoBehaviour:
     waitForAnimeEnd: 0
     cancelableProgress: 0
     _isStopInExit: 0
-    _accel: 10.23
-    _decel: 10
+    _accel: 60
+    _decel: 20
     _deadZone: 0.0522
   _beamswordBulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
   _beamswordTargetLayer:
@@ -520,7 +520,9 @@ MonoBehaviour:
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
-    _positions: []
+    _positions:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     _jumpSpeed: 0
     _targetIdx: 0
 --- !u!114 &77449240

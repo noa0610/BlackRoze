@@ -483,8 +483,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 77449240}
   _status: {fileID: 11400000, guid: 11c5ea8d18132e344be620495817c278, type: 2}
-  _animator: {fileID: 77449232}
   _currentState: 
+  _currentMode: 
   _currentDirection: {x: 0, y: 0}
   _junpPositions:
   - {fileID: 1206585446}
@@ -504,7 +504,6 @@ MonoBehaviour:
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
-    _rigidbody2D: {fileID: 77449233}
     _isStopInExit: 0
     _accel: 10.23
     _decel: 10
@@ -517,6 +516,13 @@ MonoBehaviour:
   _shockwaveTargetLayer:
     serializedVersion: 2
     m_Bits: 1024
+  _positionJump:
+    animeTriggerName: 
+    waitForAnimeEnd: 0
+    cancelableProgress: 0
+    _positions: []
+    _jumpSpeed: 0
+    _targetIdx: 0
 --- !u!114 &77449240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -868,8 +874,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 247344952}
   _status: {fileID: 11400000, guid: 2bea7f548f87c4441bb8b8a42c221a45, type: 2}
-  _animator: {fileID: 247344954}
   _currentState: 
+  _currentMode: 
   _currentDirection: {x: 0, y: 0}
   _rb: {fileID: 247344955}
   bulletPrefab: {fileID: 424759803315516098, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
@@ -4000,8 +4006,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 7340325418745476336}
   _status: {fileID: 11400000, guid: 8f027c1fc253958428ed83fa9c922dc6, type: 2}
-  _animator: {fileID: 2304263901732056687}
   _currentState: 
+  _currentMode: 
   _currentDirection: {x: 0, y: 0}
   _groundCheck: {fileID: 703885838269489387}
   _groundCheckRadius: 0.1
@@ -4025,16 +4031,18 @@ MonoBehaviour:
   _stunKnockback: {x: -0.6, y: 0.8}
   _maxSuccession: 3
   _shootBlockTime: 0.6
+  _invincibleTime: 0.6
   _forceEnableJump: 0
   _jump:
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0.7
-    _rb: {fileID: 0}
     _hasLeapt: 0
+    _enableJumped: -1
     _cutMultiplier: 0.5
     _accel: 60
     _airFriction: 30
+  _muzzle: {fileID: 0}
 --- !u!58 &7340325418745476333
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -4153,6 +4161,10 @@ PrefabInstance:
       propertyPath: _suicideBombing._radius
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 5092649469929487127, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7298730748722147604, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
       propertyPath: m_Name
       value: Drone Animation
@@ -4163,7 +4175,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8467423874332928375, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.6
+      value: -2.5
       objectReference: {fileID: 0}
     - target: {fileID: 8467423874332928375, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
       propertyPath: m_LocalPosition.z

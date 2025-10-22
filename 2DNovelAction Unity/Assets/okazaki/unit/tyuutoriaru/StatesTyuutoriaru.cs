@@ -73,7 +73,7 @@ namespace BlackRose.Core.Models.Units
             // States.beamswordattackmove
             var beamswordattackTrigger = new[]
             {
-                (Triggers.Attack2end, States.attackidle),
+                (Triggers.Attack2end, States.fixedpositionjump),
                 (Triggers.Died, States.dead),
                 (Triggers.HalfHP, States.stun)
             };
@@ -104,6 +104,7 @@ namespace BlackRose.Core.Models.Units
             .AddTransmissions(States.lasershot, lasershotTrigger)
             .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
             .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
+            .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
             .AddTransmissions(States.stun, stunTrigger)
             .AddTransmissions(States.shockwave, shockwaveTrigger);
             // 待機
@@ -133,19 +134,26 @@ namespace BlackRose.Core.Models.Units
             .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
-                _stateMachine.LazyChange(Triggers.Attack2end);
+                GetComponent<BoxCollider2D>().isTrigger = true;
+                _positionJump?.SetTarget(JumpSelect());
+                                _stateMachine.LazyChange(Triggers.Attack2end);
             });
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
             // ジャンプ
-            var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
-            var fixedpositionjump = new PositionJump(jumpPositions, 10f);
-                fixedpositionjump.OnArrived += () =>
-                {
-                   _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
-                };
+            _positionJump.SetPositions(_junpPositions.ConvertAll(p => (Vector2)p.transform.position));
+            var fixedpositionjump = _positionJump;
+            fixedpositionjump.SetRB2(_RB2);
+            _positionJump.OnArrived += () =>
+            {
+                GetComponent<BoxCollider2D>().isTrigger = false;
+                Debug.Log("ジャンプ到達コールバックが呼ばれました。");
+                _stateMachine.LazyChange(Triggers.Landing);
+                Debug.Log("固定位置ジャンプに到達しました。");
+            };
+
             _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
             // スタン
-            var stun = new Idle_LazyChange(Triggers.Event2.ToString(),  5, true);
+            var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
             _stateMachine.AddState(States.stun, stun);
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)

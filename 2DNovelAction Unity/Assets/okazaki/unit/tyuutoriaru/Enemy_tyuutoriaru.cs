@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.Helper;
@@ -9,7 +9,7 @@ using BlackRose.Datas.Definitions;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-   public partial class Enemy_tyuutoriaru : UnitBase
+    public partial class Enemy_tyuutoriaru : UnitBase
     {
 
         [SerializeField] private List<GameObject> _junpPositions;
@@ -29,7 +29,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _beamswordTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private PositionJump _positionJump ;
+        [SerializeField] private PositionJump _positionJump;
+
+        #region 
 
         // protected override void RegisterStats()
         // {
@@ -68,7 +70,7 @@ namespace BlackRose.Core.Models.Units
         //     var fixedpositionjumpTrigger = new[]                                // ジャンプステートのトリガー
         //     {
         //         (Triggers.Landing, States.attackidle),             // 着地で攻撃待機へ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ
+        //         (Triggers.Died, States
         //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
         //     };
         //     var stunTrigger = new[]                                // スタンステートのトリガー
@@ -107,15 +109,15 @@ namespace BlackRose.Core.Models.Units
         //     });
         //     _stateMachine.AddState(States.dead, died);
         //     // ジャンプ
-        //     var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
-        //     var fixedpositionjump = new PositionJump(jumpPositions, 10f)
-        //         .SetAnimeTrigger("fixedpositionjump")
-        //         .SetCancelableProgress(0);
-        //         fixedpositionjump.OnArrived += () =>
-        //         {
-        //            _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
-        //         };
-        //     _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
+        // var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
+        // var fixedpositionjump = new PositionJump(jumpPositions, 10f)
+        //     .SetAnimeTrigger("fixedpositionjump")
+        //     .SetCancelableProgress(0);
+        //     fixedpositionjump.OnArrived += () =>
+        //     {
+        //        _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
+        //     };
+        // _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
         //     // 攻撃待機
         //     var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
         //     attackIdle.LazyEvent.AddListener(Attackselect);
@@ -153,6 +155,7 @@ namespace BlackRose.Core.Models.Units
         //     });
         //     _stateMachine.AddState(States.shockwave, shockwave);
         // }
+        #endregion
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
         {
@@ -252,7 +255,16 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("ビームソード接近");
             _stateMachine.ChangeState(Triggers.Attack2);
         }
-    }
 
+        private int JumpSelect()
+        {
+            // 中心とこのオブジェクトのx座標差を取得
+            float distance = transform.position.x - _centerPositions.transform.position.x;
+            Debug.Log("距離差: " + distance);
+            // 差がプラスなら1、マイナスなら0を返す
+            return distance >= 0 ? 0 : 1;
+            
+        }
+    }
 }
 

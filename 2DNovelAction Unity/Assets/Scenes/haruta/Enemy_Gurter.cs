@@ -33,6 +33,9 @@ namespace BlackRose.Core.Models.Units
         public event Action OnStunEnd;
         public event Action OnAttackStart;
         public event Action OnAttackEnd;
+        [SerializeField] private Animator animator;
+        private bool _isStunning = false;
+
 
 
 
@@ -58,6 +61,9 @@ namespace BlackRose.Core.Models.Units
             HitWhileShield,
             Died
         }
+        [Header("State Flags")]
+        private bool _isTackling = false;  // タックル用フラグを追加
+
 
         protected override void BeforeAwake()
         {
@@ -140,6 +146,8 @@ namespace BlackRose.Core.Models.Units
             shoot.SetDirection(Direction);
             _stateMachine.AddState(States.ShoulderGrenade, shoot);
 
+
+
             // ✅ スタンステートをインスペクタ値で設定
             var stunState = new Stun(_rb2, stunDuration, true)
                 .SetKnockback(stunKnockbackDir); // ノックバック方向設定
@@ -173,11 +181,12 @@ namespace BlackRose.Core.Models.Units
             }
             if (IsMatchingState(States.Stun))
             {
-
-                OnStunStart?.Invoke(); // シールドを無効化
-
-                // 2秒後にスタン解除
-                Invoke(nameof(RecoverFromStun), 2f);
+                if (!_isStunning) // スタン開始時の1回だけ実行
+                {
+                    _isStunning = true;
+                    OnStunStart?.Invoke();
+                    animator.SetTrigger("stun");
+                }
                 return;
             }
 
@@ -204,11 +213,13 @@ namespace BlackRose.Core.Models.Units
                 if (IsMatchingState(States.ShieldTackle))
                 {
                     // 攻撃判定ONイベント
+                    animator.SetTrigger("tackle");
                     _shieldDefense?.SetAttack(true);
                 }
                 else
                 {
                     // 攻撃判定OFFイベント
+                    animator.SetTrigger("shoot");
                     _shieldDefense?.SetAttack(false);
                 }
                 cooldownTimer = attackCooldown;
@@ -216,6 +227,24 @@ namespace BlackRose.Core.Models.Units
             }
             // シールドタックル開始時
 
+        }
+        public void tackleEnd()
+        {
+            _isTackling = false;  // タックル終了時にフラグをリセット
+            animator.SetTrigger("idle");
+        }
+
+        public void stanEnd()
+        {
+            _isStunning = false;  // スタン終了時にフラグをリセット
+            animator.SetTrigger("stunrecover");
+            OnStunEnd?.Invoke();
+            _stateMachine.ChangeState(Triggers.StartBattle);
+        }
+
+        public void shootEnd()
+        {
+            animator.SetTrigger("idle");
         }
         private void RecoverFromStun()
         {

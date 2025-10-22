@@ -3023,8 +3023,9 @@ MonoBehaviour:
     _createPos: 0.35
     _direction: {x: 1, y: 0}
     _muzzle: {fileID: 1733311511}
+  animator: {fileID: 137948057}
   stunDuration: 2
-  stunKnockbackForce: 15
+  stunKnockbackForce: -1
   stunKnockbackDir: {x: 0.78, y: 0.9}
   angleDeg: 60
 --- !u!1 &149858643
@@ -4830,6 +4831,7 @@ MonoBehaviour:
     _createPos: 0.35
     _direction: {x: 1, y: 0}
     _muzzle: {fileID: 0}
+  animator: {fileID: 0}
   stunDuration: 2
   stunKnockbackForce: 15
   stunKnockbackDir: {x: 0.78, y: 0.9}

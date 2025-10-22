@@ -118,18 +118,20 @@ namespace BlackRose.Core.Models.Units
             // レーザー攻撃
             var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab);
             _stateMachine.AddState(States.lasershot, lasershot);
+            // ビームソード攻撃移動
+            var freeMove = new FreeMove(true);
+            freeMove.SetAccel(30.0f);
+            freeMove.SetDecel(20.0f);
+            _stateMachine.AddState(States.beamswordattackmove, freeMove);
             // ビームソード攻撃
             var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
             .SetDirection(Vector2.down)
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject    );
+            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject);
+            beamswordattack.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack2end);
+            });
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
-            // ビームソード攻撃移動
-            var freeMove = new FreeMove()
-            .SetAccel(80f)
-            .SetDecel(40f)
-            .SetDeadZone(0.01f);
-            _stateMachine.AddState(States.beamswordattackmove, freeMove);
-            // ジャンプ
             // ジャンプ
             var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
             var fixedpositionjump = new PositionJump(jumpPositions, 10f);

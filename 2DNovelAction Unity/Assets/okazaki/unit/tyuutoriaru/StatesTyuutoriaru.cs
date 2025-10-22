@@ -51,8 +51,8 @@ namespace BlackRose.Core.Models.Units
             // States.attackidle
             var attackidleTrigger = new[]
             {
-                (Triggers.Attack2, States.lasershot),
-                (Triggers.Attack1, States.beamswordattackmove),
+                (Triggers.Attack1, States.lasershot),
+                (Triggers.Attack2, States.beamswordattackmove),
                 (Triggers.Died, States.dead),
                 (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
             };
@@ -87,14 +87,14 @@ namespace BlackRose.Core.Models.Units
             // States.stun
             var stunTrigger = new[]
             {
-                (Triggers.Landing, States.attackidle),
+                (Triggers.Event2, States.shockwave),
                 (Triggers.Died, States.dead),
                 (Triggers.HalfHP, States.stun)
             };
             // States.shockwave
             var shockwaveTrigger = new[]
             {
-                (Triggers.Shockwaveend, States.attackidle),
+                (Triggers.Shockwaveend, States.idle),
                 (Triggers.Died, States.dead),
                 (Triggers.HalfHP, States.stun)
             };
@@ -117,6 +117,10 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
             var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab);
+            lasershot.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack1end);
+            });
             _stateMachine.AddState(States.lasershot, lasershot);
             // ビームソード攻撃移動
             var freeMove = new FreeMove(true);

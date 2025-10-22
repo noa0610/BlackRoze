@@ -132,10 +132,10 @@ namespace BlackRose.Core.Models.Units
         //     .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
         //     .SetAnimeTrigger("beamswordattack")
         //     .SetCancelableProgress(0);
-            // beamswordattack.onShootComplete.AddListener(() =>
-            // {
-            //     _stateMachine.LazyChange(Triggers.Attack2end);
-            // });
+        //     beamswordattack.onShootComplete.AddListener(() =>
+        //     {
+        //         _stateMachine.LazyChange(Triggers.Attack2end);
+        //     });
         //     _stateMachine.AddState(States.beamswordattack, beamswordattack);
         //     // スタン
         //     var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);

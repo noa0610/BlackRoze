@@ -20,9 +20,10 @@ namespace BlackRose.Core.Models.Units
         private int currentAttack = 1; // 初期値は1（アタック1）
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
-        [SerializeField] private Transform[] _firePoints;
-        [SerializeField] private Transform[] _swordfirePoints;
-        [SerializeField] private GameObject _bulletPrefab;
+        [SerializeField] private GameObject _Lasershotmuzzle;
+        [SerializeField] private GameObject _swordfirePoints;
+        [SerializeField] private BulletData _LasershotbulletData;
+        [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Rigidbody2D _RB2;
         [SerializeField] private FreeMove _freeMove;
         [SerializeField] private BulletData _beamswordBulletData; // 必要ならInspectorでセット

@@ -117,7 +117,10 @@ namespace BlackRose.Core.Models.Units
             attackIdle.OnCompleted += Attackselect;
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
-            var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab);
+            var lasershot = new ShootForward(_LasershotbulletData, _LasershotTargetLayer)
+            .SetDirection(Vector2.left)
+            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            // 弾発射完了時にレーザー攻撃終了トリガーを発火
             lasershot.onShootComplete.AddListener(() =>
             {
                 _stateMachine.LazyChange(Triggers.Attack1end);
@@ -131,7 +134,7 @@ namespace BlackRose.Core.Models.Units
             // ビームソード攻撃
             var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
             .SetDirection(Vector2.down)
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject);
+            .SetMuzzle(_swordfirePoints != null ? _swordfirePoints : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
                 GetComponent<BoxCollider2D>().isTrigger = true;
@@ -158,7 +161,7 @@ namespace BlackRose.Core.Models.Units
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
             .SetDirection(Vector2.left)
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject);
+            .SetMuzzle(_swordfirePoints != null ?_swordfirePoints : gameObject);
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {

@@ -16,6 +16,7 @@ namespace BlackRose.Core.Models.Units
         protected LayerMask _targetLayer;
         protected BulletStatus _status;
         protected Vector2 _direction;
+        protected float _currentHP;
         protected UnitBase _parent;
         protected TimerTicket _ticket;
         public Transform Transform => transform;
@@ -26,6 +27,7 @@ namespace BlackRose.Core.Models.Units
         public void SetBulletStatus(BulletData bullet, LayerMask targetLayer)
         {
             _status = bullet.originalstatus;
+            _currentHP = _status.hp;
             _targetLayer = targetLayer;
         }
 
@@ -86,7 +88,7 @@ namespace BlackRose.Core.Models.Units
             if (LayerMask.NameToLayer("Throughable") == collision.gameObject.layer)
                 return;
 
-            Destroy(gameObject);
+            if (Hit()) Destroy(gameObject);
         }
 
         protected virtual void Hitted_Target(Collider2D collision)
@@ -101,7 +103,21 @@ namespace BlackRose.Core.Models.Units
                 UnitManager.instance.AddDamage(target, _parent, _status.damage);
             }
 
-            Destroy(gameObject);
+            if(Hit()) Destroy(gameObject);
+        }
+
+        protected bool Hit()
+        {
+            if (_currentHP != -1)
+            {
+                _currentHP--;
+                if (_currentHP < 0)
+                {
+                    _currentHP = 0;
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

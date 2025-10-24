@@ -5,6 +5,9 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using HighElixir;
 using BlackRose.Datas.Definitions;
+using Fungus;
+using Unity.Mathematics;
+using UnityEngine.Rendering;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -15,13 +18,13 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private List<GameObject> _junpPositions;
         [SerializeField] private GameObject _centerPositions;
         [SerializeField] private GameObject _YPositions;
-
+        [SerializeField] private Animator _anim;
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private int currentAttack = 1; // 初期値は1（アタック1）
+        private int nowstate = 0;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
         [SerializeField] private GameObject _Lasershotmuzzle;
-        [SerializeField] private GameObject _swordfirePoints;
         [SerializeField] private BulletData _LasershotbulletData;
         [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Rigidbody2D _RB2;
@@ -264,7 +267,40 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("距離差: " + distance);
             // 差がプラスなら1、マイナスなら0を返す
             return distance >= 0 ? 0 : 1;
-            
+
+        }
+        private void AnimaSelect()
+        {
+            if (nowstate == 2)
+            {
+                _anim.SetTrigger("toShot_Medium");
+                nowstate = 3;
+                return;
+            }
+            else if (nowstate == 3)
+            {
+                _anim.SetTrigger("toShot_Down");
+                nowstate = 4;
+                return;
+            }
+            else if (nowstate == 4)
+            {
+                _anim.SetTrigger("toShot_Up");
+                nowstate = 5;
+                return;
+            }
+            else if (nowstate == 5)
+            {
+                _anim.SetTrigger("toShot_Medium");
+                nowstate = 6;
+                return;
+            }
+            else if (nowstate == 6)
+            {
+                _anim.SetTrigger("toShot_Down");
+                nowstate = 6;
+                return;
+            }
         }
     }
 }

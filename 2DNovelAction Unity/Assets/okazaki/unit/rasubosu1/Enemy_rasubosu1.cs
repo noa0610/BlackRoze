@@ -21,7 +21,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Transform[] _firewallPoints;// 必要ならInspectorでセット
-        [SerializeField] private FreeMove _freeMove;
+        [SerializeField] private BulletData _diffusebeamgunBulletData; // 必要ならInspectorでセット
+        [SerializeField] private LayerMask _diffusebeamgunTargetLayer; 
+        [SerializeField] private Transform[] _diffusebeamgunPoints;// 必要ならInspectorでセット
 
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()

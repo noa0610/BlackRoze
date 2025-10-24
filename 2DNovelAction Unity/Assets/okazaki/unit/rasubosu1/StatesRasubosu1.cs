@@ -91,11 +91,17 @@ namespace BlackRose.Core.Models.Units
             var attackIdle = new Idle_LazyEvent(5f);
             // 遅延完了時に呼びたい処理をOnCompletedで登録
             attackIdle.OnCompleted += Attackjudgement;
+            {
+                
+            }
             _stateMachine.AddState(States.attackidle, attackIdle);
             // アームパンチ
             _stateMachine.AddState(States.armpunch, new Idle());
             // 拡散ビーム砲
-            _stateMachine.AddState(States.diffusebeamgun, new Idle());
+            var diffusebeamgun = new ShootForward( _diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
+            .SetDirection(Vector2.down)
+            .SetMuzzle(_diffusebeamgunPoints.Length > 0 ? _diffusebeamgunPoints[0].gameObject : gameObject    );
+            _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
             // ファイアウォール移動
             _stateMachine.AddState(States.firewallmove, new Idle());
             // ファイアウォール

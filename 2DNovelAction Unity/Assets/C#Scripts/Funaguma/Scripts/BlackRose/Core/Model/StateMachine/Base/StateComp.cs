@@ -1,5 +1,4 @@
 ﻿using BlackRose.Core.Models.Units;
-using HighElixir;
 using HighElixir.Timers;
 using System;
 using UnityEngine;
@@ -8,22 +7,35 @@ namespace BlackRose.Core.Models.States
 {
     public class StateComp : IState
     {
+        [Header("タイマー")]
+        [SerializeField] private string _parentName;
         // ステート切り替えを拒否する待機フレーム数
         private Timer _timeHolders;
         protected int _waitFrame = 0;
         protected TimerTicket _tickTicket;
-        protected Timer Timer => _timeHolders;
+        protected Timer Timer
+        {
+            get
+            {
+                if (_timeHolders == null)
+                {
+                    _timeHolders = new Timer(_parentName);
+                    if (_waitFrame > 0)
+                        _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
+                }
+                return _timeHolders;
+            }
+        }
 
         public event Action WaitTickHasCompleted;
         public StateComp(string parentName = "")
         {
-            _timeHolders = new(parentName);
-            if (_waitFrame > 0)
-                _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
+            _parentName = parentName;
+            _ = Timer;
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
-            return !_timeHolders.Contains(_tickTicket) || _timeHolders.IsFinished(_tickTicket);
+            return !Timer.Contains(_tickTicket) || Timer.IsFinished(_tickTicket);
         }
 
         public virtual bool AllowEnter(IState previousState, UnitBase parent)
@@ -60,7 +72,8 @@ namespace BlackRose.Core.Models.States
             _waitFrame = frame;
             if (!_timeHolders.Contains(_tickTicket))
                 _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
-            _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
+            else
+                _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
             return this as T;
         }
     }

@@ -14,8 +14,8 @@ GameObject:
   - component: {fileID: -6154703371997583296}
   - component: {fileID: -8381216389615061597}
   m_Layer: 0
-  m_Name: Circle 2
-  m_TagString: Playerbullet
+  m_Name: Gurdersbullet
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 8200441657282752572}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.4265, y: 0.0653, z: 0}
-  m_LocalScale: {x: 0.42146, y: 0.42428002, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -101,8 +101,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canHitLayer:
     serializedVersion: 2
-    m_Bits: 1
-  bulletData: {fileID: 0}
+    m_Bits: 1025
 --- !u!58 &-6154703371997583296
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -164,4 +163,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 3
+  m_Constraints: 4

@@ -61,9 +61,6 @@ namespace BlackRose.Core.Models.Units
             HitWhileShield,
             Died
         }
-        [Header("State Flags")]
-        private bool _isTackling = false;  // タックル用フラグを追加
-
 
         protected override void BeforeAwake()
         {
@@ -96,55 +93,64 @@ namespace BlackRose.Core.Models.Units
 
         protected override void RegisterStats()
         {
+            var idleTrigger = new[]
+            {
+                (Triggers.StartBattle, States.ShieldIdle,""),
+            (Triggers.HitWhileShield, States.Stun,"stun"),
+            (Triggers.Died, States.Dead,"")
+            };
+            var sieldidleTrigger = new[]
+            {
+                (Triggers.FoundPlayer, States.AttackWait,""),
+            (Triggers.HitWhileShield, States.Stun,"stun"),
+             (Triggers.Died, States.Dead,"")
+            };
+            var AttackwaitTrigger = new[]
+            {
+                (Triggers.LostPlayer, States.ShieldIdle,""),
+            (Triggers.NearAttack, States.ShieldTackle,"tackle"),
+             (Triggers.FarAttack, States.ShoulderGrenade,""),
+             (Triggers.HitWhileShield, States.Stun,"stun"),
+             (Triggers.Died, States.Dead,"")
+            };
+            var ShieldTackleTrigger = new[]
+            {
+                (Triggers.CooldownEnd, States.AttackWait,""),
+                (Triggers.HitWhileShield, States.Stun,"stun"),
+                (Triggers.Died, States.Dead,"")
+            };
+            var SholderGrenadTrigger = new[]
+            {
+                (Triggers.CooldownEnd, States.AttackWait,""),
+            (Triggers.HitWhileShield, States.Stun,"stun"),
+            (Triggers.Died, States.Dead,"")
+            };
+            var stunTrigger = new[]
+            {
+               (Triggers.StartBattle, States.ShieldIdle,""),
+             (Triggers.Died, States.Dead,"")
+            };
             _stateMachine
-                .AddTransmissions(States.Idle, new[]
-                {
-            (Triggers.StartBattle, States.ShieldIdle),
-            (Triggers.HitWhileShield, States.Stun),
-            (Triggers.Died, States.Dead)
-                })
-                .AddTransmissions(States.ShieldIdle, new[]
-                {
-            (Triggers.FoundPlayer, States.AttackWait),
-            (Triggers.HitWhileShield, States.Stun),
-            (Triggers.Died, States.Dead)
-                })
-                .AddTransmissions(States.AttackWait, new[]
-                {
-            (Triggers.LostPlayer, States.ShieldIdle),
-            (Triggers.NearAttack, States.ShieldTackle),
-            (Triggers.FarAttack, States.ShoulderGrenade),
-            (Triggers.HitWhileShield, States.Stun),
-            (Triggers.Died, States.Dead)
-                })
-                .AddTransmissions(States.ShieldTackle, new[]
-                {
-            (Triggers.CooldownEnd, States.AttackWait),
-            (Triggers.HitWhileShield, States.Stun),
-            (Triggers.Died, States.Dead)
-                })
-                .AddTransmissions(States.ShoulderGrenade, new[]
-                {
-            (Triggers.CooldownEnd, States.AttackWait),
-            (Triggers.HitWhileShield, States.Stun),
-            (Triggers.Died, States.Dead)
-                })
-                .AddTransmissions(States.Stun, new[]
-                {
-            (Triggers.StartBattle, States.ShieldIdle),
-            (Triggers.Died, States.Dead)
-                });
+            .AddTransmissions(States.Idle, idleTrigger)
+            .AddTransmissions(States.ShieldIdle, sieldidleTrigger)
+            .AddTransmissions(States.AttackWait, AttackwaitTrigger)
+            .AddTransmissions(States.ShieldTackle, ShieldTackleTrigger)
+            .AddTransmissions(States.ShoulderGrenade, SholderGrenadTrigger)
+            .AddTransmissions(States.Stun, stunTrigger)
+            .AddTransmissions(States.Idle, idleTrigger);
+
+
 
             // 各ステート登録
             _stateMachine.AddState(States.Idle, new Idle());
             _stateMachine.AddState(States.ShieldIdle, new Idle());
             _stateMachine.AddState(States.AttackWait, new Idle());
             _stateMachine.AddState(States.ShieldTackle, new Stun(_rb2, 1, true));
-
             shoot.SetBullet(_bulletData);
             shoot.SetMuzzle(_muzzle);
             shoot.SetDirection(Direction);
             _stateMachine.AddState(States.ShoulderGrenade, shoot);
+
 
 
 
@@ -165,6 +171,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(States.Idle);
 
         }
+        [SerializeField] private float tackletime = 0.8f;
 
         protected override void FixedUpdate()
         {
@@ -184,11 +191,14 @@ namespace BlackRose.Core.Models.Units
                 if (!_isStunning) // スタン開始時の1回だけ実行
                 {
                     _isStunning = true;
-                    OnStunStart?.Invoke();
-                    animator.SetTrigger("stun");
+                    OnStunStart?.Invoke(); // シールドを無効化
+
+                    // ✅ 2秒後にスタン解除処理を呼ぶ
+                    Invoke(nameof(AutoRecoverFromStun), stunDuration);
                 }
                 return;
             }
+
 
             if (IsMatchingState(States.Dead))
             {
@@ -201,7 +211,10 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.Died);
                 return;
             }
-            SearchPlayer();
+            if ( IsMatchingState(States.AttackWait)||IsMatchingState(States.ShieldIdle))
+            {
+                SearchPlayer();
+            }
 
 
 
@@ -213,44 +226,69 @@ namespace BlackRose.Core.Models.Units
                 if (IsMatchingState(States.ShieldTackle))
                 {
                     // 攻撃判定ONイベント
-                    animator.SetTrigger("tackle");
                     _shieldDefense?.SetAttack(true);
                 }
                 else
                 {
                     // 攻撃判定OFFイベント
-                    animator.SetTrigger("shoot");
                     _shieldDefense?.SetAttack(false);
                 }
                 cooldownTimer = attackCooldown;
-                _stateMachine.ChangeState(Triggers.CooldownEnd);
             }
             // シールドタックル開始時
+            if(IsMatchingState(States.ShieldTackle))
+            {
+                tackletime -= Time.fixedDeltaTime;
+                if(tackletime<0)
+                {
+                    StateMachine.ChangeState(Triggers.CooldownEnd);
+                }
+            }
 
         }
+        private void AutoRecoverFromStun()
+        {
+            if (!_isStunning) return; // 二重実行防止
+
+            
+            animator.SetTrigger("stunrecover"); // ✅ リカバーアニメーション再生
+            
+            // _stateMachine.ChangeState(Triggers.StartBattle); // Idleへ復帰
+        }
+
         public void tackleEnd()
         {
-            _isTackling = false;  // タックル終了時にフラグをリセット
-            animator.SetTrigger("idle");
+            if (IsMatchingState(States.ShieldTackle))
+            {
+                _stateMachine.ChangeState(Triggers.StartBattle);
+                animator.SetTrigger("idle");
+                Debug.Log($"tackleEnd 実行後: 現在のステート = {_stateMachine.CurrentState.key}");
+            }
         }
-
+        public void Recover()
+        {
+            Debug.Log("スタン復帰");
+            _isStunning = false;
+            OnStunEnd?.Invoke();                // ✅ シールド再有効化など
+            _stateMachine.ChangeState(Triggers.StartBattle);
+        }
         public void stanEnd()
         {
-            _isStunning = false;  // スタン終了時にフラグをリセット
+            _isStunning = false;
             animator.SetTrigger("stunrecover");
-            OnStunEnd?.Invoke();
-            _stateMachine.ChangeState(Triggers.StartBattle);
+            OnStunEnd?.Invoke();  
         }
 
         public void shootEnd()
         {
+            Debug.Log("shoot終了");
+            _stateMachine.ChangeState(Triggers.CooldownEnd);
             animator.SetTrigger("idle");
         }
         private void RecoverFromStun()
         {
 
             OnStunEnd?.Invoke(); // シールドを再有効化
-            _stateMachine.ChangeState(Triggers.StartBattle);
         }
 
 
@@ -284,17 +322,8 @@ namespace BlackRose.Core.Models.Units
                 // 角度を考慮した発射方向（向きに応じてX符号を反転）
                 Vector2 shootDir = new Vector2(direction * Mathf.Cos(angleRad), Mathf.Sin(angleRad)).normalized;
 
-                // --- 安全にクラスの Direction フィールドを更新する ---
-                // もしクラス側の Direction が int 型なら（1/-1 を期待している）：
-                //    Direction = direction;
-                // もしクラス側の Direction が Vector2 型なら：
+
                 Direction = facingVector;
-
-                // 例: Direction が int の場合（一般的にはこれが多い）
-                // Direction = direction;
-
-                // 例: Direction が Vector2 の場合
-                // Direction = facingVector;
 
                 // --- 発射方向をセット ---
                 shoot.SetDirection(shootDir);
@@ -305,23 +334,34 @@ namespace BlackRose.Core.Models.Units
 
 
             // --- クールダウン中は攻撃しない ---
-            if (cooldownTimer > 0)
-                return;
-            if (_searchAssistance.Execute("meray", list, out _))
+            if (IsMatchingState(States.AttackWait))
+            {
+                if (cooldownTimer > 0)
+                    return;
+                if (_searchAssistance.Execute("meray", list, out _))
+                {
+                    animator.SetTrigger("tackle");
+                    _stateMachine.ChangeState(Triggers.NearAttack);
+                    cooldownTimer = attackCooldown;
+                     
+                }
+                else if (_searchAssistance.Execute("renge", list, out _))
+                {
+
+                    _stateMachine.ChangeState(Triggers.FarAttack);
+                    animator.SetTrigger("shoot");
+                    cooldownTimer = attackCooldown;
+                    
+                }
+                else
+                {
+                    _stateMachine.ChangeState(Triggers.LostPlayer);
+                }
+            }
+            if (IsMatchingState(States.ShieldIdle) && _searchAssistance.Execute("renge", list, out _))
             {
                 _stateMachine.ChangeState(Triggers.FoundPlayer);
-                _stateMachine.ChangeState(Triggers.NearAttack);
-                cooldownTimer = attackCooldown;
-            }
-            else if (_searchAssistance.Execute("renge", list, out _))
-            {
-                _stateMachine.ChangeState(Triggers.FoundPlayer);
-                _stateMachine.ChangeState(Triggers.FarAttack);
-                cooldownTimer = attackCooldown;
-            }
-            else
-            {
-                _stateMachine.ChangeState(Triggers.LostPlayer);
+                
             }
 
 
@@ -341,4 +381,3 @@ namespace BlackRose.Core.Models.Units
         }
     }
 }
-

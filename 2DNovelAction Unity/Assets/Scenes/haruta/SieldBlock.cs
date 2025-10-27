@@ -11,7 +11,7 @@ namespace BlackRose.Core.Models.Units
         public void SetAttack(bool enabled)
         {
             isAttackEnabled = enabled;
-            Debug.Log($"[SieldBlock] 攻撃判定が {(enabled ? "有効" : "無効")} になりました");
+         
         }
 
         private Enemy_Gurter gurter;
@@ -70,7 +70,7 @@ namespace BlackRose.Core.Models.Units
         public void SetDefense(bool enabled)
         {
             isDefenseEnabled = enabled;
-            Debug.Log($"[SieldBlock] 防御が {(enabled ? "有効" : "無効")} になりました");
+           
         }
 
         private void OnTriggerEnter2D(Collider2D collision)

@@ -252,8 +252,6 @@ namespace BlackRose.Core.Models.Units
 
             
             animator.SetTrigger("stunrecover"); // ✅ リカバーアニメーション再生
-            
-            // _stateMachine.ChangeState(Triggers.StartBattle); // Idleへ復帰
         }
 
         public void tackleEnd()
@@ -285,11 +283,11 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.CooldownEnd);
             animator.SetTrigger("idle");
         }
-        private void RecoverFromStun()
-        {
+        // private void RecoverFromStun()
+        // {
 
-            OnStunEnd?.Invoke(); // シールドを再有効化
-        }
+        //     OnStunEnd?.Invoke(); // シールドを再有効化
+        // }
 
 
         private bool IsMatchingState(States state)

@@ -18,6 +18,7 @@ namespace BlackRose.Core.Models.Units
             L_Jump,
             L_Skill,
         }
+        [Header("Light Mode Settings")]
         [SerializeField] private MultiShoot _shoot;
         [SerializeField] private MultiShoot _half;
         [SerializeField] private MultiShoot _full;
@@ -60,7 +61,8 @@ namespace BlackRose.Core.Models.Units
                 Mode.Light,
                 LightStates.L_Jump,
                     (AITriggers.shootInput, LightStates.L_Shoot, ""),
-                    (AITriggers.skillInput, LightStates.L_Skill, "")
+                    (AITriggers.skillInput, LightStates.L_Skill, ""),
+                    (AITriggers.jumpInput, LightStates.L_Jump, "")
                 );
 
             // Skill
@@ -106,7 +108,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void FixedUpdate(float deltaTime)
         {
-           
+
         }
 
         public override void InvokeShoot()

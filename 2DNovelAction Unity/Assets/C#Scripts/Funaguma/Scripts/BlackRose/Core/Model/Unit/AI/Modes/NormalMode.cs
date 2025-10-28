@@ -32,6 +32,8 @@ namespace BlackRose.Core.Models.Units
         [Header("States")]
         private Warp _warpState = new Warp();
         [SerializeField] private ShootForward _shoot = new ShootForward();
+        [SerializeField] private ShootForward _half = new ShootForward();
+        [SerializeField] private ShootForward _full = new ShootForward();
 
 #if UNITY_EDITOR
         [Header("Debug")]
@@ -161,10 +163,14 @@ namespace BlackRose.Core.Models.Units
 
         public override void InvokeHalfShoot()
         {
+            _shoot.SetDirection(_parent.Direction);
+            SM.ChangeState(Triggers.shootInput);
         }
 
         public override void InvokeFullShoot()
         {
+            _shoot.SetDirection(_parent.Direction);
+            SM.ChangeState(Triggers.shootInput);
         }
 
 #if UNITY_EDITOR

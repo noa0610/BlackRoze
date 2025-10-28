@@ -67,14 +67,13 @@ namespace BlackRose.Core.Models.States
             _timeHolders.Update(deltaTime);
         }
 
-        public T SetWaitTick<T>(int frame) where T : StateComp
+        public void SetWaitTick(int frame)
         {
             _waitFrame = frame;
             if (!_timeHolders.Contains(_tickTicket))
                 _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
             else
                 _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
-            return this as T;
         }
     }
 }

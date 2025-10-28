@@ -19,8 +19,10 @@ namespace BlackRose.Core.Models.Units
         [Header("Mode")]
         [SerializeField] private NormalMode _normalMode;
         [SerializeField] private LightMode _lightMode;
-        [SerializeField] private HeavyMode _heavyMode;        
+        [SerializeField] private HeavyMode _heavyMode;
+        private TimerTicket _blockFlip;
 
+        public bool ShouldBeBlockFlip => Timer.TryGetCurrentTime(_blockFlip, out var f) && f > 0 && CurrentMode is HeavyMode;
         public bool CanJump => !Timer.IsFinished(_coyoteTicket);
 
         // === UnityLifeCycle ===

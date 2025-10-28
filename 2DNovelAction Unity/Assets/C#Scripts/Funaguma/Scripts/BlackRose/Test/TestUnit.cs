@@ -66,6 +66,13 @@ namespace BlackRose.Test
             {
                 Debug.Log("上書き成功 : " + _state.GetType().ToString());
                 StateMachine.AddState(States.TestState, _state as StateComp);
+                if (_state is ICompleteEmitter emitter)
+                {
+                    emitter.OnCompleted += () =>
+                    {
+                        _stateMachine.LazyChange(Triggers.stateCompleted);
+                    };
+                }
             }
         }
 

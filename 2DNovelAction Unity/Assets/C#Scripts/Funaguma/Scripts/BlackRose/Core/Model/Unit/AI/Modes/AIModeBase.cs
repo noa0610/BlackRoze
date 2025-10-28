@@ -10,6 +10,7 @@ namespace BlackRose.Core.Models.Units
     [Serializable]
     public abstract class AIModeBase : IAIState
     {
+        [Header("AI Mode Settings")]
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected Jump _jump;
         [SerializeField] protected float[] _chargeTime = new float[2] { 1.2f, 2.3f };
@@ -33,6 +34,7 @@ namespace BlackRose.Core.Models.Units
         }
         public virtual void OnReleaseShoot(float chargeTime)
         {
+            Debug.Log($"[AI] Charge: {chargeTime}");
             if (chargeTime > _chargeTime[1])
             {
                 InvokeFullShoot();

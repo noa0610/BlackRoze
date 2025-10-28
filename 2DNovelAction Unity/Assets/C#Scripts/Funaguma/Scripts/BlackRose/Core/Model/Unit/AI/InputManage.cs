@@ -43,7 +43,7 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(AITriggers.cancelMove);
                 return;
             }
-            else if (d.x != 0 && !_stateMachine.CurrentState.HasTag(tags[Tags.Shoot], tags[Tags.Stunned]))
+            else if (!ShouldBeBlockFlip)
             {
                 Direction = d.normalized;
                 _shootDirection = d;
@@ -53,11 +53,13 @@ namespace BlackRose.Core.Models.Units
 
         private void OnAttack(InputValue value)
         {
+            Timer.Restart(_blockFlip, false);
             if (value.isPressed)
             {
                 Debug.Log("AI Attack Pressed");
                 CurrentMode.OnShoot(value);
-                Timer.Start(_chargeTicket);
+                if (!Timer.IsRunning(_chargeTicket))
+                    Timer.Start(_chargeTicket);
             }
             else
             {

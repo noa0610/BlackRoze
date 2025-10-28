@@ -3408,7 +3408,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: bone_body[1]/bone_R_arm[1]/bone_R_arm[2]/bone_R_arm[3]
+    path: bone_body[1]/bone_body[2]/bone_head
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -3420,7 +3420,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: bone_body[1]/bone_R_arm[1]/bone_R_arm[2]/bone_R_arm[3]
+    path: bone_body[1]/bone_body[2]/bone_head
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -3432,7 +3432,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: bone_body[1]/bone_R_arm[1]/bone_R_arm[2]/bone_R_arm[3]
+    path: bone_body[1]/bone_body[2]/bone_head
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -3588,7 +3588,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: bone_body[1]/bone_body[2]/bone_head
+    path: bone_body[1]/bone_R_arm[1]/bone_R_arm[2]/bone_R_arm[3]
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -3600,7 +3600,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: bone_body[1]/bone_body[2]/bone_head
+    path: bone_body[1]/bone_R_arm[1]/bone_R_arm[2]/bone_R_arm[3]
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -3612,10 +3612,17 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: bone_body[1]/bone_body[2]/bone_head
+    path: bone_body[1]/bone_R_arm[1]/bone_R_arm[2]/bone_R_arm[3]
     classID: 4
     script: {fileID: 0}
     flags: 0
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
-  m_Events: []
+  m_Events:
+  - time: 1.0833334
+    functionName: Recover
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0

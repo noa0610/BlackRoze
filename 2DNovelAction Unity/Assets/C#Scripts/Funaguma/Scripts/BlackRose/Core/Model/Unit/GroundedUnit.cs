@@ -2,6 +2,7 @@
 using System;
 using BlackRose.Core.Models.Units;
 using HighElixir.Timers;
+using UniRx;
 
 namespace BlackRose
 {
@@ -15,7 +16,9 @@ namespace BlackRose
         [SerializeField] private float _disableCheckTime = 0.2f; // 地面判定を無効にする
         private TimerTicket _ticket;
         public bool IsGrounded { get; private set; }
-        public Action OnAirToGround { get; set; } = null; // 地面に着地したときのコールバック
+
+        private ReactiveCommand _onAirToGround = new();
+        public IObservable<Unit> OnAirToGround => _onAirToGround; // 地面に着地したときのコールバック
 
 
         public virtual void AfterJump()
@@ -38,7 +41,7 @@ namespace BlackRose
                 if (!beforeGrounded && OnAirToGround != null)
                 {
                     Debug.Log("GroundedUnit: OnAirToGround called");
-                    OnAirToGround?.Invoke(); // 地面に着地したときのコールバックを呼び出す
+                    _onAirToGround?.Execute(); // 地面に着地したときのコールバックを呼び出す
                 }
                 IsGrounded = true;
                 OnGrounded(); // 地面にいる場合の処理

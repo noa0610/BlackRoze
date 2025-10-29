@@ -117,15 +117,15 @@ namespace HighElixir.StateMachine
 
         public void Update(float deltaTime = 0f)
         {
-            if (_disposed || !Awaked) return;
+            if (_disposed || !Awaked || !IsRunning) return;
             var s = _current.info;
 
-            if ((s.blockCommandDequeueFunc != null && s.blockCommandDequeueFunc()) &&
+            if ((s.blockCommandDequeueFunc == null || !s.blockCommandDequeueFunc()) &&
                 !s.State.BlockCommandDequeue())
                 _queue.Process();
 
             s.State.Update(deltaTime);
-            s.SubHost?.Update(deltaTime); // ★ 追加：子FSM Update
+            s.SubHost?.Update(deltaTime);
         }
 
 
@@ -160,10 +160,10 @@ namespace HighElixir.StateMachine
         }
 
 
-        public void LazySend(TEvt evt)
+        public bool LazySend(TEvt evt, bool skipIfExist = false)
         {
-            if (_disposed || !Awaked) return;
-            _queue.Enqueue(evt);
+            if (_disposed || !Awaked) return false;
+            return _queue.Enqueue(evt, skipIfExist);
         }
 
         #endregion

@@ -1,7 +1,7 @@
-﻿using BlackRose.Core.Models.Helper;
-using BlackRose.Core.Models.States;
-using HighElixir;
-using System.Collections.Generic;
+﻿using BlackRose.Core.Models.Units.State;
+using HighElixir.StateMachine;
+using HighElixir.Unity.Loggings;
+using UniRx;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
@@ -9,57 +9,83 @@ namespace BlackRose.Core.Models.Units
     // ステート、モード管理
     public partial class AIController
     {
-        public enum Mode { Normal, Light, Heavy }
+        public enum Mode
+        {
+            Normal,
+            Light,
+            Heavy
+        }
 
-        // 各モードに共通するステート
-        public enum AIStates { Idle, Move, Jump, Fall, Dash, SpecialAttack, Dead, ShootInterval }
-        public enum AITriggers
+        public enum AIStates : int
+        {
+            Dead,
+            Normal,
+            Light,
+            Heavy
+        }
+        public enum AITriggers : int
         {
             moveInput, cancelMove, dashInput, shootInput, halfCharge, fullCharge, jumpInput,
             shootCompleted, watingTimeHasElapsed, skillInput, skillFinished,
             landing, falling, stun, recoverFromStun,
-            modeChanged
+
+            // モードチェンジ
+            mC_l, mC_h, mC_n, dead
         }
-        public enum Tags
-        {
-            Shoot, Stunned
-        }
-        public readonly static Dictionary<Tags, string> tags = EnumWrapper.GetValueNameMap<Tags>();
-        private Mode _currentEnumMode = Mode.Normal;
+
+        // 外部
         private AISpriteResolver _spriteResolver;
 
+#if UNITY_EDITOR
+        [SerializeField] private string _State;
+#endif
+        // Common State
+        [SerializeField] private MoveOnGround _move = new();
+        [SerializeField] private DashOnGround _dash = new();
+
+        public MoveOnGround MoveOnGround => _move;
+        public DashOnGround Dash => _dash;
         // ===== State Machine =====
 #if UNITY_EDITOR
         public override bool ShoudBeLogging => true;
 #endif
+        private StateMachine<AIController, AITriggers, AIStates> _fms;
+        private AIStates _currentEnumMode = AIStates.Normal;
+        public StateMachine<AIController, AITriggers, AIStates> Machine => _fms;
         public AIModeBase CurrentMode => _currentEnumMode switch
         {
-            Mode.Normal => _normalMode,
-            Mode.Heavy => _heavyMode,
-            Mode.Light => _lightMode,
+            AIStates.Normal => _normalMode,
+            AIStates.Heavy => _heavyMode,
+            AIStates.Light => _lightMode,
             _ => _normalMode
         };
-
+        public AITriggers ModeChange => _currentEnumMode switch
+        {
+            AIStates.Normal => AITriggers.mC_n,
+            AIStates.Heavy => AITriggers.mC_h,
+            AIStates.Light => AITriggers.mC_l,
+            _ => AITriggers.mC_n,
+        };
         // 外部からのモード切替 API
         public void SwitchModeLight()
         {
             _spriteResolver.Change_L();
-            ChangeMode(Mode.Light);
+            ChangeMode(AIStates.Light);
         }
         public void SwitchModeHeavy()
         {
             _spriteResolver.Change_H();
-            ChangeMode(Mode.Heavy);
+            ChangeMode(AIStates.Heavy);
         }
         public void SwitchModeNormal()
         {
             _spriteResolver.Change_N();
-            ChangeMode(Mode.Normal);
+            ChangeMode(AIStates.Normal);
         }
 
         // === Private ===
 
-        private void ChangeMode(Mode mode)
+        private void ChangeMode(AIStates mode)
         {
             // ★ ステータス反映
             var status = CurrentMode.StatusData;
@@ -73,9 +99,7 @@ namespace BlackRose.Core.Models.Units
 
             _currentEnumMode = mode;
 
-            _stateMachine.SetLayer(mode.ToString());
-
-            _stateMachine.ChangeState(AITriggers.modeChanged);
+            _fms.Send(ModeChange);
 
             Debug.Log("ModeChanged");
         }
@@ -90,69 +114,33 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterAwake()
         {
             base.AfterAwake();
-            GetComponent<AIMuzzleSetter>().Set(_normalMode, _lightMode, _heavyMode);
-            ChangeMode(Mode.Normal);
+            ChangeMode(AIStates.Normal);
         }
 
         protected override void RegisterStats()
         {
+            _stateMachine.AddState("Idle", new Models.States.Idle());
+            _fms = new(this, HighElixir.StateMachine.QueueMode.UntilSuccesses, logger: new UnityLogger());
+
+
+#if UNITY_EDITOR
+            _fms.OnTransition.Subscribe(x => _State = x.ToState.ToString());
+#endif
+            _fms.RegisterState(AIStates.Normal, new Idle<AIController>());
+            _fms.RegisterState(AIStates.Light, new Idle<AIController>());
+            _fms.RegisterState(AIStates.Heavy, new Idle<AIController>());
+            _fms.RegisterState(AIStates.Dead, new Idle<AIController>());
+            // 任意遷移
+            _fms.RegisterAnyTransition(AITriggers.mC_h, AIStates.Heavy);
+            _fms.RegisterAnyTransition(AITriggers.mC_l, AIStates.Light);
+            _fms.RegisterAnyTransition(AITriggers.mC_n, AIStates.Normal);
+            _fms.RegisterAnyTransition(AITriggers.dead, AIStates.Dead);
+
             _normalMode.Register();
             _lightMode.Register();
             _heavyMode.Register();
 
-            // モード非依存の共通フォールバック
-
-            // Idle
-            _stateMachine.AddTransitionsForLayer(
-                Layer.COMMON,
-                AIStates.Idle,
-                (AITriggers.moveInput, AIStates.Move, ""),
-                (AITriggers.dashInput, AIStates.Dash, ""),
-                (AITriggers.falling, AIStates.Fall, "")
-                );
-            _stateMachine.AddTransitionsForLayer(
-                Layer.COMMON,
-                AIStates.ShootInterval,
-                (AITriggers.watingTimeHasElapsed, AIStates.Idle, ""),
-                (AITriggers.moveInput, AIStates.Move, ""),
-                (AITriggers.dashInput, AIStates.Dash, ""),
-                (AITriggers.falling, AIStates.Fall, "")
-                );
-            // Move
-            _stateMachine.AddTransitionsForLayer(
-                Layer.COMMON,
-                AIStates.Move,
-                (AITriggers.cancelMove, AIStates.Idle, ""),
-                (AITriggers.dashInput, AIStates.Dash, ""),
-                (AITriggers.jumpInput, AIStates.Jump, "")
-                );
-            // Fall
-            _stateMachine.AddTransitionsForLayer(
-                Layer.COMMON,
-                AIStates.Fall,
-                (AITriggers.landing, AIStates.Idle, "")
-                );
-
-            // 任意遷移
-            //_stateMachine.AddAnyTransition(AITriggers.landing, AIStates.Idle, Layer.COMMON);
-            _stateMachine.AddAnyTransition(AITriggers.falling, AIStates.Fall, Layer.COMMON);
-            _stateMachine.AddAnyTransition(AITriggers.modeChanged, AIStates.Idle, Layer.COMMON);
-            _stateMachine.AddAnyTransition(AITriggers.skillFinished, AIStates.Idle, Layer.COMMON);
-            _stateMachine.AddAnyTransition(AITriggers.shootCompleted, AIStates.ShootInterval, Layer.COMMON);
-
-            _stateMachine.AddState(AIStates.Idle, new Idle());
-            _stateMachine.AddState(AIStates.Fall, new MoveOnAir());
-            _stateMachine.AddState(AIStates.Move, new MoveOnGround());
-            _stateMachine.AddState(AIStates.Dash, new DashOnGround(this));
-
-            var idle = new Idle_LazyEvent();
-            _stateMachine.AddState(AIStates.ShootInterval, idle);
-
-            idle.SetTime(0.2f);
-            idle.OnCompleted += () =>
-            {
-                _stateMachine.ChangeState(AITriggers.watingTimeHasElapsed);
-            };
+            _fms.Awake(AIStates.Normal);
         }
     }
 }

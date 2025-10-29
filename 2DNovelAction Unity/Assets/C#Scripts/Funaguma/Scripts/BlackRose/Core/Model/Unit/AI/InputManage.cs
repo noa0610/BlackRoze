@@ -1,4 +1,6 @@
 ﻿using HighElixir.Timers;
+using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,6 +8,10 @@ namespace BlackRose.Core.Models.Units
 {
     public partial class AIController
     {
+        private ReactiveCommand _onCanceledJump = new();
+
+        public IObservable<Unit> OnCanceledJump => _onCanceledJump;
+
         // === Input Action ===
         private void OnJump(InputValue value)
         {
@@ -16,6 +22,7 @@ namespace BlackRose.Core.Models.Units
             }
             if (!value.isPressed)
             {
+                _onCanceledJump.Execute();
                 CurrentMode.CanceldJump(value);
             }
         }
@@ -24,11 +31,11 @@ namespace BlackRose.Core.Models.Units
         {
             if (!value.isPressed)
             {
-                _stateMachine.LazyChange(AITriggers.cancelMove);
+                _fms.LazySend(AITriggers.cancelMove);
                 return;
             }
             if (!IsGrounded) return;
-            _stateMachine.ChangeState(AITriggers.dashInput);
+            _fms.LazySend(AITriggers.dashInput);
         }
 
         private void OnMove(InputValue value)
@@ -40,7 +47,7 @@ namespace BlackRose.Core.Models.Units
             CurrentMode.OnInputMove(d);
             if (d.x == 0)
             {
-                _stateMachine.ChangeState(AITriggers.cancelMove);
+                _fms.LazySend(AITriggers.cancelMove);
                 return;
             }
             else if (!ShouldBeBlockFlip)
@@ -48,7 +55,7 @@ namespace BlackRose.Core.Models.Units
                 Direction = d.normalized;
                 _shootDirection = d;
             }
-            _stateMachine.ChangeState(AITriggers.moveInput);
+            _fms.LazySend(AITriggers.moveInput);
         }
 
         private void OnAttack(InputValue value)
@@ -85,12 +92,12 @@ namespace BlackRose.Core.Models.Units
         protected override void OnGrounded()
         {
             Timer.Start(_coyoteTicket);
-            _stateMachine.LazyChange(AITriggers.landing);
+            _fms.LazySend(AITriggers.landing);
             CurrentMode.OnGrounded();
         }
         protected override void OnFall()
         {
-            _stateMachine.ChangeState(AITriggers.falling);
+            _fms.LazySend(AITriggers.falling, true);
         }
 
         public override void AfterJump()

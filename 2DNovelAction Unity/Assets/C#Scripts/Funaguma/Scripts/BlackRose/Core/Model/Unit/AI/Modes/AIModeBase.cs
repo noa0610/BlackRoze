@@ -1,8 +1,12 @@
-﻿using BlackRose.Core.Models.States;
+﻿using HighElixir.StateMachine;
+using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
+using HighElixir.Unity.Loggings;
 using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static BlackRose.Core.Models.Units.AIController;
 using Triggers = BlackRose.Core.Models.Units.AIController.AITriggers;
 
 namespace BlackRose.Core.Models.Units
@@ -10,17 +14,120 @@ namespace BlackRose.Core.Models.Units
     [Serializable]
     public abstract class AIModeBase : IAIState
     {
+        public enum SubState
+        {
+            // Cancelable
+            Idle,
+            ShootInterval,
+            Move,
+            Jump,
+            // Shoot
+            Shoot,
+            Half,
+            Full,
+            //
+            Dash,
+            Falling,
+            Skill,
+            SpecialAttack
+        }
+#if UNITY_EDITOR
+        [Header("Debug")]
+        [SerializeField] private string _currentState;
+#endif
         [Header("AI Mode Settings")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected Jump _jump;
+        [SerializeField] protected State.Jump _jump;
         [SerializeField] protected float[] _chargeTime = new float[2] { 1.2f, 2.3f };
+
+        [Header("Animator")]
+        [SerializeField] private string _skillAnimeTrigger;
+
         protected AIController _parent;
+        protected StateMachine<AIController, Triggers, SubState> _stateMachine;
         public UnitStatusData StatusData => _status;
-        protected IStateMachine SM => _parent.StateMachine;
         protected Timer Timer => _parent.Timer;
         protected TimerTicket ChargeTime => _parent.ChargeTime;
-        public abstract void Register();
 
+        public abstract AIStates Attach { get; }
+
+        public virtual void Register()
+        {
+            Debug.Log(GetType().Name + ":登録処理");
+            _stateMachine = new(_parent, HighElixir.StateMachine.QueueMode.DoEverything, logger: new UnityLogger());
+            _stateMachine.OnTransitionLogging();
+            _stateMachine.RegisterProcessor = new StateProcessor<AIController, AITriggers, SubState>((x, y) =>
+            {
+                if (y.State.HasTag("Shoot"))
+                {
+                    Debug.Log("Interval");
+                    y.RegisterTransition(Triggers.shootCompleted, SubState.ShootInterval);
+                }
+                if (y.State.HasTag("Cancelable"))
+                {
+                    y.RegisterTransition(Triggers.skillInput, SubState.Skill, _skillAnimeTrigger);
+                    y.RegisterTransition(Triggers.shootInput, SubState.Shoot);
+                    y.RegisterTransition(Triggers.halfCharge, SubState.Half);
+                    y.RegisterTransition(Triggers.fullCharge, SubState.Full);
+                }
+            });
+#if UNITY_EDITOR
+            _stateMachine.OnTransition.Subscribe(x =>
+            {
+                _currentState = x.ToState.ToString();
+            });
+#endif
+            _stateMachine.RegisterState(SubState.Idle, new Idle<AIController>());
+            _stateMachine.RegisterState(SubState.Jump, _jump, "Cancelable");
+            _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable");
+            _stateMachine.RegisterState(SubState.Dash, _parent.Dash);
+            _stateMachine.RegisterState(SubState.ShootInterval, new Idle<AIController>());
+
+            RegisterStates();
+
+            // Idle
+            _stateMachine.RegisterTransitions(
+                SubState.Idle,
+                    (Triggers.moveInput, SubState.Move, ""),
+                    (Triggers.dashInput, SubState.Dash, ""),
+                    (Triggers.shootInput, SubState.Shoot, ""),
+                    (Triggers.halfCharge, SubState.Half, ""),
+                    (Triggers.fullCharge, SubState.Full, ""),
+                    (Triggers.jumpInput, SubState.Jump, "")
+                );
+
+            // ShootInterval
+            _stateMachine.RegisterTransitions(
+                SubState.ShootInterval,
+                    (Triggers.watingTimeHasElapsed, SubState.Idle,""),
+                    (Triggers.jumpInput, SubState.Jump, ""),
+                    (Triggers.moveInput, SubState.Move, "")
+                );
+
+            // Move
+            _stateMachine.RegisterTransitions(
+                SubState.Move,
+                    (Triggers.cancelMove, SubState.Idle, "")
+                );
+
+            // 任意遷移
+            _stateMachine.RegisterAnyTransition(AITriggers.falling, SubState.Falling);
+            _stateMachine.RegisterAnyTransition(AITriggers.landing, SubState.Idle);
+            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle);
+
+            // 共通アニメータ登録
+
+            RegisterTransitions();
+
+            _stateMachine.OnEnterEvent(SubState.Jump).Subscribe(_ => _parent.AfterJump());
+            _parent.Machine.AttachSubMachine<SubState>(Attach, _stateMachine, SubState.Idle, new StateMachine<AIController, Triggers, AIStates>.SubMachineOptions<SubState>()
+            {
+                OnExitResetState = true,
+                ForwardEventsFirst = true,
+            });
+        }
+        protected abstract void RegisterStates();
+        protected virtual void RegisterTransitions() { }
         // Grounded Event
         public virtual void OnGrounded()
         {
@@ -50,13 +157,11 @@ namespace BlackRose.Core.Models.Units
         public abstract void InvokeFullShoot();
         public virtual void OnJump(InputValue value)
         {
-            _parent.StateMachine.ChangeState(Triggers.jumpInput);
-            _parent.AfterJump();
+            _stateMachine.Send(Triggers.jumpInput);
         }
 
         public virtual void CanceldJump(InputValue value)
         {
-            _jump.Cut();
         }
 
         public abstract void OnSkill(InputValue value);
@@ -80,10 +185,6 @@ namespace BlackRose.Core.Models.Units
         public void Bind(AIController parent)
         {
             _parent = parent;
-        }
-
-        public virtual void SetMuzzle(GameObject obj)
-        {
         }
     }
 }

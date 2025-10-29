@@ -34,6 +34,8 @@ namespace BlackRose
         {
             _subject.OnTrigger += (res, collider) =>
             {
+                if (collider == null || collider.gameObject == null) return;
+                if (_target == null) return;
                 if (collider.gameObject.Equals(_target.gameObject))
                 {
                     if (res)

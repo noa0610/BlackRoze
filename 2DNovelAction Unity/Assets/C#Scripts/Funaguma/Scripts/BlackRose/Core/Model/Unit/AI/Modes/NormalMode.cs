@@ -1,7 +1,10 @@
-﻿using BlackRose.Core.Models.Helper;
-using BlackRose.Core.Models.States;
+﻿using BlackRose.Core.Models.Units.State;
+using Cysharp.Threading.Tasks;
+using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
 using System;
+using System.Threading;
+using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using AIStates = BlackRose.Core.Models.Units.AIController.AIStates;
@@ -12,118 +15,61 @@ namespace BlackRose.Core.Models.Units
     [Serializable]
     public sealed class NormalMode : AIModeBase
     {
-        public enum NormalState
-        {
-            N_Shoot,
-            N_Half,
-            N_Full,
-            N_Jump,
-            N_Skill,
-        }
-
         [Header("Warp")]
         [SerializeField] private float _warpRange;
         [SerializeField] private GameObject _preWarpDemo;
+
         // プレイヤーの中央になるように調整
         [SerializeField] private Vector3 _warpDemoDelta = new(0, 1, 0);
         [SerializeField] private float _skillCT = 4f;
+        [SerializeField] private float _intervalDelay;
         private TimerTicket _skillTicket;
 
         [Header("States")]
-        private Warp _warpState = new Warp();
+        [SerializeField] private Warp _warpState = new Warp();
         [SerializeField] private ShootForward _shoot = new ShootForward();
         [SerializeField] private ShootForward _half = new ShootForward();
         [SerializeField] private ShootForward _full = new ShootForward();
 
+        [Header("状態管理")]
+        [SerializeField] private int _shootCount = 0;
 #if UNITY_EDITOR
         [Header("Debug")]
         [SerializeField] private float _ct;
 #endif
         public Vector2 WarpPreDir { get; private set; }
 
-        public override void Register()
+        public override AIStates Attach => AIStates.Normal;
+
+        protected override void RegisterStates()
         {
             _skillTicket = Timer.CountDownRegister(_skillCT, "ワープCT", initZero: true);
 
-            // Idle
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                AIStates.Idle,
-                    (Triggers.shootInput, NormalState.N_Shoot, ""),
-                    (Triggers.halfCharge, NormalState.N_Half, ""),
-                    (Triggers.fullCharge, NormalState.N_Full, ""),
-                    (Triggers.jumpInput, NormalState.N_Jump, ""),
-                    (Triggers.skillInput, NormalState.N_Skill, "")
-                );
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                AIStates.ShootInterval,
-                    (Triggers.shootInput, NormalState.N_Shoot, ""),
-                    (Triggers.halfCharge, NormalState.N_Half, ""),
-                    (Triggers.fullCharge, NormalState.N_Full, ""),
-                    (Triggers.skillInput, NormalState.N_Skill, "")
-                );
-            // Move
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                AIStates.Move,
-                    (Triggers.jumpInput, NormalState.N_Jump, ""),
-                    (Triggers.skillInput, NormalState.N_Skill, "")
-                );
-
-            // Jump
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                NormalState.N_Jump,
-                    (Triggers.falling, AIStates.Fall, ""),
-                    (Triggers.landing, AIStates.Idle, "")
-                );
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                NormalState.N_Jump,
-                    (Triggers.shootInput, NormalState.N_Shoot, ""),
-                    (Triggers.skillInput, NormalState.N_Skill, "")
-                );
-
-            // Skill
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                NormalState.N_Skill,
-                    (Triggers.skillFinished, AIStates.Idle, "")
-                );
-
-            // Interval
-            SM.AddTransitionsForLayer(
-                AIController.Mode.Normal,
-                AIStates.ShootInterval,
-                    (Triggers.shootInput, NormalState.N_Shoot, "")
-                );
-
-            SM.AddTransitionForLayer(
-                AIController.Mode.Normal.ToString(), 
-                AIStates.Fall.ToString(), 
-                Triggers.skillInput.ToString(), 
-                NormalState.N_Skill.ToString(), "");
-
-            SM.AddState(NormalState.N_Jump, _jump);
-            SM.AddState(NormalState.N_Skill, _warpState);
-            SM.AddState(NormalState.N_Shoot, _shoot);
-            SM.AddState(NormalState.N_Half, _shoot);
-            SM.AddState(NormalState.N_Full, _shoot);
+            _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
+            _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
+            _stateMachine.RegisterState(SubState.Full, _full, "Shoot");
 
             // event
-            _warpState.OnCompleted += () =>
+            _stateMachine.OnCompletion.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ID == SubState.Skill).Subscribe(_ =>
             {
                 Debug.Log("==================");
-                if (SM.ChangeState(Triggers.skillFinished))
+                if (_stateMachine.Send(Triggers.skillFinished))
                     Debug.Log("Warp Completed and State Changed");
                 else
                     Debug.Log("Warp Completed but State Change Blocked");
-            };
+            });
 
-            _shoot.onShootComplete.AddListener(() =>
+            _stateMachine.OnCompletion.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.State.HasTag("Shoot")).Subscribe(_ =>
             {
-                SM.LazyChange(Triggers.shootCompleted);
+                Debug.Log("===========");
+                _stateMachine.Send(Triggers.shootCompleted);
+                var token = new CancellationToken();
+                UniTask.Create(async () =>
+                {
+                    await _stateMachine.DelaySendEvtAsync(TimeSpan.FromSeconds(_intervalDelay), Triggers.watingTimeHasElapsed, token);
+                    if (token.IsCancellationRequested)
+                        _shootCount = 0;
+                }).Forget();
             });
         }
 
@@ -139,7 +85,7 @@ namespace BlackRose.Core.Models.Units
             {
                 // TODO : ワープ実行
                 _preWarpDemo.SetActive(false);
-                SM.ChangeState(Triggers.skillInput);
+                _stateMachine.Send(Triggers.skillInput);
                 Timer.Start(_skillTicket);
             }
         }
@@ -147,6 +93,8 @@ namespace BlackRose.Core.Models.Units
         {
             if (dir != Vector2.zero)
                 WarpPreDir = dir;
+            else
+                WarpPreDir = _parent.ShootDir;
         }
 
         public override void FixedUpdate(float deltaTime)
@@ -157,20 +105,22 @@ namespace BlackRose.Core.Models.Units
 
         public override void InvokeShoot()
         {
-            _shoot.SetDirection(_parent.Direction);
-            SM.ChangeState(Triggers.shootInput);
+            if (_shootCount > 4)
+            {
+                Debug.Log("うああああああ");
+                return;
+            }
+            _stateMachine.Send(Triggers.shootInput);
         }
 
         public override void InvokeHalfShoot()
         {
-            _shoot.SetDirection(_parent.Direction);
-            SM.ChangeState(Triggers.shootInput);
+            _stateMachine.Send(Triggers.halfCharge);
         }
 
         public override void InvokeFullShoot()
         {
-            _shoot.SetDirection(_parent.Direction);
-            SM.ChangeState(Triggers.shootInput);
+            _stateMachine.Send(Triggers.fullCharge);
         }
 
 #if UNITY_EDITOR
@@ -188,11 +138,6 @@ namespace BlackRose.Core.Models.Units
         public override void ModeChange_V()
         {
             _parent.SwitchModeHeavy();
-        }
-
-        public override void SetMuzzle(GameObject obj)
-        {
-            _shoot.SetGameObject(obj);
         }
     }
 }

@@ -9,7 +9,6 @@ namespace BlackRose.Core.Models.Units
         UnitStatusData StatusData { get; }
         void Register();
         void Bind(AIController parent);
-        void SetMuzzle(GameObject obj);
         //
         void OnGrounded();
 

@@ -1,9 +1,7 @@
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using HighElixir;
-using System.Collections.Generic;
-using UniRx;
 using UnityEngine;
+
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_tyuutoriaru
@@ -16,6 +14,7 @@ namespace BlackRose.Core.Models.Units
             dead,// 死亡
             attackidle, // 攻撃待機
             lasershot, // レーザー攻撃
+            lasershotidle, // レーザー攻撃待機
             beamswordattack, // ビームソード攻撃
             beamswordattackmove, // ビームソード攻撃移動
             fixedpositionjump, // ジャンプ
@@ -29,6 +28,7 @@ namespace BlackRose.Core.Models.Units
             Attack1, // 攻撃１
             Attack2, // 攻撃２
             Attack1end, // 攻撃1した
+            Attack1loop, // ループ完了
             moveend, // 移動した
             Attack2end, // 攻撃1した
             Shockwaveend, // ショックウェーブした
@@ -51,7 +51,7 @@ namespace BlackRose.Core.Models.Units
             // States.attackidle
             var attackidleTrigger = new[]
             {
-                (Triggers.Attack1, States.lasershot, ""),
+                (Triggers.Attack1, States.lasershot, "toShot_Medium"),
                 (Triggers.Attack2, States.beamswordattackmove,""),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")                // HPが半分以下でショックウェーブへ
@@ -59,7 +59,14 @@ namespace BlackRose.Core.Models.Units
             // States.lasershot
             var lasershotTrigger = new[]
             {
-                (Triggers.Attack1end, States.attackidle,""),
+                (Triggers.Attack1end, States.attackidle,"toIdle"),
+                (Triggers.Attack1loop, States.lasershotidle,""),
+                (Triggers.Died, States.dead,""),
+                (Triggers.HalfHP, States.stun,"toStan")
+            };
+            var lasershotidleTrigger = new[]
+            {
+                (Triggers.Attack1, States.lasershot,""),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -102,6 +109,7 @@ namespace BlackRose.Core.Models.Units
             .AddTransmissions(States.idle, idleTrigger)
             .AddTransmissions(States.attackidle, attackidleTrigger)
             .AddTransmissions(States.lasershot, lasershotTrigger)
+            .AddTransmissions(States.lasershotidle, lasershotidleTrigger)
             .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
             .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
             .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
@@ -113,7 +121,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.dead, new Idle());
             // 攻撃待機
             var attackIdle = new Idle_LazyEvent(5f);
-            // 遅延完了時に呼びたい処理をOnCompletedで登録  
+            // 遅延完了時に呼びたい処理をOnCompletedで登録
             attackIdle.OnCompleted += Attackselect;
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
@@ -123,10 +131,32 @@ namespace BlackRose.Core.Models.Units
             // 弾発射完了時にレーザー攻撃終了トリガーを発火
             lasershot.onShootComplete.AddListener(() =>
             {
-                AnimaSelect();
-                _stateMachine.LazyChange(Triggers.Attack1end);
+                if (nowstate == 7)
+                {
+                    // 最終状態なら攻撃終了へ
+                    _stateMachine.LazyChange(Triggers.Attack1end);
+                }
+                else
+                {
+                    // 続けるなら Attack1loop を発火して lasershot に戻す（transmission で lasershot->lasershot に遷移）
+                    _stateMachine.LazyChange(Triggers.Attack1loop);
+                }
             });
+
             _stateMachine.AddState(States.lasershot, lasershot);
+            var lasershotidle = new Idle_LazyEvent(5f);
+            // 遅延完了時に呼びたい処理をOnCompletedで登録
+            lasershotidle.OnCompleted += () =>
+            {
+                if (_isAnimating) return; // 既に開始済みなら無視
+                _isAnimating = true;  
+                // アニメ開始（トリガー送信）
+                AnimaSelect();
+                // 非同期でアニメ進行を監視して半分になったら Attack1 を呼ぶ（fire-and-forget）
+                _ = WaitAndCallAttack1();
+            };
+
+            _stateMachine.AddState(States.lasershotidle, lasershotidle);
             // ビームソード攻撃移動
             var freeMove = new FreeMove(true);
             freeMove.SetAccel(30.0f);

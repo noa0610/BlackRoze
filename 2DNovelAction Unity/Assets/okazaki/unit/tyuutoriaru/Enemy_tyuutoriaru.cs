@@ -5,10 +5,8 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using HighElixir;
 using BlackRose.Datas.Definitions;
-using Fungus;
-using Unity.Mathematics;
-using UnityEngine.Rendering;
-
+using Cysharp.Threading.Tasks;
+using System;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
@@ -21,7 +19,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private Animator _anim;
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private int currentAttack = 1; // 初期値は1（アタック1）
-        private int nowstate = 0;
+        private int nowstate = 2;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
         [SerializeField] private GameObject _Lasershotmuzzle;
@@ -34,7 +32,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private PositionJump _positionJump;
-
+        private bool _waitingForAttack1 = false;
+        // アニメ再生中フラグ（AnimaSelect の重複実行防止）
+        private bool _isAnimating = false;
         #region 
 
         // protected override void RegisterStats()
@@ -271,35 +271,91 @@ namespace BlackRose.Core.Models.Units
         }
         private void AnimaSelect()
         {
+
+            Debug.Log("Enemy_tyuutoriaru: AnimaSelect 呼び出し nowstate=" + nowstate);
+            if (!_isAnimating) _isAnimating = true;
+
             if (nowstate == 2)
             {
-                _anim.SetTrigger("toShot_Medium");
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態2からの遷移");
+                _anim.SetTrigger("toShot_Up");
                 nowstate = 3;
                 return;
             }
             else if (nowstate == 3)
             {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態3からの遷移");
                 _anim.SetTrigger("toShot_Down");
                 nowstate = 4;
                 return;
             }
             else if (nowstate == 4)
             {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態4からの遷移");
                 _anim.SetTrigger("toShot_Up");
                 nowstate = 5;
                 return;
             }
             else if (nowstate == 5)
             {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態5からの遷移");
                 _anim.SetTrigger("toShot_Medium");
                 nowstate = 6;
                 return;
             }
             else if (nowstate == 6)
             {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態6からの遷移");
                 _anim.SetTrigger("toShot_Down");
-                nowstate = 6;
+                nowstate = 7;
                 return;
+            }
+        }
+        // アニメ遷移→進行度監視して一度だけ Attack1 を呼ぶ
+        private async UniTaskVoid WaitAndCallAttack1()
+        {
+            // 二重起動防止
+            if (_waitingForAttack1) return;
+            _waitingForAttack1 = true;
+
+            try
+            {
+                // Animator が無ければ即呼ぶ
+                if (_anim == null)
+                {
+                    Attack1();
+                    return;
+                }
+                // 1フレーム待って Animator の遷移を反映させる
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                // 現在のステートハッシュを取得して、ステートが変わるのを待つ
+                int startHash = _anim.GetCurrentAnimatorStateInfo(0).shortNameHash;
+                int attempts = 0;
+                const int maxTransitionFrames = 300; // 約5秒（60FPS想定）
+                while (_anim.GetCurrentAnimatorStateInfo(0).shortNameHash == startHash && attempts++ < maxTransitionFrames)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update);                }
+                // 新しいステートの進行度が 0.5 以上になるまで待つ（タイムアウト付き）
+                attempts = 0;
+                const int maxProgressFrames = 600; // 約10秒                
+                while (_anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f && attempts++ < maxProgressFrames)
+                {                    await UniTask.Yield(PlayerLoopTiming.Update);
+                }
+
+                // 進行度到達後に一度だけ Attack1 を呼ぶ
+                Attack1();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                // 問題があっても攻撃継続
+                Attack1();
+            }
+            finally
+            {
+                _waitingForAttack1 = false;
+                _isAnimating = false;
             }
         }
     }

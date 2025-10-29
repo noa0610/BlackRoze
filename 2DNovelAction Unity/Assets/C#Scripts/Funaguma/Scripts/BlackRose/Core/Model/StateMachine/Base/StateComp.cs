@@ -20,7 +20,7 @@ namespace BlackRose.Core.Models.States
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
-            return _timeHolders.IsFinished(nameof(_waitFrame));
+            return true; // _timeHolders.IsFinished(nameof(_waitFrame));
         }
 
         public virtual bool AllowEnter(IState previousState, UnitBase parent)

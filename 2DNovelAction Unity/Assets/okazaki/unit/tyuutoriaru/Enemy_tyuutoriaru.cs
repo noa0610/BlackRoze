@@ -1,187 +1,165 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using HighElixir;
 using BlackRose.Datas.Definitions;
-
+using Cysharp.Threading.Tasks;
+using System;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    public class Enemy_tyuutoriaru : UnitBase
+    public partial class Enemy_tyuutoriaru : UnitBase
     {
-        public enum States
-        {
-            none,
-            idle,// 待機
-            dead,// 死亡
-            attackidle, // 攻撃待機
-            lasershot, // レーザー攻撃
-            beamswordattack, // ビームソード攻撃
-            beamswordattackmove, // ビームソード攻撃移動
-            fixedpositionjump, // ジャンプ
-            stun, // スタン
-            shockwave, // ショックウェーブ
-        }
-        private enum Triggers
-        {
-            None,
-            FoundPlayer,   // プレイヤーを発見した
-            Attackcooldown, // 攻撃クールダウンした
-            Attack1, // 攻撃１
-            Attack2, // 攻撃２
-            Attack1end, // 攻撃1した
-            moveend, // 移動した
-            Attack2end, // 攻撃1した
-            Shockwaveend, // ショックウェーブした
-            HalfHP, // HPが半分以下
-            Landing, // 着地
-            Event1, // イベント1発生
-            Event2, // イベント2発生
-            Died,          // 死亡した（HPが０になった）
-        }
+
         [SerializeField] private List<GameObject> _junpPositions;
         [SerializeField] private GameObject _centerPositions;
         [SerializeField] private GameObject _YPositions;
-
+        [SerializeField] private Animator _anim;
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
         private int currentAttack = 1; // 初期値は1（アタック1）
+        private int nowstate = 2;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
-        [SerializeField] private Transform[] _firePoints;
-        [SerializeField] private Transform[] _swordfirePoints;
-        [SerializeField] private GameObject _bulletPrefab;
+        [SerializeField] private GameObject _Lasershotmuzzle;
+        [SerializeField] private BulletData _LasershotbulletData;
+        [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Rigidbody2D _RB2;
         [SerializeField] private FreeMove _freeMove;
         [SerializeField] private BulletData _beamswordBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _beamswordTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private PositionJump _positionJump ;
+        [SerializeField] private PositionJump _positionJump;
+        private bool _waitingForAttack1 = false;
+        // アニメ再生中フラグ（AnimaSelect の重複実行防止）
+        private bool _isAnimating = false;
+        #region 
 
-        protected override void RegisterStats()
-        {
-            // トランスミッショングループを作成
-            var idleTrigger = new[]                                // 待機ステートのトリガー
-            {
-                (Triggers.FoundPlayer, States.attackidle),              // イベント1発生で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-            };
-            var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー  
-            {
-                (Triggers.Attack1, States.fixedpositionjump),              // 攻撃１でレーザー攻撃へ
-                (Triggers.Attack2, States.beamswordattackmove),   // 攻撃２でビームソード接近へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-            };
-            var lasershotTrigger = new[]                           // レーザー攻撃ステートのトリガー
-            {
-                (Triggers.Attack1end, States.attackidle),                // 攻撃１終了で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-            };
-            var beamswordattackmoveTrigger = new[]                     // ビームソード攻撃ステートのトリガー
-            {
-                (Triggers.moveend, States.beamswordattack),                // 移動終了で攻撃２へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-            };
-            var beamswordattackTrigger = new[]                     // ビームソード攻撃ステートのトリガー
-            {
-                (Triggers.Attack2end, States.fixedpositionjump),                // 攻撃２終了でジャンプへ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-            };
-            var fixedpositionjumpTrigger = new[]                                // ジャンプステートのトリガー
-            {
-                (Triggers.Landing, States.attackidle),             // 着地で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-            };
-            var stunTrigger = new[]                                // スタンステートのトリガー
-            {
-                (Triggers.Event2, States.shockwave),               // イベント2発生でショックウェーブへ
-                (Triggers.Died, States.dead),                      // 死亡で死へ 
-            };
-            var shockwaveTrigger = new[]                           // ショックウェーブステートのトリガー
-            {
-                (Triggers.Shockwaveend, States.idle),              // ショックウェーブ終了で待機へ
-                (Triggers.Died, States.dead)                       // 死亡で死へ
-            };
+        // protected override void RegisterStats()
+        // {
+        //     // トランスミッショングループを作成
+        //     var idleTrigger = new[]                                // 待機ステートのトリガー
+        //     {
+        //         (Triggers.FoundPlayer, States.attackidle),              // イベント1発生で攻撃待機へ
+        //         (Triggers.Died, States.dead),                      // 死亡で死へ
+        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
+        //     };
+        //     var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー  
+        //     {
+        //         (Triggers.Attack1, States.fixedpositionjump),              // 攻撃１でレーザー攻撃へ
+        //         (Triggers.Attack2, States.beamswordattackmove),   // 攻撃２でビームソード接近へ
+        //         (Triggers.Died, States.dead),                      // 死亡で死へ
+        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
+        //     };
+        //     var lasershotTrigger = new[]                           // レーザー攻撃ステートのトリガー
+        //     {
+        //         (Triggers.Attack1end, States.attackidle),                // 攻撃１終了で攻撃待機へ
+        //         (Triggers.Died, States.dead),                      // 死亡で死へ
+        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
+        //     };
+        //     var beamswordattackmoveTrigger = new[]                     // ビームソード攻撃ステートのトリガー
+        //     {
+        //         (Triggers.moveend, States.beamswordattack),                // 移動終了で攻撃２へ
+        //         (Triggers.Died, States.dead),                      // 死亡で死へ
+        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
+        //     };
+        //     var beamswordattackTrigger = new[]                     // ビームソード攻撃ステートのトリガー
+        //     {
+        //         (Triggers.Attack2end, States.fixedpositionjump),                // 攻撃２終了でジャンプへ
+        //         (Triggers.Died, States.dead),                      // 死亡で死へ
+        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
+        //     };
+        //     var fixedpositionjumpTrigger = new[]                                // ジャンプステートのトリガー
+        //     {
+        //         (Triggers.Landing, States.attackidle),             // 着地で攻撃待機へ
+        //         (Triggers.Died, States
+        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
+        //     };
+        //     var stunTrigger = new[]                                // スタンステートのトリガー
+        //     {
+        //         (Triggers.Event2, States.shockwave),               // イベント2発生でショックウェーブへ
+        //         (Triggers.Died, States.dead),                      // 死亡で死へ 
+        //     };
+        //     var shockwaveTrigger = new[]                           // ショックウェーブステートのトリガー
+        //     {
+        //         (Triggers.Shockwaveend, States.idle),              // ショックウェーブ終了で待機へ
+        //         (Triggers.Died, States.dead)                       // 死亡で死へ
+        //     };
 
-            // ステートマシンにStatesの移動先の追加
-            _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.lasershot, lasershotTrigger)
-                .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
-                .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
-                .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
-                .AddTransmissions(States.stun, stunTrigger)
-                .AddTransmissions(States.shockwave, shockwaveTrigger);
+        //     // ステートマシンにStatesの移動先の追加
+        //     _stateMachine
+        //         .AddTransmissions(States.idle, idleTrigger)
+        //         .AddTransmissions(States.attackidle, attackidleTrigger)
+        //         .AddTransmissions(States.lasershot, lasershotTrigger)
+        //         .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
+        //         .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
+        //         .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
+        //         .AddTransmissions(States.stun, stunTrigger)
+        //         .AddTransmissions(States.shockwave, shockwaveTrigger);
 
-            // 死んだときに何もしないならDeadの設定はいらない
+        //     // 死んだときに何もしないならDeadの設定はいらない
 
-            // 待機
-            var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
-            _stateMachine.AddState(States.idle, idle);
-            // 死亡
-            var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimationCompleted.AddListener(() =>
-            {
-                UnitManager.instance.RemoveUnit(this);
-                Destroy(gameObject);
-            });
-            _stateMachine.AddState(States.dead, died);
-            // ジャンプ
-            var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
-            var fixedpositionjump = new PositionJump(jumpPositions, 10f)
-                .SetAnimeTrigger("fixedpositionjump")
-                .SetCancelableProgress(0);
-                fixedpositionjump.OnArrived += () =>
-                {
-                   _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
-                };
-            _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
-            // 攻撃待機
-            var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
-            attackIdle.LazyEvent.AddListener(Attackselect);
-            _stateMachine.AddState(States.attackidle, attackIdle);
-            // レーザー攻撃
-            var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab).SetAnimeTrigger("lasershot").SetCancelableProgress(0);
-            _stateMachine.AddState(States.lasershot, lasershot);
-            // ビームソード攻撃移動
-            var beamswordattackmove = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
-            _stateMachine.AddState(States.beamswordattackmove, beamswordattackmove);
-            // ビームソード攻撃
-            var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
-            .SetDirection(Vector2.down) // プレイヤー方向など、必要に応じてセット
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
-            .SetAnimeTrigger("beamswordattack")
-            .SetCancelableProgress(0);
-            beamswordattack.onShootComplete.AddListener(() =>
-            {
-                _stateMachine.LazyChange(Triggers.Attack2end);
-            });
-            _stateMachine.AddState(States.beamswordattack, beamswordattack);
-            // スタン
-            var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
-            _stateMachine.AddState(States.stun, stun);
-            // ショックウェーブ
-            var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
-            .SetDirection(Vector2.left)
-            .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
-            .SetAnimeTrigger("beamswordattack")
-            .SetCancelableProgress(0);
-            // 弾発射完了時にショックウェーブ終了トリガーを発火
-            shockwave.onShootComplete.AddListener(() =>
-            {
-                _stateMachine.LazyChange(Triggers.Shockwaveend);
-            });
-            _stateMachine.AddState(States.shockwave, shockwave);
-        }
+        //     // 待機
+        //     var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
+        //     _stateMachine.AddState(States.idle, idle);
+        //     // 死亡
+        //     var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
+        //     died.OnAnimationCompleted.AddListener(() =>
+        //     {
+        //         UnitManager.instance.RemoveUnit(this);
+        //         Destroy(gameObject);
+        //     });
+        //     _stateMachine.AddState(States.dead, died);
+        //     // ジャンプ
+        // var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
+        // var fixedpositionjump = new PositionJump(jumpPositions, 10f)
+        //     .SetAnimeTrigger("fixedpositionjump")
+        //     .SetCancelableProgress(0);
+        //     fixedpositionjump.OnArrived += () =>
+        //     {
+        //        _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
+        //     };
+        // _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
+        //     // 攻撃待機
+        //     var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
+        //     attackIdle.LazyEvent.AddListener(Attackselect);
+        //     _stateMachine.AddState(States.attackidle, attackIdle);
+        //     // レーザー攻撃
+        //     var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab).SetAnimeTrigger("lasershot").SetCancelableProgress(0);
+        //     _stateMachine.AddState(States.lasershot, lasershot);
+        //     // ビームソード攻撃移動
+        //     var beamswordattackmove = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
+        //     _stateMachine.AddState(States.beamswordattackmove, beamswordattackmove);
+        //     // ビームソード攻撃
+        //     var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
+        //     .SetDirection(Vector2.down) // プレイヤー方向など、必要に応じてセット
+        //     .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
+        //     .SetAnimeTrigger("beamswordattack")
+        //     .SetCancelableProgress(0);
+        //     beamswordattack.onShootComplete.AddListener(() =>
+        //     {
+        //         _stateMachine.LazyChange(Triggers.Attack2end);
+        //     });
+        //     _stateMachine.AddState(States.beamswordattack, beamswordattack);
+        //     // スタン
+        //     var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
+        //     _stateMachine.AddState(States.stun, stun);
+        //     // ショックウェーブ
+        //     var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
+        //     .SetDirection(Vector2.left)
+        //     .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
+        //     .SetAnimeTrigger("beamswordattack")
+        //     .SetCancelableProgress(0);
+        //     // 弾発射完了時にショックウェーブ終了トリガーを発火
+        //     shockwave.onShootComplete.AddListener(() =>
+        //     {
+        //         _stateMachine.LazyChange(Triggers.Shockwaveend);
+        //     });
+        //     _stateMachine.AddState(States.shockwave, shockwave);
+        // }
+        #endregion
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
         {
@@ -281,7 +259,105 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("ビームソード接近");
             _stateMachine.ChangeState(Triggers.Attack2);
         }
-    }
 
+        private int JumpSelect()
+        {
+            // 中心とこのオブジェクトのx座標差を取得
+            float distance = transform.position.x - _centerPositions.transform.position.x;
+            Debug.Log("距離差: " + distance);
+            // 差がプラスなら1、マイナスなら0を返す
+            return distance >= 0 ? 0 : 1;
+
+        }
+        private void AnimaSelect()
+        {
+
+            Debug.Log("Enemy_tyuutoriaru: AnimaSelect 呼び出し nowstate=" + nowstate);
+            if (!_isAnimating) _isAnimating = true;
+
+            if (nowstate == 2)
+            {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態2からの遷移");
+                _anim.SetTrigger("toShot_Up");
+                nowstate = 3;
+                return;
+            }
+            else if (nowstate == 3)
+            {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態3からの遷移");
+                _anim.SetTrigger("toShot_Down");
+                nowstate = 4;
+                return;
+            }
+            else if (nowstate == 4)
+            {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態4からの遷移");
+                _anim.SetTrigger("toShot_Up");
+                nowstate = 5;
+                return;
+            }
+            else if (nowstate == 5)
+            {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態5からの遷移");
+                _anim.SetTrigger("toShot_Medium");
+                nowstate = 6;
+                return;
+            }
+            else if (nowstate == 6)
+            {
+                Debug.Log("Enemy_tyuutoriaru: アニメーション状態6からの遷移");
+                _anim.SetTrigger("toShot_Down");
+                nowstate = 7;
+                return;
+            }
+        }
+        // アニメ遷移→進行度監視して一度だけ Attack1 を呼ぶ
+        private async UniTaskVoid WaitAndCallAttack1()
+        {
+            // 二重起動防止
+            if (_waitingForAttack1) return;
+            _waitingForAttack1 = true;
+
+            try
+            {
+                // Animator が無ければ即呼ぶ
+                if (_anim == null)
+                {
+                    Attack1();
+                    return;
+                }
+                // 1フレーム待って Animator の遷移を反映させる
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                // 現在のステートハッシュを取得して、ステートが変わるのを待つ
+                int startHash = _anim.GetCurrentAnimatorStateInfo(0).shortNameHash;
+                int attempts = 0;
+                const int maxTransitionFrames = 300; // 約5秒（60FPS想定）
+                while (_anim.GetCurrentAnimatorStateInfo(0).shortNameHash == startHash && attempts++ < maxTransitionFrames)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update);                }
+                // 新しいステートの進行度が 0.5 以上になるまで待つ（タイムアウト付き）
+                attempts = 0;
+                const int maxProgressFrames = 600; // 約10秒                
+                while (_anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f && attempts++ < maxProgressFrames)
+                {                    await UniTask.Yield(PlayerLoopTiming.Update);
+                }
+
+                // 進行度到達後に一度だけ Attack1 を呼ぶ
+                Attack1();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                // 問題があっても攻撃継続
+                Attack1();
+            }
+            finally
+            {
+                _waitingForAttack1 = false;
+                _isAnimating = false;
+            }
+        }
+    }
 }
 

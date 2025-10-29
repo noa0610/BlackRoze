@@ -59,9 +59,10 @@ namespace BlackRose.Core.Models.States
             base.Stay(parent, deltaTime);
             if (Rigidbody2D == null) return;
             // 目標位置に到達したかチェック
-            if (Vector2.Distance(Rigidbody2D.position, TargetPosition) < 0.1f)
+            if (Vector2.Distance(parent.transform.position, TargetPosition) < 0.2f)
             {
                 Rigidbody2D.velocity = Vector2.zero; // 到達時の速度をゼロにする
+                Debug.Log("PositionJump: Arrived at target position.");
                 OnCompleted?.Invoke(); // 到達時のコールバックを呼び出す
             }
         }

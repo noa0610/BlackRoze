@@ -1,7 +1,7 @@
 ﻿using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
 using HighElixir.Timers;
-using HighElixir.UI;
+using HighElixir.Unity.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;

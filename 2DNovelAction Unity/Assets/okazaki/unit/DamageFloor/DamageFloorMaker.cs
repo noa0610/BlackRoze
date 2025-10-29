@@ -1,6 +1,7 @@
 ﻿using HighElixir;
-using HighElixir.Pool;
+using HighElixir.Pools;
 using HighElixir.Timers;
+using HighElixir.Unity.Pools;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ namespace BlackRose.Core.Models.Objects
     {
         [SerializeField] private DamageFloor _damageFloorPref;
 
-        private Pool<DamageFloor> _pool;
+        private ObjectPool<DamageFloor> _pool;
 
         // ダメージフロアごとにTimeHolder用のキーを持たせる
         private Dictionary<DamageFloor, TimerTicket> _floorTimerDict = new();
@@ -43,13 +44,13 @@ namespace BlackRose.Core.Models.Objects
                 _floorTimerDict.Remove(go);
                 _floorTimerLink.Remove(key);
                 GlobalTimer.Update.UnRegister(key);
-                _pool.Release(go); // プールに返す
+                _pool.Pool.Release(go); // プールに返す
             }
         }
 
         private void Awake()
         {
-            _pool = new Pool<DamageFloor>(_damageFloorPref, 10, transform);
+            _pool = new ObjectPool<DamageFloor>(_damageFloorPref, 10, transform);
         }
     }
 }

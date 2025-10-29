@@ -11,13 +11,22 @@ namespace HighElixir.Timers.Internal
         // true: 上昇中, false: 下降中
         public bool IsReversing { get; private set; } = false;
 
+        public event Action<bool> OnReversed;
         public UpAndDownTimer(TimerConfig config) : base(config)
         {
             if (config.Duration <= 0f) OnError(new ArgumentOutOfRangeException(nameof(config.Duration)));
             InitialTime = config.Duration;
         }
 
-
+        public override void Reset()
+        {
+            Stop(false);
+            if (IsReversing)
+                Current = 0f;
+            else
+                Current = InitialTime;
+            NotifyReset();
+        }
         public override void Update(float dt)
         {
             if (dt <= 0f) return; // 負やゼロを無視
@@ -28,7 +37,7 @@ namespace HighElixir.Timers.Internal
                 {
                     Current = InitialTime;
                     IsRunning = false;
-                    InvokeEventSafely();
+                    NotifyComplete();
                 }
             }
             else
@@ -38,19 +47,20 @@ namespace HighElixir.Timers.Internal
                 {
                     Current = 0f;
                     IsRunning = false;
-                    InvokeEventSafely();
+                    NotifyComplete();
                 }
             }
         }
 
         public void ReverseDirection()
         {
-            IsReversing = !IsReversing;
+            SetDirection(!IsReversing);
         }
 
         public void SetDirection(bool isUp)
         {
             IsReversing = isUp;
+            OnReversed?.Invoke(isUp);
         }
     }
 
@@ -60,7 +70,7 @@ namespace HighElixir.Timers.Internal
         public override bool IsFinished => !IsRunning && (Current <= 0 || Current >= InitialTime);
         public override CountType CountType => base.CountType | CountType.Tick;
         public TickUpAndDownTimer(TimerConfig config) : base(config)
-        { 
+        {
             InitialTime = (int)InitialTime;
         }
 

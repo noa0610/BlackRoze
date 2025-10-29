@@ -4,7 +4,6 @@
     {
         public readonly float Current;
         public readonly float Delta;
-
         public TimeData(float current, float delta)
         {
             Current = current; Delta = delta;

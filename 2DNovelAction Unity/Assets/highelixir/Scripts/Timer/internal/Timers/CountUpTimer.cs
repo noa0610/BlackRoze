@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace HighElixir.Timers.Internal
+﻿namespace HighElixir.Timers.Internal
 {
     internal class CountUpTimer : InternalTimerBase
     {
@@ -18,7 +16,7 @@ namespace HighElixir.Timers.Internal
 
         public override void Reset()
         {
-            InvokeEventSafely();
+            NotifyComplete();
             base.Reset();
         }
 

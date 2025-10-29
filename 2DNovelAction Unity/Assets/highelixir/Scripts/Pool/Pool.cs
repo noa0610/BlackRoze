@@ -1,169 +1,275 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace HighElixir.Pool
+namespace HighElixir.Pools
 {
-    public class Pool<T> : IDisposable where T : UnityEngine.Object
+    /// <summary>
+    /// オブジェクトの再利用を行う汎用プールクラス。
+    /// <br/>GC負荷を軽減し、高頻度生成オブジェクトの効率を最適化する。
+    /// <br/>スレッドセーフで、Unity以外の環境でも利用可能。
+    /// </summary>
+    /// <typeparam name="T">プール対象の型</typeparam>
+    public class Pool<T> : IDisposable
     {
-        private readonly T _original;
-        private readonly Stack<T> _available = new();
-        private readonly HashSet<T> _inUse = new();
-        private int _maxPoolSize;
-        private Transform _container;
+        // --- 基本構成 ---
+        private readonly Func<T> _createMethod;
+        private readonly Action<T> _destroyMethod;
+        private readonly ConcurrentQueue<T> _available = new();
+        private readonly ConcurrentDictionary<T, byte> _inUse = new();
 
-        public Transform Container => _container;
-        public List<T> InUse => new List<T>(_inUse);
+        private int _maxPoolSize;
+
+        /// <summary>プールが破棄済みかどうか</summary>
+        public bool Disposed { get; private set; } = false;
+
+        /// <summary>初期化済みかどうか</summary>
         public bool Initialized { get; private set; } = false;
 
-        // 取得・解放するオブジェクトを操作したい時用
+        /// <summary>必要に応じて自動でプールサイズを拡張するかどうか</summary>
+        public bool AutoExpand { get; set; } = true;
+
+        /// <summary>最大許容キャパシティ</summary>
+        public int MaxCapacity { get; set; } = 10000;
+
+        /// <summary>現在利用可能なオブジェクト数</summary>
+        public int AvailableCount => _available.Count;
+
+        /// <summary>現在使用中のオブジェクト数</summary>
+        public int InUseCount => _inUse.Count;
+
+        /// <summary>プール全体のオブジェクト数</summary>
+        public int TotalCount => AvailableCount + InUseCount;
+
+        // --- イベント群 ---
+        /// <summary>Get直後に呼び出されるイベント</summary>
         public event Action<T> OnGetEvt;
+
+        /// <summary>Release直後に呼び出されるイベント</summary>
         public event Action<T> OnReleaseEvt;
-        public event Action<PooledObject<T>> OnAcquirePooledEvt;
-        public Pool(T original, int maxPoolSize, Transform container = null, bool LazeCreate = false)
+
+        /// <summary>GetAsDisposableで取得した際に呼ばれるイベント</summary>
+        public event Action<PooledObject<T>> OnAcquiredPooledEvt;
+
+        /// <summary>生成直後に呼び出されるイベント</summary>
+        public event Action<T> OnCreateEvt;
+
+        /// <summary>破棄直前に呼び出されるイベント</summary>
+        public event Action<T> OnDestroyEvt;
+
+        /// <summary>
+        /// プールを初期化する。
+        /// </summary>
+        /// <param name="createMethod">オブジェクト生成メソッド</param>
+        /// <param name="destroyMethod">オブジェクト破棄メソッド</param>
+        /// <param name="maxPoolSize">初期プールサイズ</param>
+        /// <param name="lazyInit">遅延初期化を行うか</param>
+        public Pool(Func<T> createMethod, Action<T> destroyMethod, int maxPoolSize, bool lazyInit = false)
         {
-            if (original == null) throw new ArgumentNullException(nameof(original));
+            if (createMethod == null) throw new ArgumentNullException(nameof(createMethod));
+            if (destroyMethod == null) throw new ArgumentNullException(nameof(destroyMethod));
             if (maxPoolSize <= 0) throw new ArgumentOutOfRangeException(nameof(maxPoolSize));
 
-            _original = original;
+            _createMethod = createMethod;
+            _destroyMethod = destroyMethod;
             _maxPoolSize = maxPoolSize;
-            _container = container;
-            if (!LazeCreate) Initialize();
+
+            if (!lazyInit)
+                Initialize();
         }
 
+        /// <summary>
+        /// プールを初期化し、必要数のインスタンスを生成する。
+        /// </summary>
         public void Initialize()
         {
-            Dispose();
-            CreateInstances(_maxPoolSize);
+            if (Initialized) return;
             Initialized = true;
+            FillPool();
         }
+
+        #region Get / Release
+
+        /// <summary>
+        /// プールからオブジェクトを取得する。
+        /// <br/>足りない場合は新規生成される。
+        /// </summary>
         public T Get()
         {
+            if (Disposed) throw new ObjectDisposedException(nameof(Pool<T>));
             var obj = Get_Internal();
             OnGetEvt?.Invoke(obj);
             return obj;
         }
 
-        public PooledObject<T> GetPooled()
+        /// <summary>
+        /// IDisposableとしてプールオブジェクトを取得する。
+        /// <br/>usingスコープで自動的にReleaseされる。
+        /// </summary>
+        public IPooledObject<T> GetAsDisposable()
         {
-            var pooled = new PooledObject<T>(Get_Internal(), this);
-            OnAcquirePooledEvt?.Invoke(pooled);
+            if (Disposed) throw new ObjectDisposedException(nameof(Pool<T>));
+            var obj = Get_Internal();
+            var pooled = new PooledObject<T>(obj, () => Release(obj));
+            OnAcquiredPooledEvt?.Invoke(pooled);
             return pooled;
         }
+
+        /// <summary>
+        /// 使用済みオブジェクトをプールへ返却する。
+        /// <br/>プールサイズを超える場合は破棄される。
+        /// </summary>
         public void Release(T obj)
         {
+            if (Disposed) throw new ObjectDisposedException(nameof(Pool<T>));
             if (obj == null) return;
-            if (_available.Contains(obj)) return;
-            OnReleaseEvt?.Invoke(obj);
-            if (_inUse.Remove(obj))
+
+            if (_inUse.Remove(obj, out _))
             {
-                SetActive(obj, false);
-                SetParent(obj, _container);
+                OnReleaseEvt?.Invoke(obj);
                 if (_available.Count < _maxPoolSize)
-                    _available.Push(obj);
+                    _available.Enqueue(obj);
                 else
                     DestroyObject(obj);
             }
             else
             {
-                Debug.LogWarning($"{obj.name} はプール外のオブジェクトです", obj);
+                LogWarning($"{obj} はプール外のオブジェクトです");
             }
         }
 
-        public void Dispose()
+        /// <summary>
+        /// 内部取得処理。利用可能なオブジェクトを取得または新規生成する。
+        /// </summary>
+        private T Get_Internal()
         {
-            foreach (var obj in _available)
-                DestroyObject(obj);
-            foreach (var obj in _inUse)
-                DestroyObject(obj);
-            _available.Clear();
-            _inUse.Clear();
-            OnGetEvt = null;
-            OnReleaseEvt = null;
-            OnAcquirePooledEvt = null;
+            if (!_available.TryDequeue(out T obj))
+                obj = CreateInstance();
+
+            if (!_inUse.TryAdd(obj, 0))
+                LogWarning($"{obj} はすでに使用中です");
+
+            return obj;
         }
+
+        #endregion
+
+        #region Settings
+
+        /// <summary>
+        /// プールサイズを設定し、余剰分を破棄・不足分を補充する。
+        /// </summary>
         public void SetPoolSize(int poolSize)
         {
             _maxPoolSize = poolSize;
             var extra = _available.Count - _maxPoolSize;
             var need = _maxPoolSize - (_available.Count + _inUse.Count);
+
             if (extra > 0)
             {
                 for (int i = 0; i < extra; i++)
-                {
-                    var g = _available.Pop();
-                    DestroyObject(g);
-                }
+                    if (_available.TryDequeue(out T g))
+                        DestroyObject(g);
             }
             else if (need > 0)
             {
-                CreateInstances(need);
+                for (int i = 0; i < need; i++)
+                    CreateInstance(false);
             }
         }
-        public void SetContainer(Transform container)
+
+        #endregion
+
+        #region 生成・破棄
+
+        /// <summary>
+        /// すべてのオブジェクトを再生成する。
+        /// </summary>
+        public void ReCreateAll()
         {
-            _container = container;
             foreach (var obj in _available)
-                SetParent(obj, _container);
+                DestroyObject(obj);
+            _available.Clear();
+
+            foreach (var obj in _inUse.Keys)
+                DestroyObject(obj);
+            _inUse.Clear();
+
+            FillPool();
         }
 
-        private T Get_Internal()
+        /// <summary>
+        /// プールに必要数のオブジェクトを補充する。
+        /// </summary>
+        private void FillPool()
         {
-            T obj = _available.Count > 0
-                ? _available.Pop()
-                : CreateInstance();
+            while (TotalCount < _maxPoolSize)
+                CreateInstance();
+        }
 
-            if (!_inUse.Add(obj))
-                Debug.LogWarning($"{obj.name} はすでに使用中です", obj);
+        /// <summary>
+        /// 新しいオブジェクトを生成する。
+        /// </summary>
+        private T CreateInstance(bool enqueue = true)
+        {
+            if (TotalCount >= MaxCapacity)
+                throw new InvalidOperationException($"[{nameof(T)}] MAX_CAPACITYを超過しました");
 
-            SetActive(obj, true);
+            var obj = _createMethod();
+
+            if (AutoExpand && TotalCount > _maxPoolSize)
+                _maxPoolSize = TotalCount;
+
+            OnCreateEvt?.Invoke(obj);
+
+            if (enqueue)
+                _available.Enqueue(obj);
+
             return obj;
         }
-        private void CreateInstances(int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                var obj = CreateInstance();
-                SetActive(obj, false);
-                _available.Push(obj);
-            }
-        }
-        private T CreateInstance()
-        {
-            if (_original is GameObject go)
-            {
-                var instance = UnityEngine.Object.Instantiate(go, _container);
-                return instance as T;
-            }
-            else if (_original is Component comp)
-            {
-                var instance = UnityEngine.Object.Instantiate(comp, _container);
-                return instance as T;
-            }
 
-            throw new InvalidOperationException($"PoolはGameObjectまたはComponentにしか対応していません: {typeof(T)}");
+        /// <summary>
+        /// オブジェクトを破棄する。
+        /// </summary>
+        private void DestroyObject(T obj)
+        {
+            OnDestroyEvt?.Invoke(obj);
+            _destroyMethod(obj);
         }
 
-        private void SetActive(T obj, bool active)
+        #endregion
+
+        /// <summary>
+        /// プールを破棄し、すべてのオブジェクトを解放する。
+        /// </summary>
+        public void Dispose()
         {
-            if (obj is GameObject go)
-                go.SetActive(active);
-            else if (obj is Component comp)
-                comp.gameObject.SetActive(active);
+            if (Disposed) return;
+            Disposed = true;
+
+            foreach (var obj in _available)
+                DestroyObject(obj);
+
+            foreach (var obj in _inUse.Keys)
+                DestroyObject(obj);
+
+            _available.Clear();
+            _inUse.Clear();
+
+            // イベントを解除
+            OnGetEvt = null;
+            OnReleaseEvt = null;
+            OnAcquiredPooledEvt = null;
+            OnCreateEvt = null;
+            OnDestroyEvt = null;
         }
 
-        private void SetParent(T obj, Transform parent)
+        /// <summary>
+        /// 環境に応じて警告ログを出力する。
+        /// </summary>
+        private void LogWarning(string message)
         {
-            if (obj is GameObject go)
-                go.transform.SetParent(parent, false);
-            else if (obj is Component comp)
-                comp.transform.SetParent(parent, false);
-        }
-        private static void DestroyObject(T obj)
-        {
-            if (obj is GameObject go) UnityEngine.Object.Destroy(go);
-            else if (obj is Component comp) UnityEngine.Object.Destroy(comp.gameObject);
-            else UnityEngine.Object.Destroy(obj);
+            Console.WriteLine("[Pool Warning] " + message);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace BlackRose.Core.Models.Units
             var attackidleTrigger = new[]
             {
                 (Triggers.Attack1, States.lasershot, "toShot_Medium"),
-                (Triggers.Attack2, States.beamswordattackmove,""),
+                (Triggers.Attack2, States.beamswordattackmove,"toMove"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")                // HPが半分以下でショックウェーブへ
             };
@@ -73,35 +73,35 @@ namespace BlackRose.Core.Models.Units
             // States.beamswordattack
             var beamswordattackmoveTrigger = new[]
             {
-                (Triggers.moveend, States.beamswordattack,""),
+                (Triggers.moveend, States.beamswordattack,"toSlash"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.beamswordattackmove
             var beamswordattackTrigger = new[]
             {
-                (Triggers.Attack2end, States.fixedpositionjump,""),
+                (Triggers.Attack2end, States.fixedpositionjump,"tojump"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.fixedpositionjump
             var fixedpositionjumpTrigger = new[]
             {
-                (Triggers.Landing, States.attackidle,""),
+                (Triggers.Landing, States.attackidle,"toIdle"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.stun
             var stunTrigger = new[]
             {
-                (Triggers.Event2, States.shockwave,""),
+                (Triggers.Event2, States.shockwave,"toShockwave"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.shockwave
             var shockwaveTrigger = new[]
             {
-                (Triggers.Shockwaveend, States.idle,""),
+                (Triggers.Shockwaveend, States.idle,"toIdle"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -138,7 +138,7 @@ namespace BlackRose.Core.Models.Units
                 }
                 else
                 {
-                    // 続けるなら Attack1loop を発火して lasershot に戻す（transmission で lasershot->lasershot に遷移）
+                    // 続けるなら Attack1loop を発火して lasershot に戻す（transmission で lasershot->lasershotidle に遷移）
                     _stateMachine.LazyChange(Triggers.Attack1loop);
                 }
             });

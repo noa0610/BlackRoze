@@ -20,6 +20,7 @@ namespace BlackRose.Core.Models.Units
             fixedpositionjump, // ジャンプ
             stun, // スタン
             shockwave, // ショックウェーブ
+            shockwaveidle, // ショックウェーブ待機
         }
         private enum Triggers
         {
@@ -36,6 +37,7 @@ namespace BlackRose.Core.Models.Units
             Landing, // 着地
             Event1, // イベント1発生
             Event2, // イベント2発生
+            shockwaveidleend, // ショックウェーブ待機終了
             Died,          // 死亡した（HPが０になった）
         }
         protected override void RegisterStats()
@@ -44,7 +46,7 @@ namespace BlackRose.Core.Models.Units
             // States.idle
             var idleTrigger = new[]
             {
-                (Triggers.FoundPlayer, States.attackidle, "toIdle"),
+                (Triggers.FoundPlayer, States.attackidle, ""),
                 (Triggers.Died, States.dead, ""),
                 (Triggers.HalfHP, States.stun,"toStan")                // HPが半分以下でショックウェーブへ
             };
@@ -80,7 +82,7 @@ namespace BlackRose.Core.Models.Units
             // States.beamswordattackmove
             var beamswordattackTrigger = new[]
             {
-                (Triggers.Attack2end, States.fixedpositionjump,"tojump"),
+                (Triggers.Attack2end, States.fixedpositionjump,"toJump"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -94,7 +96,13 @@ namespace BlackRose.Core.Models.Units
             // States.stun
             var stunTrigger = new[]
             {
-                (Triggers.Event2, States.shockwave,"toShockwave"),
+                (Triggers.Event2, States.shockwave,"toIdle"),
+                (Triggers.Died, States.dead,""),
+            };
+            // States.shockwaveidle
+            var shockwaveidleTrigger = new[]
+            {
+                (Triggers.shockwaveidleend, States.shockwave,"toShockWave"),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -114,6 +122,7 @@ namespace BlackRose.Core.Models.Units
             .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
             .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
             .AddTransmissions(States.stun, stunTrigger)
+            .AddTransmissions(States.shockwaveidle, shockwaveTrigger)
             .AddTransmissions(States.shockwave, shockwaveTrigger);
             // 待機
             _stateMachine.AddState(States.idle, new Idle());
@@ -149,7 +158,7 @@ namespace BlackRose.Core.Models.Units
             lasershotidle.OnCompleted += () =>
             {
                 if (_isAnimating) return; // 既に開始済みなら無視
-                _isAnimating = true;  
+                _isAnimating = true;
                 // アニメ開始（トリガー送信）
                 AnimaSelect();
                 // 非同期でアニメ進行を監視して半分になったら Attack1 を呼ぶ（fire-and-forget）
@@ -168,10 +177,11 @@ namespace BlackRose.Core.Models.Units
             .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
-                GetComponent<BoxCollider2D>().isTrigger = true;
-                _positionJump?.SetTarget(JumpSelect());
-                                _stateMachine.LazyChange(Triggers.Attack2end);
+                // アニメの完了を待ってから Attack2end を発火
+                StartCoroutine(WaitForBeamswordAnimationThenFire());
+                // 当たり判定をトリガーに切り替え・ジャンプ先セット
             });
+
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
             // ジャンプ
             _positionJump.SetPositions(_junpPositions.ConvertAll(p => (Vector2)p.transform.position));
@@ -187,12 +197,15 @@ namespace BlackRose.Core.Models.Units
 
             _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
             // スタン
-            var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
+            var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 1.3f, true);
             _stateMachine.AddState(States.stun, stun);
+            // ショックウェーブ待機
+            var shockwaveidle = new Idle_LazyChange(Triggers.shockwaveidleend.ToString(), 2.0f, true);
+            _stateMachine.AddState(States.shockwaveidle, shockwaveidle);
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
             .SetDirection(Vector2.left)
-            .SetMuzzle(_Lasershotmuzzle != null ?_Lasershotmuzzle : gameObject);
+            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {

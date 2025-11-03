@@ -10,24 +10,64 @@ namespace BlackRose.Core.Models.Units
     public partial class Enemy_rasubosu2 : UnitBase
     {
         [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
-        private Transform playerTransform;
+        [SerializeField] private Transform[] _MissileFallPoint;    // ミサイル落下地点
+        [SerializeField] private float _WarpIntervalTime = 1f;  // ワープ移動間隔時間
+        [SerializeField] private GameObject _ShotPoint;         // 連続ワープショット発射位置
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private SearchAssistanceMono _searchAssistance;
+        private UnitBase _player;
+
+
+        protected override void AfterAwake()
+        {
+            _searchAssistance = GetComponent<SearchAssistanceMono>();
+            _stateMachine.ChangeState(Triggers.Event1);
+        }
+        
         protected override void Start()
         {
             base.Start();
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
+        }
+
+
+
+        private bool IsMatchingState(States state)
+        {
+            return _stateMachine.CurrentState.key == _stateNames[state];
+        }
+
+        private void SearchPlayer()
+        {
+            var list = UnitManager.instance.GetUnitList();
+            if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
             {
-                playerTransform = playerObj.transform;
-            }
-            else
-            {
-                Debug.LogWarning("Playerタグの付いたオブジェクトが見つかりませんでした。");
+                _player = units.GetUnitNearest(transform.position);
+                _stateMachine.ChangeState(Triggers.Event1);
             }
         }
+        
+        protected override void AfterFixedUpdate()
+        {
+            SearchPlayer();
+            // 見た目の向き変更など既存処理
+            if (_player != null)
+            {
+                Direction = (_player.Transform.position - transform.position).normalized;
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
+            }
+            // beamswordattackステート中のみ判定
+
+        }
+
         private void Attackjudgement()
         {
-            if (playerTransform == null) return;
-            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+            if (_player == null) return;
+            float distanceToPlayer = Vector3.Distance(transform.position, _player.transform.position);
 
             if (distanceToPlayer <= closeRangeDistance)
             {

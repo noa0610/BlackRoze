@@ -8,38 +8,38 @@ namespace BlackRose.Core.Models.Units
         public enum States
         {
             none,
-            idle,// 待機
-            dead,// 死亡
-            warpidle, // ワープ待機
-            warp, // ワープ 
-            attackidle, // 攻撃待機
-            pointermissile, // ポインターミサイル
-            crosswave, // クロスウェーブ
-            warpShot, // ワープショット
-            grappleSlash, // グラップルスラッシュ
-            flashBeamSword, // フラッシュビームソード
+            idle,               // 待機
+            dead,               // 死亡
+            warpidle,           // ワープ待機
+            warp,               // ワープ 
+            attackidle,         // 攻撃待機
+            pointermissile,     // ポインターミサイル
+            crosswave,          // クロスウェーブ
+            warpShot,           // ワープショット
+            grappleSlash,       // グラップルスラッシュ
+            flashBeamSword,     // フラッシュビームソード
         }
         private enum Triggers
         {
             None,
-            Warpcooldown, // ワープクールダウンした
-            Warpreturn, // ワープに戻る
-            Warpend, // ワープ終了
-            Warpcomplete, // ワープ完了
-            Attackcooldown, // 攻撃クールダウンした
-            Attack1,       // 攻撃１
-            Attack2,       // 攻撃２
-            Attack3,       // 攻撃３
-            Attack4,       // 攻撃４
-            Attack5,       // 攻撃5
-            Attack1end,    // 攻撃１した
-            Attack2end,    // 攻撃２した
-            Attack3end,    // 攻撃３した
-            Attack4end,    // 攻撃４した
-            Attack5end,    // 攻撃5した
-            Event1,        // イベント1が終わった
-            Playerdead,    // プレイヤーが死亡
-            Died,          // 死亡した（HPが０になった）
+            Warpcooldown,       // ワープクールダウンした
+            Warpreturn,         // ワープに戻る
+            Warpend,            // ワープ終了
+            Warpcomplete,       // ワープ完了
+            Attackcooldown,     // 攻撃クールダウンした
+            Attack1,            // 攻撃１
+            Attack2,            // 攻撃２
+            Attack3,            // 攻撃３
+            Attack4,            // 攻撃４
+            Attack5,            // 攻撃５
+            Attack1end,         // 攻撃１した
+            Attack2end,         // 攻撃２した
+            Attack3end,         // 攻撃３した
+            Attack4end,         // 攻撃４した
+            Attack5end,         // 攻撃5した
+            Event1,             // イベント1が終わった
+            Playerdead,         // プレイヤーが死亡
+            Died,               // 死亡した（HPが０になった）
         }
         protected override void RegisterStats()
         {
@@ -137,7 +137,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.warpidle, warpidle);
 
             /* ワープ */
-            var warp = new Idle();
+            var warp = new Warp();
             _stateMachine.AddState(States.warpidle, warp);
 
             /* ポインターミサイル */
@@ -145,19 +145,15 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.pointermissile, pointermissile);
 
             /* クロスウェーブ */
-            var crosswave = new Idle();
+            var crosswave = new ShootForward();
             _stateMachine.AddState(States.crosswave, crosswave);
 
             /* ワープショット */ 
             var warpShot = new Idle();
             _stateMachine.AddState(States.warpShot, warpShot);
 
-            /* グラップ */ 
-            var grappleSlash = new Idle();
-            _stateMachine.AddState(States.grappleSlash, grappleSlash);
-
             /* フラッシュビームソード */ 
-            var flashBeamSword = new Idle();
+            var flashBeamSword = new ShootForward();
             _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
         }
     }

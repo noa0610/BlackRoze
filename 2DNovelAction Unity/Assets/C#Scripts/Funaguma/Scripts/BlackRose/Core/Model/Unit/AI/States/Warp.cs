@@ -8,14 +8,12 @@ namespace BlackRose.Core.Models.Units.State
     [Serializable]
     public class Warp : State<AIController>, INotifyStateCompletion
     {
-        [SerializeField]
-        private Vector2 _pos;
-
-        private ActionAsObservable _action;
+        private ActionAsObservable _action = new();
         public IObservable<byte> Completion => _action;
 
         public override void Enter()
         {
+            var _pos = (Vector2)Cont.PreWarp.transform.position;
             var start = (Vector2)Cont.transform.position;
             var vec = _pos - start;
 
@@ -85,14 +83,5 @@ namespace BlackRose.Core.Models.Units.State
 
             _action?.Invoke();
         }
-
-
-
-        public void SetPos(Vector2 pos)
-        {
-            _pos = pos;
-        }
-
-
     }
 }

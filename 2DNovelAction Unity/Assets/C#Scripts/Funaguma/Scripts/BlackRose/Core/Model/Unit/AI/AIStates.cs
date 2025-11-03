@@ -42,12 +42,16 @@ namespace BlackRose.Core.Models.Units
         // Common State
         [SerializeField] private MoveOnGround _move = new();
         [SerializeField] private DashOnGround _dash = new();
-
+        [SerializeField] private MoveOnAir _moveAir = new();
         public MoveOnGround MoveOnGround => _move;
         public DashOnGround Dash => _dash;
+        public MoveOnAir MoveAir => _moveAir;
         // ===== State Machine =====
 #if UNITY_EDITOR
         public override bool ShoudBeLogging => true;
+        public HighElixir.Loggings.ILogger logger = null;//new UnityLogger();
+#else
+        public HighElixir.Loggings.ILogger logger = null;
 #endif
         private StateMachine<AIController, AITriggers, AIStates> _fms;
         private AIStates _currentEnumMode = AIStates.Normal;
@@ -120,7 +124,11 @@ namespace BlackRose.Core.Models.Units
         protected override void RegisterStats()
         {
             _stateMachine.AddState("Idle", new Models.States.Idle());
-            _fms = new(this, HighElixir.StateMachine.QueueMode.UntilSuccesses, logger: new UnityLogger());
+            var op = new StateMachineOption<AIController, AITriggers, AIStates>(this);
+            op.LogLevel = RequiredLoggerLevel.ALL;
+            op.Logger = logger;
+            op.QueueMode = HighElixir.StateMachine.QueueMode.UntilSuccesses;
+            _fms = new(op);
 
 
 #if UNITY_EDITOR

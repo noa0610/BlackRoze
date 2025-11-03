@@ -11,10 +11,9 @@ namespace HighElixir.StateMachine
 {
     /// <summary>
     /// ステートマシンの本体クラス
-    /// <br/>任意のコンテキスト・イベント・ステート型を扱う汎用ステートマシン
+    /// 任意のコンテキスト・イベント・ステート型を扱う汎用ステートマシン
     /// </summary>
     public sealed partial class StateMachine<TCont, TEvt, TState> : IStateMachine<TCont>, IDisposable
-
     {
         #region Fields
         private IStateMachine<TCont> _parent;
@@ -28,6 +27,7 @@ namespace HighElixir.StateMachine
         private TransitionExecutor<TCont, TEvt, TState> _executor;
         private readonly Dictionary<TState, StateInfo> _states = new();
         private ILogger _logger;
+        private RequiredLoggerLevel _logLevel = RequiredLoggerLevel.Error | RequiredLoggerLevel.Fatal;
 
         // 通知
         private readonly ReactiveProperty<TransitionResult> _onTransition = new();
@@ -36,19 +36,15 @@ namespace HighElixir.StateMachine
         // 状態管理
         private (TState id, StateInfo info) _current;
         private bool _disposed;
-
+        private bool _enableOverriding;
         #endregion
 
         #region Delegates / Hooks
-
-        // 外部委譲
         public IStateMachineErrorHandler ErrorHandler { get; set; }
         public IStateRegisterProcessor<TCont, TEvt, TState> RegisterProcessor { get; set; }
-
         #endregion
 
         #region Properties
-
         public IStateMachine<TCont> Parent { get => _parent; internal set => _parent = value; }
         public TCont Context => _cont;
         public (TState id, StateInfo info) Current { get => _current; internal set => _current = value; }
@@ -58,12 +54,14 @@ namespace HighElixir.StateMachine
         public bool Disposed => _disposed;
         public IObservable<TransitionResult> OnTransition => _onTransition;
         public IObservable<StateInfo> OnCompletion => _onCompletion;
-
         #endregion
 
-        #region Constructor
-
-        public StateMachine(TCont context, QueueMode mode = QueueMode.UntilFailures, IEventQueue<TCont, TEvt, TState> eventQueue = null, ILogger logger = null)
+        #region Constructors
+        public StateMachine(
+            TCont context,
+            QueueMode mode = QueueMode.UntilFailures,
+            IEventQueue<TCont, TEvt, TState> eventQueue = null,
+            ILogger logger = null)
         {
             _cont = context;
             _queue = eventQueue ?? new DefaultEventQueue<TCont, TEvt, TState>(this, mode);
@@ -71,16 +69,44 @@ namespace HighElixir.StateMachine
             _logger = logger;
         }
 
+        /// <summary>
+        /// StateMachineOption から構築するオーバーロード。
+        /// - EnableOverriding
+        /// - Logger/LogLevel
+        /// - Queue/QueueMode
+        /// を反映する。
+        /// </summary>
+        public StateMachine(StateMachineOption<TCont, TEvt, TState> option)
+        {
+            if (option == null) throw new ArgumentNullException(nameof(option));
+            _cont = option.Cont;
+            _queue = option.Queue ?? new DefaultEventQueue<TCont, TEvt, TState>(this, option.QueueMode);
+            _executor = new(this);
+            _logger = option.Logger;
+            _logLevel = option.LogLevel;
+            _enableOverriding = option.EnableOverriding;
+        }
         #endregion
 
         #region Lifecycle
-
         public void Awake(TState initialState)
         {
             if (!_states.ContainsKey(initialState))
                 throw new ArgumentNullException($"[StateMachine]初期ステート {initialState} が存在しません");
+
             _initial = initialState;
             Awaked = true;
+
+            // 未バインド検知（デバッグ支援）
+            if (_logger != null)
+            {
+                foreach (var state in _states.Values)
+                {
+                    if (!state.Binded)
+                        Log(RequiredLoggerLevel.Warning, $"{state.ID} does not bind.");
+                }
+            }
+
             Reset();
             Start();
         }
@@ -88,12 +114,10 @@ namespace HighElixir.StateMachine
         public void Pause(bool initialize = true)
         {
             IsRunning = false;
-            if (initialize)
-                Reset();
+            if (initialize) Reset();
         }
 
-        public void Resume()
-            => Start();
+        public void Resume() => Start();
 
         private void Start()
         {
@@ -109,6 +133,7 @@ namespace HighElixir.StateMachine
                 OnError(ex);
             }
         }
+
         public void Reset()
         {
             if (_states.TryGetValue(_initial, out var state))
@@ -120,19 +145,15 @@ namespace HighElixir.StateMachine
             if (_disposed || !Awaked || !IsRunning) return;
             var s = _current.info;
 
-            if ((s.blockCommandDequeueFunc == null || !s.blockCommandDequeueFunc()) &&
-                !s.State.BlockCommandDequeue())
+            if ((s.blockCommandDequeueFunc == null || !s.blockCommandDequeueFunc()) && !s.State.BlockCommandDequeue())
                 _queue.Process();
 
             s.State.Update(deltaTime);
             s.SubHost?.Update(deltaTime);
         }
-
-
         #endregion
 
         #region Transition
-
         public bool Send(TEvt evt)
         {
             if (_disposed || !Awaked) return false;
@@ -159,17 +180,14 @@ namespace HighElixir.StateMachine
             }
         }
 
-
         public bool LazySend(TEvt evt, bool skipIfExist = false)
         {
             if (_disposed || !Awaked) return false;
             return _queue.Enqueue(evt, skipIfExist);
         }
-
         #endregion
 
         #region Registration
-
         /// <summary>
         /// ステートを登録する
         /// </summary>
@@ -180,16 +198,22 @@ namespace HighElixir.StateMachine
                 throw new InvalidOperationException("[StateMachine]ステートマシンは起動済みです");
 
             if (_states.ContainsKey(id))
-                throw new InvalidOperationException($"[StateMachine]このIDは既に登録されています: {id}");
+            {
+                // 既存あり：Bind済みかつ上書き無効なら例外
+                if (_states[id].Binded && !_enableOverriding)
+                    throw new InvalidOperationException($"[StateMachine]このIDは既に登録されています: {id}");
+            }
 
             state.Tags.AddRange(tags);
             state.Parent = this;
             _states[id] = new() { _state = state, Parent = this, ID = id };
+
             if (state is INotifyStateCompletion)
             {
                 var d = _states[id].ObserveAction().Subscribe(x => _onCompletion.Value = x);
                 _states[id]._obs.Join(d);
             }
+
             try
             {
                 // 外部プロセッサに委譲
@@ -200,8 +224,7 @@ namespace HighElixir.StateMachine
                 OnError(ex);
             }
 
-            if (_logger != null)
-                _logger.Info($"[{Context.ToString()}] ステート登録：{id.ToString()}");
+            Log(RequiredLoggerLevel.Info, $"[{Context?.ToString()}] ステート登録：{id?.ToString()}");
             return _states[id];
         }
 
@@ -258,60 +281,49 @@ namespace HighElixir.StateMachine
             }
             return null;
         }
-
         #endregion
 
         #region Subscription
-
-        public IObservable<TState> OnEnterEvent(TState state)
+        public IObservable<IStateInfo<TCont>> OnEnterEvent(TState state)
         {
             if (_disposed) return null;
-            return _states.TryGetValue(state, out var s) ? s.OnEnter : null;
+            var info = GetOrCreate(state);
+            return info.OnEnter;
         }
 
-        public IObservable<TState> OnExitEvent(TState state)
+        public IObservable<IStateInfo<TCont>> OnExitEvent(TState state)
         {
             if (_disposed) return null;
-            return _states.TryGetValue(state, out var s) ? s.OnExit : null;
+            var info = GetOrCreate(state);
+            return info.OnExit;
         }
 
-        public IDisposable AllowEnter(TState state, Func<TState, bool> predicate)
+        public IDisposable AllowEnter(TState state, Func<IStateInfo<TCont>, bool> predicate)
         {
             if (_disposed) return null;
-            if (_states.TryGetValue(state, out var s))
-            {
-                s.AllowEnterFunc += predicate;
-                return Disposable.Create(() => s.AllowEnterFunc -= predicate);
-            }
-            return Disposable.Empty;
+            var s = GetOrCreate(state);
+            s.AllowEnterFunc += predicate;
+            return Disposable.Create(() => s.AllowEnterFunc -= predicate);
         }
 
-        public IDisposable AllowExit(TState state, Func<TState, bool> predicate)
+        public IDisposable AllowExit(TState state, Func<IStateInfo<TCont>, bool> predicate)
         {
             if (_disposed) return null;
-            if (_states.TryGetValue(state, out var s))
-            {
-                s.AllowExitFunc += predicate;
-                return Disposable.Create(() => s.AllowExitFunc -= predicate);
-            }
-            return Disposable.Empty;
+            var s = GetOrCreate(state);
+            s.AllowExitFunc += predicate;
+            return Disposable.Create(() => s.AllowExitFunc -= predicate);
         }
 
         public IDisposable BlockCommandDequeue(TState state, Func<bool> predicate)
         {
             if (_disposed) return null;
-            if (_states.TryGetValue(state, out var s))
-            {
-                s.BlockCommandDequeueFunc += predicate;
-                return Disposable.Create(() => s.BlockCommandDequeueFunc -= predicate);
-            }
-            return Disposable.Empty;
+            var s = GetOrCreate(state);
+            s.BlockCommandDequeueFunc += predicate;
+            return Disposable.Create(() => s.BlockCommandDequeueFunc -= predicate);
         }
-
         #endregion
 
         #region Error Handling
-
         public void OnError(Exception ex)
         {
             if (ErrorHandler != null)
@@ -322,7 +334,7 @@ namespace HighElixir.StateMachine
             else
             {
                 if (_logger != null)
-                    _logger.Error(ex);
+                    Log(RequiredLoggerLevel.Error, ex);
                 else
                     ExceptionDispatchInfo.Capture(ex).Throw();
             }
@@ -330,7 +342,6 @@ namespace HighElixir.StateMachine
         #endregion
 
         #region Dispose Management
-
         public void Dispose() => Dispose(true);
 
         private void Dispose(bool disposing)
@@ -352,7 +363,6 @@ namespace HighElixir.StateMachine
         }
 
         ~StateMachine() => Dispose(false);
-
         #endregion
 
         public override string ToString()
@@ -369,9 +379,19 @@ namespace HighElixir.StateMachine
         }
 
         #region Internal Helpers
-
-        internal bool TryGetStateInfo(TState state, out StateInfo info)
+        public bool TryGetStateInfo(TState state, out StateInfo info)
             => _states.TryGetValue(state, out info);
+
+        internal StateInfo GetOrCreate(TState state)
+        {
+            if (!TryGetStateInfo(state, out var info))
+            {
+                info = new StateInfo();
+                info.ID = state;
+                _states.Add(state, info);
+            }
+            return info;
+        }
 
         internal void Notify(TransitionResult transitionResult)
         {
@@ -385,6 +405,32 @@ namespace HighElixir.StateMachine
             info.ID = state;
             _states.Add(state, info);
             return info;
+        }
+
+        private bool IsLogEnabled(RequiredLoggerLevel level) => (_logLevel & level) != 0;
+
+        private void Log(RequiredLoggerLevel level, string message)
+        {
+            if (_logger == null || !IsLogEnabled(level)) return;
+            switch (level)
+            {
+                case RequiredLoggerLevel.Info: _logger.Info(message); break;
+                case RequiredLoggerLevel.Warning: _logger.Warn(message); break;
+                case RequiredLoggerLevel.Error: _logger.Error(message); break;
+                case RequiredLoggerLevel.Fatal: _logger.Error(message); break;
+                default: break;
+            }
+        }
+
+        private void Log(RequiredLoggerLevel level, Exception ex)
+        {
+            if (_logger == null || !IsLogEnabled(level)) return;
+            switch (level)
+            {
+                case RequiredLoggerLevel.Error: _logger.Error(ex); break;
+                case RequiredLoggerLevel.Fatal: _logger.Error(ex); break;
+                default: _logger.Error(ex); break;
+            }
         }
         #endregion
     }

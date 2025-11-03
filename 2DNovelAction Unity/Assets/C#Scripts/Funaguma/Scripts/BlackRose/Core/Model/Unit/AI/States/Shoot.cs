@@ -1,4 +1,5 @@
-﻿using BlackRose.Datas.Definitions;
+﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
@@ -23,6 +24,39 @@ namespace BlackRose.Core.Models.Units.State
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
             InitBullet(instantiatedBullet, Cont.ShootDir);
+            await base.Shoot();
+        }
+    }
+    [Serializable]
+    public class ShootWithMove : ShootBase
+    {
+        [SerializeField] private float _duration = 0.5f;
+        public ShootWithMove(BulletData data) : base(data) { }
+        public ShootWithMove() : base() { }
+
+        protected override async UniTask Shoot()
+        {
+            var b = _data.prefab;
+            if (b == null)
+            {
+                Debug.Log("Do not set bullet.");
+            }
+            // 弾の生成位置（プレイヤーのちょっと前）
+            Vector3 spawnPos = Cont.Muzzle.transform.position + new Vector3(Cont.Direction.x * _createPos, 0, 0);
+            // 弾を生成
+            Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
+            InitBullet(instantiatedBullet, Cont.ShootDir);
+            var time = 0f;
+            while  (time < _duration)
+            {
+                var t = Time.deltaTime;
+                if (Cont.MoveDirection.x != 0)
+                {
+                    MoveHelpers.CalcVerocity(Cont, Cont.Rigidbody2D, Cont.MoveDirection.x, Status.Speed, t);
+                }
+                time += t;
+                await UniTask.DelayFrame(1);
+            }
             await base.Shoot();
         }
     }

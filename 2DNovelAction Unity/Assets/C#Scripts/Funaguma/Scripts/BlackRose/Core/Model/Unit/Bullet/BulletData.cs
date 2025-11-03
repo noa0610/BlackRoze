@@ -1,5 +1,5 @@
 ﻿using BlackRose.Core.Models.Units;
-using UnityEditor;
+using HighElixir;
 using UnityEngine;
 
 namespace BlackRose.Datas.Definitions
@@ -7,6 +7,7 @@ namespace BlackRose.Datas.Definitions
     [CreateAssetMenu(menuName = "BlackRose/BulletData")]
     public class BulletData : ScriptableObject
     {
+        [LinkedFileName]
         public string bulletName;
         public Bullet prefab;
         public BulletStatus originalstatus;

@@ -60,6 +60,7 @@ namespace HighElixir.Editors
                 EditorGUI.DrawRect(rect, color);
 
 
+            EditorGUILayout.LabelField(parent, GUILayout.Width(100));
             EditorGUILayout.LabelField(name, GUILayout.Width(100));
             EditorGUILayout.LabelField(countType, GUILayout.Width(120));
 

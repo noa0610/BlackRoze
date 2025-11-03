@@ -24,7 +24,25 @@ namespace HighElixir.Async.Timers
         private static readonly ConcurrentDictionary<TimerTicket, AwaitState> _awaits = new();
 
         /// <summary>
-        /// タイマーが完了するまで待機する (UniTask.Create 版)
+        /// チケット登録も同時に可能な糖衣
+        /// </summary>
+        /// <remarks>
+        /// 登録型はカウントダウンで固定
+        /// </remarks>
+        public static UniTask<TimerAsyncResult> WaitUntilFinishedAsync(this HighElixir.Timers.Timer timer, float duration, out TimerTicket used, bool isLazy = true, CancellationToken ct = default)
+        {
+            used = timer.CountDownRegister(duration, "[TimerExt]Awaiter", andStart:true);
+            return timer.WaitUntilFinishedAsync(used, isLazy, ct);
+        }
+
+        public static UniTask<TimerAsyncResult> WaitUntilFinishedAsync(this HighElixir.Timers.Timer timer, float duration, bool isLazy = true, CancellationToken ct = default)
+        {
+            var used = timer.CountDownRegister(duration, "[TimerExt]Once Awaiter", andStart: true);
+            timer.GetTimerEvt(used).OnFinished += () => timer.UnRegister(used);
+            return timer.WaitUntilFinishedAsync(used, isLazy, ct);
+        }
+        /// <summary>
+        /// タイマーが完了するまで待機する
         /// </summary>
         public static UniTask<TimerAsyncResult> WaitUntilFinishedAsync(this HighElixir.Timers.Timer timer, TimerTicket ticket, bool isLazy = true, CancellationToken ct = default)
         {

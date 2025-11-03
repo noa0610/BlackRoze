@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: -6154703371997583296}
   - component: {fileID: -8381216389615061597}
   m_Layer: 15
-  m_Name: Circle 1
+  m_Name: normal_fullCharge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 8200441657282752572}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.4349, y: 0.0577, z: 0}
-  m_LocalScale: {x: 0.40472004, y: 0.40906, z: 1}
+  m_LocalPosition: {x: -2.4265, y: 0.0653, z: 0}
+  m_LocalScale: {x: 0.42146, y: 0.42428002, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -101,7 +101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canHitLayer:
     serializedVersion: 2
-    m_Bits: 513
+    m_Bits: 1
+  _direction: {x: 0, y: 0}
 --- !u!58 &-6154703371997583296
 CircleCollider2D:
   m_ObjectHideFlags: 0

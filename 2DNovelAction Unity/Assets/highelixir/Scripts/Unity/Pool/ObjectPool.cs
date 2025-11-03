@@ -31,10 +31,11 @@ namespace HighElixir.Unity.Pools
                 },
                 (obj) =>
                 {
-                    UnityEngine.Object.Destroy(obj);
+                    if (!_pool.InUse(obj))
+                        UnityEngine.Object.Destroy(obj);
                 },
                 capacity,
-                lazyInit
+                true
             );
 
             // イベント登録
@@ -66,6 +67,7 @@ namespace HighElixir.Unity.Pools
         #region Unity Object Handling
         private void SetActive(T obj, bool active)
         {
+            if (obj == null) return;
             if (obj is GameObject go)
                 go.SetActive(active);
             else if (obj is Component comp)

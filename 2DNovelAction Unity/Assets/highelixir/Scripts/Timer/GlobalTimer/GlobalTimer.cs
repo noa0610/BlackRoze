@@ -28,11 +28,11 @@ namespace HighElixir.Timers
 #if UNITY_2017_1_OR_NEWER
         private static void CreateObj()
         {
-            if (GameObject.FindAnyObjectByType<Timers.Internal.GlobalTimerDriver>() != null)
+            if (GameObject.FindAnyObjectByType<Timers.GlobalTimerDriver>() != null)
                 return;
             GameObject go = new GameObject("GlobalTimerDriver");
             GameObject.DontDestroyOnLoad(go);
-            go.AddComponent<Timers.Internal.GlobalTimerDriver>();
+            go.AddComponent<Timers.GlobalTimerDriver>();
         }
         static GlobalTimer()
         {

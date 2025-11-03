@@ -61,9 +61,10 @@ namespace BlackRose.Test
             {
                 _state = new Idle();
             }
-            if (_state is IRigidbodyUser user) user.SetRB2(Cache);
+            if (StateMachine == null) return;
             if (UnityEditor.EditorApplication.isPlaying)
             {
+                if (_state is IRigidbodyUser user) user.SetRB2(Cache);
                 Debug.Log("上書き成功 : " + _state.GetType().ToString());
                 StateMachine.AddState(States.TestState, _state as StateComp);
                 if (_state is ICompleteEmitter emitter)

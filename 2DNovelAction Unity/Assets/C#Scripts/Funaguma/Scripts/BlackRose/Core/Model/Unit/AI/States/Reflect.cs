@@ -10,10 +10,6 @@ namespace BlackRose.Core.Models.Units.State
     [Serializable]
     public class Reflect : State<AIController>
     {
-        [SerializeField]
-        private float _lockFrame = 8f;
-        public event System.Action OnCompleted;
-
         public override void Enter()
         {
             Cont.ReflectMono.gameObject.SetActive(true);

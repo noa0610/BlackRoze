@@ -1,7 +1,6 @@
 ﻿using HighElixir.StateMachine;
 using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
-using HighElixir.Unity.Loggings;
 using System;
 using UniRx;
 using UnityEngine;
@@ -29,7 +28,12 @@ namespace BlackRose.Core.Models.Units
             Dash,
             Falling,
             Skill,
-            SpecialAttack
+            SpecialAttack,
+
+            // Ather
+            Other1,
+            Other2,
+            Other3,
         }
 #if UNITY_EDITOR
         [Header("Debug")]
@@ -54,13 +58,19 @@ namespace BlackRose.Core.Models.Units
         public virtual void Register()
         {
             Debug.Log(GetType().Name + ":登録処理");
-            _stateMachine = new(_parent, HighElixir.StateMachine.QueueMode.DoEverything, logger: new UnityLogger());
+            var op = new StateMachineOption<AIController, AITriggers, SubState>(_parent);
+            op.Logger = _parent.logger;
+            op.QueueMode = HighElixir.StateMachine.QueueMode.DoEverything;
+            op.LogLevel = RequiredLoggerLevel.ERRORS;
+            op.EnableOverriding = true;
+
+            _stateMachine = new(op);
             _stateMachine.OnTransitionLogging();
             _stateMachine.RegisterProcessor = new StateProcessor<AIController, AITriggers, SubState>((x, y) =>
             {
                 if (y.State.HasTag("Shoot"))
                 {
-                    Debug.Log("Interval");
+                    //Debug.Log("Interval");
                     y.RegisterTransition(Triggers.shootCompleted, SubState.ShootInterval);
                 }
                 if (y.State.HasTag("Cancelable"))
@@ -77,11 +87,27 @@ namespace BlackRose.Core.Models.Units
                 _currentState = x.ToState.ToString();
             });
 #endif
-            _stateMachine.RegisterState(SubState.Idle, new Idle<AIController>());
-            _stateMachine.RegisterState(SubState.Jump, _jump, "Cancelable");
+            _stateMachine.RegisterState(SubState.Idle, new Idle<AIController>(), "OnGround", "Cancelable");
+            _stateMachine.RegisterState(SubState.Jump, _jump, "OnAir", "Cancelable");
             _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable");
-            _stateMachine.RegisterState(SubState.Dash, _parent.Dash);
-            _stateMachine.RegisterState(SubState.ShootInterval, new Idle<AIController>());
+            var hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable");
+            hook.OnEnter.Subscribe(x =>
+            {
+                _parent.DynamicAfterImageEffect2D.SetActive(true);
+            });
+            hook.OnExit.Subscribe(x =>
+            {
+                if (x is StateMachine<AIController, AITriggers, SubState>.StateInfo info && info.ID == SubState.Jump)
+                {
+                    _parent.OnAirToGround.Subscribe(_ => _parent.DynamicAfterImageEffect2D.SetActive(false));
+                }
+                else
+                {
+                    _parent.DynamicAfterImageEffect2D.SetActive(false);
+                }
+            });
+            _stateMachine.RegisterState(SubState.ShootInterval, new Idle<AIController>(), "Cancelable");
+            _stateMachine.RegisterState(SubState.Falling, _parent.MoveAir, "OnAir", "Falling", "Cancelable");
 
             RegisterStates();
 
@@ -90,16 +116,13 @@ namespace BlackRose.Core.Models.Units
                 SubState.Idle,
                     (Triggers.moveInput, SubState.Move, ""),
                     (Triggers.dashInput, SubState.Dash, ""),
-                    (Triggers.shootInput, SubState.Shoot, ""),
-                    (Triggers.halfCharge, SubState.Half, ""),
-                    (Triggers.fullCharge, SubState.Full, ""),
                     (Triggers.jumpInput, SubState.Jump, "")
                 );
 
             // ShootInterval
             _stateMachine.RegisterTransitions(
                 SubState.ShootInterval,
-                    (Triggers.watingTimeHasElapsed, SubState.Idle,""),
+                    (Triggers.watingTimeHasElapsed, SubState.Idle, ""),
                     (Triggers.jumpInput, SubState.Jump, ""),
                     (Triggers.moveInput, SubState.Move, "")
                 );
@@ -107,19 +130,32 @@ namespace BlackRose.Core.Models.Units
             // Move
             _stateMachine.RegisterTransitions(
                 SubState.Move,
-                    (Triggers.cancelMove, SubState.Idle, "")
+                    (Triggers.cancelMove, SubState.Idle, ""),
+                    (Triggers.jumpInput, SubState.Jump, ""),
+                    (Triggers.dashInput, SubState.Dash, "")
                 );
+
+            _stateMachine.RegisterTransitions(SubState.Dash,
+                (Triggers.cancelMove, SubState.Idle, ""),
+                (Triggers.jumpInput, SubState.Jump, "")
+                );
+
 
             // 任意遷移
             _stateMachine.RegisterAnyTransition(AITriggers.falling, SubState.Falling);
             _stateMachine.RegisterAnyTransition(AITriggers.landing, SubState.Idle);
-            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle);
 
             // 共通アニメータ登録
 
             RegisterTransitions();
 
             _stateMachine.OnEnterEvent(SubState.Jump).Subscribe(_ => _parent.AfterJump());
+
+            _stateMachine.OnCompletion.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.State.HasTag("Shoot")).Subscribe(_ =>
+            {
+                _stateMachine.LazySend(Triggers.shootCompleted);
+            });
+
             _parent.Machine.AttachSubMachine<SubState>(Attach, _stateMachine, SubState.Idle, new StateMachine<AIController, Triggers, AIStates>.SubMachineOptions<SubState>()
             {
                 OnExitResetState = true,
@@ -131,8 +167,6 @@ namespace BlackRose.Core.Models.Units
         // Grounded Event
         public virtual void OnGrounded()
         {
-            _jump.ResetLeaptFlag();
-            //Debug.Log("Jump Reset");
         }
         // Input Action
         public void OnShoot(InputValue value)

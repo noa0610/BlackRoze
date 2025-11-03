@@ -1,6 +1,9 @@
 ﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.Objects;
 using BlackRose.Core.Models.Units.State;
+using HighElixir.StateMachine.Extensions;
+using HighElixir.StateMachine.Extention;
+using HighElixir.Timers;
 using System;
 using UniRx;
 using UnityEngine;
@@ -15,15 +18,41 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("Heavy Shoot")]
         [Header("")]
-        [SerializeField] private ShootForward _shoot;
+        [SerializeField] private ShootWithMove _shoot;
+        [SerializeField] private ShootForward _half;
+        [SerializeField] private LaserState _laser;
         [Header("Reflect")]
         [SerializeField] private Reflect _reflect;
-        [SerializeField] private ReflectMono _reflectObj;
-
         public override AIStates Attach => AIStates.Heavy;
 
         protected override void RegisterStates()
         {
+
+            // Skill
+            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "");
+
+            var hook = _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
+            hook.OnEnter.Subscribe(_ => _parent.AutoFlipper.Enable = false);
+            hook.OnExit.Subscribe(_ => _parent.AutoFlipper.Enable = true);
+
+            hook = _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
+            hook.OnEnter.Subscribe(_ => _parent.AutoFlipper.Enable = false);
+            hook.OnExit.Subscribe(_ => _parent.AutoFlipper.Enable = true);
+
+            hook = _stateMachine.RegisterState(SubState.Full, _laser, "Shoot");
+            hook.OnEnter.Subscribe(_ =>
+            {
+                _parent.AutoFlipper.Enable = false;
+                _parent.Rigidbody2D.simulated = false;
+                _parent.Rigidbody2D.velocity = Vector3.zero;
+            });
+            hook.OnExit.Subscribe(_ =>
+            {
+                _parent.AutoFlipper.Enable = true;
+                _parent.Rigidbody2D.simulated = true;
+            });
+
+            _stateMachine.RegisterState(SubState.Skill, _reflect, "Skill");
         }
 
         public override void OnSkill(InputValue value)
@@ -40,15 +69,23 @@ namespace BlackRose.Core.Models.Units
 
         public override void InvokeShoot()
         {
-            _stateMachine.Send(Triggers.shootInput);
+            _ = _stateMachine.SendEventAndLockExitAsync(
+                Triggers.shootInput,
+                TimeSpan.FromSeconds(0.4f),
+                onUnlock: () => _stateMachine.LazySend(Triggers.shootCompleted));
         }
 
         public override void InvokeHalfShoot()
         {
+            _stateMachine.Send(Triggers.halfCharge);
         }
 
         public override void InvokeFullShoot()
         {
+            _ = _stateMachine.SendEventAndLockExitAsync(
+                Triggers.fullCharge,
+                TimeSpan.FromSeconds(2),
+                onUnlock: () => _stateMachine.LazySend(Triggers.shootCompleted));
         }
 
         public override void ModeChange_C()

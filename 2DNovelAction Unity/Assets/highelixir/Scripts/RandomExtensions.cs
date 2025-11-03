@@ -71,6 +71,8 @@ namespace HighElixir
             var u = RandomProvider.Instance.NextDouble();
             return min + (max - min) * u; // [min, max)
         }
+        public static float Rand(float min, float max)
+            => Rand(min, max);
 
         public static int Next() => RandomProvider.Instance.Next();
         #endregion

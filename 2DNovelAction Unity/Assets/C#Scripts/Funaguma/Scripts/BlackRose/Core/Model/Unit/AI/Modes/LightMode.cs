@@ -1,8 +1,12 @@
 ﻿using BlackRose.Core.Models.Units.State;
+using HighElixir.StateMachine;
+using HighElixir.StateMachine.Extention;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UniRx;
 using static BlackRose.Core.Models.Units.AIController;
+using BlackRose.Datas.Definitions;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -13,15 +17,39 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private MultiShoot _shoot;
         [SerializeField] private MultiShoot _half;
         [SerializeField] private MultiShoot _full;
-
+        [SerializeField] private BulletData _missileData;
+        private LockedShoot _locked = new();
         public override AIStates Attach => AIStates.Light;
 
         protected override void RegisterStates()
         {
+            _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
+            _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
+            _stateMachine.RegisterState(SubState.Full, _full, "Shoot");
+            var hook = _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "");
+            hook.OnEnter.Subscribe(_ => {
+                _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackTarget);
+                _stateMachine.Send(AITriggers.shootCompleted);
+            });
+
+            _stateMachine.RegisterState(SubState.Skill, _locked, "");
+
+            // Skill
+            _stateMachine.RegisterTransition(SubState.Skill, AITriggers.skillFinished, SubState.Other1, "");
+            _stateMachine.RegisterTransition(SubState.Other1, AITriggers.shootCompleted, SubState.Idle, "");
+
         }
 
         public override void OnSkill(InputValue value)
         {
+            if (value.isPressed)
+            {
+                _stateMachine.Send(AITriggers.skillInput);
+            }
+            else
+            {
+                _stateMachine.Send(AITriggers.skillFinished);
+            }
         }
 
         public override void OnInputMove(Vector2 dir)

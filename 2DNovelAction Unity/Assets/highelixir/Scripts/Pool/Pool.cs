@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HighElixir.Pools
 {
@@ -152,6 +153,8 @@ namespace HighElixir.Pools
             return obj;
         }
 
+        public bool InUse(T obj) => _inUse.ContainsKey(obj);
+        public bool IsAvailable(T obj) => _available.Contains(obj);
         #endregion
 
         #region Settings

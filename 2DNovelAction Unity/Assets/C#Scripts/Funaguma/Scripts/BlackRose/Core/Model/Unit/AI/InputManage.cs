@@ -1,4 +1,5 @@
-﻿using HighElixir.Timers;
+﻿using HighElixir.StateMachine.Extention;
+using HighElixir.Timers;
 using System;
 using UniRx;
 using UnityEngine;
@@ -41,29 +42,21 @@ namespace BlackRose.Core.Models.Units
         private void OnMove(InputValue value)
         {
             var d = value.Get<Vector2>();
-            var tmp = d;
-            tmp.y = 0;
-            MoveDirection = tmp;
+            MoveDirection = new Vector2(d.x, 0);
             CurrentMode.OnInputMove(d);
+            Direction = new Vector2((d.x == 0 || ShouldBeBlockFlip ? Direction.x : d.x), d.y);
+            _shootDirection = new Vector2((d.x == 0 || ShouldBeBlockFlip ? _shootDirection.x : d.x), d.y);
             if (d.x == 0)
-            {
                 _fms.LazySend(AITriggers.cancelMove);
-                return;
-            }
-            else if (!ShouldBeBlockFlip)
-            {
-                Direction = d.normalized;
-                _shootDirection = d;
-            }
-            _fms.LazySend(AITriggers.moveInput);
+            else
+                _fms.LazySend(AITriggers.moveInput);
         }
 
         private void OnAttack(InputValue value)
         {
-            Timer.Restart(_blockFlip, false);
             if (value.isPressed)
             {
-                Debug.Log("AI Attack Pressed");
+                //Debug.Log("AI Attack Pressed");
                 CurrentMode.OnShoot(value);
                 if (!Timer.IsRunning(_chargeTicket))
                     Timer.Start(_chargeTicket);
@@ -92,12 +85,20 @@ namespace BlackRose.Core.Models.Units
         protected override void OnGrounded()
         {
             Timer.Start(_coyoteTicket);
-            _fms.LazySend(AITriggers.landing);
             CurrentMode.OnGrounded();
+        }
+        protected override void OnAirToGound()
+        {
+            if (!_fms.HasTagOnChild("OnGround"))
+            {
+                Debug.Log(_fms.Current.info.ToString());
+                _fms.LazySend(AITriggers.landing, true);
+            }
         }
         protected override void OnFall()
         {
-            _fms.LazySend(AITriggers.falling, true);
+            if (!_fms.HasTagOnChild("Falling"))
+                _fms.LazySend(AITriggers.falling, true);
         }
 
         public override void AfterJump()

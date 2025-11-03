@@ -22,7 +22,6 @@ namespace BlackRose.Core.Models.Units
             _shootTicket = Timer.CountDownRegister(_shootBlockTime, "AI Shoot Block");
             _chargeTicket = Timer.CountUpRegister("AI ChargeTime");
             _shootIntervalDelay = Timer.CountDownRegister(0.2f, "ShootIntervalDelay");
-            _blockFlip = Timer.CountDownRegister(3, "Flip", initZero:true);
             ModeRegist();
         }
         protected override void AfterUpdate()

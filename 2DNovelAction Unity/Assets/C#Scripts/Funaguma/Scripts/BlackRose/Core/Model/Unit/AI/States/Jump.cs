@@ -8,7 +8,7 @@ namespace BlackRose.Core.Models.Units.State
     public class Jump : AccelMoveBase
     {
         protected bool _hasLeapt = false;
-        [SerializeField] protected int _enableJumped = -1;
+        [SerializeField] protected int _enableJumped = 0; // -1で∞
         [SerializeField] protected float _cutMultiplier = 0.5f;  // 上昇中にカットする倍率
 
         // 連続ジャンプ回数
@@ -38,9 +38,22 @@ namespace BlackRose.Core.Models.Units.State
 
             // 一度だけ上方向にインパルス
             Rigidbody2D.AddForce(Vector2.up * amount, ForceMode2D.Impulse);
-            if (_enableJumped == -1 || _jumpCount >= _enableJumped)
+            var x = Rigidbody2D.velocity.x;
+            if (GetDirection().x != 0 && Mathf.Abs(x) > 0.005)
+            {
+                // ジャンプ直後に進行方向に対して逆向きに入力していた場合、
+                // 横方向のブレーキをかける
+                float pow = 0;
+                if (x > 0 && GetDirection().x < 0) pow = -1;
+                if (x < 0 && GetDirection().x > 0) pow = 1;
+                pow *= _accel;
+                if (pow > x) pow = -x;
+                Rigidbody2D.velocity = new Vector2(x + pow, Rigidbody2D.velocity.y);
+            }
+
+            if (_enableJumped != -1 && _jumpCount >= _enableJumped)
                 _hasLeapt = true;
-            else if (_enableJumped != -1)
+            else if (_enableJumped > 0)
                 _jumpCount++;
 
             Cont.OnCanceledJump.Take(1).Subscribe(_ => Cut());

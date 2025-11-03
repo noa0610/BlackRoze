@@ -1,14 +1,17 @@
 ﻿using System;
 using UnityEngine;
 
-namespace HighElixir.Timers.Internal
+namespace HighElixir.Timers
 {
 #if UNITY_2017_1_OR_NEWER
     [DefaultExecutionOrder(-100)]
-    internal class GlobalTimerDriver : MonoBehaviour
+    public class GlobalTimerDriver : MonoBehaviour
     {
         private bool _updateRegister = false;
         private bool _fixedUpdateRegister = false;
+        private bool _updateEnable = true;
+        private bool _fixedUpdateEnable = true;
+
         private void Update()
         {
             if (!_updateRegister)
@@ -16,7 +19,8 @@ namespace HighElixir.Timers.Internal
                 GlobalTimer.Update.OnErrorAction(DebugOnEx);
                 _updateRegister = true;
             }
-            UpdateTimer(GlobalTimer.update, Time.deltaTime);
+            if (_updateEnable)
+                UpdateTimer(GlobalTimer.update, Time.deltaTime);
         }
         private void FixedUpdate()
         {
@@ -25,7 +29,8 @@ namespace HighElixir.Timers.Internal
                 GlobalTimer.FixedUpdate.OnErrorAction(DebugOnEx);
                 _fixedUpdateRegister = true;
             }
-            UpdateTimer(GlobalTimer.fixedUpdate, Time.fixedDeltaTime);
+            if (_fixedUpdateEnable)
+                UpdateTimer(GlobalTimer.fixedUpdate, Time.fixedDeltaTime);
         }
         private void UpdateTimer(GlobalTimer.Wrapper wrapper, float time)
         {

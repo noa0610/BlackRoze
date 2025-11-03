@@ -41,6 +41,7 @@ namespace BlackRose
                 if (!beforeGrounded && OnAirToGround != null)
                 {
                     Debug.Log("GroundedUnit: OnAirToGround called");
+                    OnAirToGound();
                     _onAirToGround?.Execute(); // 地面に着地したときのコールバックを呼び出す
                 }
                 IsGrounded = true;
@@ -67,17 +68,15 @@ namespace BlackRose
         /// </summary>
         protected virtual void OnUnGrounded() { }
 
-        protected virtual void OnFall()
-        {
-        }
-
+        protected virtual void OnFall() { }
+        protected virtual void OnAirToGound() { }
         protected override void AfterFixedUpdate()
         {
             GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
         }
         protected override void AfterAwake()
         {
-            _ticket = Timer.CountDownRegister(_disableCheckTime, "DisableCheckTime");
+            _ticket = Timer.CountDownRegister(_disableCheckTime, "DisableCheckTime", initZero:true);
         }
 #if UNITY_EDITOR
         // デバッグ用にGizmos表示

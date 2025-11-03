@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -8381216389615061597}
   m_Layer: 0
   m_Name: Circle 1
-  m_TagString: Untagged
+  m_TagString: Playerbullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -99,14 +99,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6ab31a9f5286f746995ca98751215a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bulletObject:
-    bulletData: {fileID: 0}
-    currentstatus:
-      hp: 0
-      time: 0
-      damage: 0
-      speed: 0
-      direction: {x: 0, y: 0}
   _canHitLayer:
     serializedVersion: 2
     m_Bits: 1
@@ -171,4 +163,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 3
+  m_Constraints: 0

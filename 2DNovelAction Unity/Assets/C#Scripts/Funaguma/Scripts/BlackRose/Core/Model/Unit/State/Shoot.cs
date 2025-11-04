@@ -7,7 +7,8 @@ using UnityEngine;
 namespace BlackRose.Core.Models.Units.State
 {
     [Serializable]
-    public class ShootForward : ShootBase
+    public class ShootForward<T> : ShootBase<T>
+        where T : UnitBase
     {
         public ShootForward(BulletData data) : base(data) { }
         public ShootForward() : base() { }
@@ -28,7 +29,8 @@ namespace BlackRose.Core.Models.Units.State
         }
     }
     [Serializable]
-    public class ShootWithMove : ShootBase
+    public class ShootWithMove<T> : ShootBase<T>
+        where T : UnitBase
     {
         [SerializeField] private float _duration = 0.5f;
         public ShootWithMove(BulletData data) : base(data) { }
@@ -62,7 +64,8 @@ namespace BlackRose.Core.Models.Units.State
     }
 
     [Serializable]
-    public class MultiShoot : ShootBase
+    public class MultiShoot<T> : ShootBase<T>
+        where T : UnitBase
     {
         [Tooltip("同時シュートする際の最大角度")]
         [SerializeField, Min(0)] private float _range;

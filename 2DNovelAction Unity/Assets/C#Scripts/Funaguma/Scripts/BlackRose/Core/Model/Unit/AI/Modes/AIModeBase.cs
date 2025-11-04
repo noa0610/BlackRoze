@@ -41,7 +41,7 @@ namespace BlackRose.Core.Models.Units
 #endif
         [Header("AI Mode Settings")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected State.Jump _jump;
+        [SerializeField] protected State.Jump<AIController> _jump;
         [SerializeField] protected float[] _chargeTime = new float[2] { 1.2f, 2.3f };
 
         [Header("Animator")]
@@ -168,6 +168,11 @@ namespace BlackRose.Core.Models.Units
         public virtual void OnGrounded()
         {
         }
+
+        public virtual void OnAirToGround()
+        {
+            _jump.ResetLeaptFlag();
+        }
         // Input Action
         public void OnShoot(InputValue value)
         {
@@ -196,6 +201,7 @@ namespace BlackRose.Core.Models.Units
 
         public virtual void CanceldJump(InputValue value)
         {
+            _jump.Cut();
         }
 
         public abstract void OnSkill(InputValue value);

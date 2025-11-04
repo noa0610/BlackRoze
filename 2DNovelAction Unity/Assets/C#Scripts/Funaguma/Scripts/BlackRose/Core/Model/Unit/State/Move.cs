@@ -6,7 +6,8 @@ namespace BlackRose.Core.Models.Units.State
     // Move（移動）状態
     // =======================
     [Serializable]
-    public class MoveOnGround : AccelMoveBase
+    public class MoveOnGround<T> : AccelMoveBase<T>
+        where T : UnitBase
     {
         protected override Status Status => Status.Speed;
         public MoveOnGround(bool isStopInExit = false)
@@ -16,7 +17,8 @@ namespace BlackRose.Core.Models.Units.State
     }
 
     [Serializable]
-    public class MoveOnAir : AccelMoveBase
+    public class MoveOnAir<T> : AccelMoveBase<T>
+        where T : UnitBase
     {
         protected override Status Status => Status.SpeedInAir;
         public MoveOnAir(bool isStopInExit = false)
@@ -25,7 +27,8 @@ namespace BlackRose.Core.Models.Units.State
         }
     }
     [Serializable]
-    public class DashOnGround : AccelMoveBase
+    public class DashOnGround<T> : AccelMoveBase<T>
+        where T : UnitBase
     {
         protected override Status Status => Status.DashSpeed;
 

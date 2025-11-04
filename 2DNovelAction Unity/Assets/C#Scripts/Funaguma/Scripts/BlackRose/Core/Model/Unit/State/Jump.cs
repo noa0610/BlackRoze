@@ -5,7 +5,8 @@ using UnityEngine;
 namespace BlackRose.Core.Models.Units.State
 {
     [Serializable]
-    public class Jump : AccelMoveBase
+    public class Jump<T> : AccelMoveBase<T>
+        where T : UnitBase
     {
         protected bool _hasLeapt = false;
         [SerializeField] protected int _enableJumped = 0; // -1で∞
@@ -29,7 +30,7 @@ namespace BlackRose.Core.Models.Units.State
         {
             if (Rigidbody2D == null)
             {
-                Debug.LogError($"{nameof(Jump)}: Rigidbody2D not set.");
+                Debug.LogError($"{nameof(Jump<T>)}: Rigidbody2D not set.");
                 return;
             }
 
@@ -56,16 +57,8 @@ namespace BlackRose.Core.Models.Units.State
             else if (_enableJumped > 0)
                 _jumpCount++;
 
-            Cont.OnCanceledJump.Take(1).Subscribe(_ => Cut());
         }
 
-        public override void Exit()
-        {
-            Cont.OnAirToGround.Take(1).Subscribe(_ =>
-            {
-                ResetLeaptFlag();
-            });
-        }
         // いわゆる「ジャンプカット」：入力離しで上昇を弱める
         public void Cut()
         {

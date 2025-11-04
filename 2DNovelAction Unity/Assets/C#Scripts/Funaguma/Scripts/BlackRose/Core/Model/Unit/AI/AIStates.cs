@@ -1,6 +1,5 @@
 ﻿using BlackRose.Core.Models.Units.State;
 using HighElixir.StateMachine;
-using HighElixir.Unity.Loggings;
 using UniRx;
 using UnityEngine;
 
@@ -40,12 +39,12 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private string _State;
 #endif
         // Common State
-        [SerializeField] private MoveOnGround _move = new();
-        [SerializeField] private DashOnGround _dash = new();
-        [SerializeField] private MoveOnAir _moveAir = new();
-        public MoveOnGround MoveOnGround => _move;
-        public DashOnGround Dash => _dash;
-        public MoveOnAir MoveAir => _moveAir;
+        [SerializeField] private MoveOnGround<AIController> _move = new();
+        [SerializeField] private DashOnGround<AIController> _dash = new();
+        [SerializeField] private MoveOnAir<AIController> _moveAir = new();
+        public MoveOnGround<AIController> MoveOnGround => _move;
+        public DashOnGround<AIController> Dash => _dash;
+        public MoveOnAir<AIController> MoveAir => _moveAir;
         // ===== State Machine =====
 #if UNITY_EDITOR
         public override bool ShoudBeLogging => true;

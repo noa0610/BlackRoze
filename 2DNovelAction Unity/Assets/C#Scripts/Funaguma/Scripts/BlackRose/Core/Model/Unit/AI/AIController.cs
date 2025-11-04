@@ -14,9 +14,7 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("Option Settings")]
         [SerializeField] private bool _canChargeCount = false;
-        [SerializeField]private Vector2 _shootDirection = Vector2.right;
 
-        public Vector2 ShootDir => _shootDirection;
         public bool ShouldBeBlockFlip => !_flippingUnit.Enable && CurrentMode is HeavyMode;
         public bool CanJump => !Timer.IsFinished(_coyoteTicket);
 
@@ -30,7 +28,6 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _dPlayer = GetComponent<DynamicAfterImageEffect2DPlayer>();
-            _2d = GetComponent<Rigidbody2D>();
             _flippingUnit = GetComponent<AutoFlipHelper>();
             TimerRegist();
             ModeRegist();

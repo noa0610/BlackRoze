@@ -4,19 +4,15 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.Units.State
 {
-    public interface IRigidbodyUser
-    {
-        Rigidbody2D Rigidbody2D { get; }
-
-        void SetRB2(Rigidbody2D rb);
-    }
-    public class MovingStateBase : State<AIController>
+    public class MoveStateBase<T> : State<T>
+        where T : UnitBase
     {
         public Rigidbody2D Rigidbody2D => Cont.Rigidbody2D;
         protected virtual Vector2 GetDirection() => Cont.MoveDirection.normalized;
     }
 
-    public class HolizontalMovingStates : MovingStateBase
+    public class HolizontalMovingStates<T> : MoveStateBase<T>
+        where T : UnitBase
     {
         protected override Vector2 GetDirection() => base.GetDirection() * new Vector2(1, 0);
     }
@@ -25,12 +21,13 @@ namespace BlackRose.Core.Models.Units.State
     // Move（移動）状態
     // =======================
     [Serializable]
-    public abstract class AccelMoveBase : HolizontalMovingStates
+    public abstract class AccelMoveBase<T> : HolizontalMovingStates<T>
+        where T : UnitBase
     {
         [SerializeField] private bool _isStopInExit = false;
         [SerializeField] protected float _accel = 20f;           // 横方向の加速（m/s^2 想定）
         [SerializeField] protected float _friction = 1.0f;
-        
+
         protected abstract Status Status { get; }
         public bool IsStopInExit { get => _isStopInExit; set => _isStopInExit = value; }
         public virtual float GetAccel(UnitBase parent)
@@ -81,16 +78,14 @@ namespace BlackRose.Core.Models.Units.State
             Rigidbody2D.velocity = new Vector2(newVx, Rigidbody2D.velocity.y);
         }
 
-        public AccelMoveBase SetAccel(float accel)
+        public void SetAccel(float accel)
         {
             _accel = accel;
-            return this;
         }
 
-        public AccelMoveBase SetFriction(float friction)
+        public void SetFriction(float friction)
         {
             _friction = friction;
-            return this;
         }
     }
 }

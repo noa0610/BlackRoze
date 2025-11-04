@@ -14,9 +14,9 @@ namespace BlackRose.Core.Models.Units
     public class LightMode : AIModeBase
     {
         [Header("Light Mode Settings")]
-        [SerializeField] private MultiShoot _shoot;
-        [SerializeField] private MultiShoot _half;
-        [SerializeField] private MultiShoot _full;
+        [SerializeField] private MultiShoot<AIController> _shoot;
+        [SerializeField] private MultiShoot<AIController> _half;
+        [SerializeField] private MultiShoot<AIController> _full;
         [SerializeField] private BulletData _missileData;
         private LockedShoot _locked = new();
         public override AIStates Attach => AIStates.Light;

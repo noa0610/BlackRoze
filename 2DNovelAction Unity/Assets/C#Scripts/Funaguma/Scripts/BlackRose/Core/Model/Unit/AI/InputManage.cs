@@ -45,7 +45,7 @@ namespace BlackRose.Core.Models.Units
             MoveDirection = new Vector2(d.x, 0);
             CurrentMode.OnInputMove(d);
             Direction = new Vector2((d.x == 0 || ShouldBeBlockFlip ? Direction.x : d.x), d.y);
-            _shootDirection = new Vector2((d.x == 0 || ShouldBeBlockFlip ? _shootDirection.x : d.x), d.y);
+            ShootDir = new Vector2((d.x == 0 || ShouldBeBlockFlip ? ShootDir.x : d.x), d.y);
             if (d.x == 0)
                 _fms.LazySend(AITriggers.cancelMove);
             else
@@ -92,6 +92,7 @@ namespace BlackRose.Core.Models.Units
             if (!_fms.HasTagOnChild("OnGround"))
             {
                 Debug.Log(_fms.Current.info.ToString());
+                CurrentMode.OnAirToGround();
                 _fms.LazySend(AITriggers.landing, true);
             }
         }

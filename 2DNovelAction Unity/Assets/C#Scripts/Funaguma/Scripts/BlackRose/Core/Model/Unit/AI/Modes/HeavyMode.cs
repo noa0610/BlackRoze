@@ -18,9 +18,9 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("Heavy Shoot")]
         [Header("")]
-        [SerializeField] private ShootWithMove _shoot;
-        [SerializeField] private ShootForward _half;
-        [SerializeField] private LaserState _laser;
+        [SerializeField] private ShootWithMove<AIController> _shoot;
+        [SerializeField] private ShootForward<AIController> _half;
+        [SerializeField] private LaserState<AIController> _laser;
         [Header("Reflect")]
         [SerializeField] private Reflect _reflect;
         public override AIStates Attach => AIStates.Heavy;

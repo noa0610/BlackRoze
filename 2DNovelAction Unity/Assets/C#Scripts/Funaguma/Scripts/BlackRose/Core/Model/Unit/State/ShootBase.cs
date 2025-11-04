@@ -10,7 +10,8 @@ using HighElixir.Implements.Observables;
 namespace BlackRose.Core.Models.Units.State
 {
     [Serializable]
-    public class ShootBase : State<AIController>, INotifyStateCompletion
+    public class ShootBase<T> : State<T>, INotifyStateCompletion
+        where T : UnitBase
     {
         [SerializeField] protected BulletData _data;         // 発射する弾のデータ
         [SerializeField] protected float _createPos = 0.35f;
@@ -51,7 +52,7 @@ namespace BlackRose.Core.Models.Units.State
         protected virtual void InitBullet(Bullet bullet, Vector3 dict)
         {
             // ステータスをセット（速度、方向、ダメージなど）
-            bullet.SetBulletStatus(_data, Cont.AttackTarget);
+            bullet.SetBulletStatus(_data, Cont.AttackLayer);
             bullet.SetDirection(dict);
             bullet.Invoke();
         }

@@ -8,12 +8,9 @@ namespace BlackRose.Core.Models.Units
     {
         // 各モードで使用するオブジェクト群
         [Header("Objects")]
-        [SerializeField] private GameObject _muzzle;
-        [SerializeField] private GameObject _PreWarp;
+        [SerializeField] private GameObject _preWarp;
         [SerializeField] private LayerMask _attackTarget;
         [SerializeField] private ReflectMono _reflectMono;
-        [SerializeField] private Rigidbody2D _2d;
-        [SerializeField] private BulletData _lazer;
 
         // GetComponent
         private DynamicAfterImageEffect2DPlayer _dPlayer;
@@ -21,10 +18,8 @@ namespace BlackRose.Core.Models.Units
 
         public DynamicAfterImageEffect2DPlayer DynamicAfterImageEffect2D { get { return _dPlayer; } }
         public LayerMask AttackTarget => _attackTarget;
-        public GameObject Muzzle => _muzzle;
-        public GameObject PreWarp => _PreWarp;
+        public GameObject PreWarp => _preWarp;
         public ReflectMono ReflectMono => _reflectMono;
-        public Rigidbody2D Rigidbody2D => _2d;
         public AutoFlipHelper AutoFlipper => _flippingUnit;
     }
 }

@@ -26,9 +26,9 @@ namespace BlackRose.Core.Models.Units
 
         [Header("States")]
         [SerializeField] private Warp _warpState = new Warp();
-        [SerializeField] private ShootForward _shoot = new ShootForward();
-        [SerializeField] private ShootForward _half = new ShootForward();
-        [SerializeField] private ShootForward _full = new ShootForward();
+        [SerializeField] private ShootForward<AIController> _shoot = new();
+        [SerializeField] private ShootForward<AIController> _half = new();
+        [SerializeField] private ShootForward<AIController> _full = new();
 
         [Header("状態管理")]
         [SerializeField] private int _shootCount = 0;

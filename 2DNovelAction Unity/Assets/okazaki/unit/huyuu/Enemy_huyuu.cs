@@ -9,11 +9,9 @@ using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    public class Enemy_huyuu : UnitBase
+    public partial class Enemy_huyuu : UnitBase
     {
         [SerializeField] private SuicideBombing _suicideBombing;
-        [SerializeField] private FreeMove _freeMove;
-        [SerializeField] private Rigidbody2D _RB2;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         public enum States
@@ -67,23 +65,6 @@ namespace BlackRose.Core.Models.Units
             var move = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
             _stateMachine.AddState(States.move, move);
 
-            //爆発
-            _suicideBombing.SetAnimeTrigger("Explosion").SetCancelableProgress(0);
-            _suicideBombing.OnExplode.AddListener(() =>
-            {
-                _stateMachine.LazyChange(Triggers.Died);
-            });
-            _stateMachine.AddState(States.explosion, _suicideBombing);
-            // 死亡
-            var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimationCompleted.AddListener(() =>
-            {
-                Debug.Log("Enemy_huyuu: 死亡アニメーションが完了しました。");
-                UnitManager.instance.RemoveUnit(this);
-                Destroy(gameObject);
-            });
-            _stateMachine.AddState(States.dead, died);
-        }
         // 実装
         private SearchAssistanceMono _searchAssistance;
 

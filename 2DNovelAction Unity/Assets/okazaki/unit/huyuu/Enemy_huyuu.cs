@@ -13,8 +13,57 @@ namespace BlackRose.Core.Models.Units
     {
         [SerializeField] private SuicideBombing _suicideBombing;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
-        
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
+        public enum States
+        {
+            none,
+            move, // 移動
+            idle,// 待機
+            dead,// 死亡
+            explosion,// 爆発
+        }
+        private enum Triggers
+        {
+            None,
+            MissingPlayer, // プレイヤーを見失った
+            FoundPlayer,   // プレイヤーを発見した
+            AttackRange,   // 攻撃範囲に入った
+            Explosion,     // 爆発した
+            Died,          // 死亡した（HPが０になった）
+        }
+        protected override void RegisterStats()
+        {
+            // トランスミッショングループを作成
+            var idleTrigger = new[]
+            {
+                (Triggers.FoundPlayer, States.move),
+                (Triggers.Died, States.dead)
+            };
+            var moveTrigger = new[]
+            {
+                (Triggers.MissingPlayer, States.idle),
+                (Triggers.AttackRange, States.explosion),
+                (Triggers.Died, States.dead)
+            };
+            var explosionTrigger = new[]
+            {
+                (Triggers.Explosion, States.dead),
+                (Triggers.Died, States.dead)
+            };
+            // ステートマシンにStatesの移動先の追加
+            _stateMachine
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.move, moveTrigger)
+                .AddTransitions(States.explosion, explosionTrigger);
+            // 死んだときに何もしないならDeadの設定はいらない
+
+            // 待機
+            var idle = new Idle().SetAnimeTrigger("Drone_Idle").SetCancelableProgress(0);
+            _stateMachine.AddState(States.idle, idle);
+
+            // 移動
+            var move = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
+            _stateMachine.AddState(States.move, move);
 
         // 実装
         private SearchAssistanceMono _searchAssistance;

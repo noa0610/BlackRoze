@@ -4,6 +4,8 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Datas.Definitions;
 using System;
 using UnityEngine;
+using BlackRose.Core.Models.Units.Helpers;
+using Cysharp.Threading.Tasks;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -96,6 +98,10 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        protected override void OnDeath()
+        {
+            GetComponent<BreakHelper>().InvokeBreak().Forget();
+        }
         private bool IsMatchState(States state)
         {
             return _stateMachine.CurrentState.key == _states[state];

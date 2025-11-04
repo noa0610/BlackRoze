@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System;
 using BlackRose.Core.Models.Units;
+using HighElixir.Timers;
+using UniRx;
 
 namespace BlackRose
 {
@@ -12,25 +14,24 @@ namespace BlackRose
         [SerializeField] private float _groundCheckRadius = 0.1f;  // チェック半径
         [SerializeField] private LayerMask _groundLayer;           // 地面Layer
         [SerializeField] private float _disableCheckTime = 0.2f; // 地面判定を無効にする
-
+        private TimerTicket _ticket;
         public bool IsGrounded { get; private set; }
-        public Action OnAirToGround { get; set; } = null; // 地面に着地したときのコールバック
-        protected override void AfterFixedUpdate()
-        {
-            GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
-        }
 
+        private ReactiveCommand _onAirToGround = new();
+        public IObservable<Unit> OnAirToGround => _onAirToGround; // 地面に着地したときのコールバック
+
+
+        public virtual void AfterJump()
+        {
+            Timer.Start(_ticket, true, true);
+        }
         private void GroundCheck()
         {
-            if (_disableCheckTime > 0f)
-            {
-                _disableCheckTime -= Time.fixedDeltaTime; // 地面判定を無効にする時間を減らす
-                return; // 無効な場合は地面チェックを行わない
-            }
+            if (!Timer.IsFinished(_ticket)) return;
             Collider2D hit = Physics2D.OverlapCircle(
                 _groundCheck.position,
                 _groundCheckRadius,
-                _groundLayer.value       // LayerMaskをIntに変換して渡す
+                _groundLayer
             );
             bool beforeGrounded = IsGrounded; // 前回の地面状態を保存
             bool grounded = hit != null;
@@ -40,7 +41,8 @@ namespace BlackRose
                 if (!beforeGrounded && OnAirToGround != null)
                 {
                     Debug.Log("GroundedUnit: OnAirToGround called");
-                    OnAirToGround?.Invoke(); // 地面に着地したときのコールバックを呼び出す
+                    OnAirToGound();
+                    _onAirToGround?.Execute(); // 地面に着地したときのコールバックを呼び出す
                 }
                 IsGrounded = true;
                 OnGrounded(); // 地面にいる場合の処理
@@ -66,12 +68,19 @@ namespace BlackRose
         /// </summary>
         protected virtual void OnUnGrounded() { }
 
-        protected virtual void OnFall()
+        protected virtual void OnFall() { }
+        protected virtual void OnAirToGound() { }
+        protected override void AfterFixedUpdate()
         {
+            GroundCheck();              // 毎フレーム地面判定＆コヨーテタイム更新
         }
-
+        protected override void AfterAwake()
+        {
+            _ticket = Timer.CountDownRegister(_disableCheckTime, "DisableCheckTime", initZero:true);
+        }
+#if UNITY_EDITOR
         // デバッグ用にGizmos表示
-        private void OnDrawGizmosSelected()
+        protected virtual void OnDrawGizmosSelected()
         {
             if (_groundCheck != null)
             {
@@ -79,10 +88,6 @@ namespace BlackRose
                 Gizmos.DrawWireSphere(_groundCheck.position, _groundCheckRadius);
             }
         }
-
-        public void AfterJump()
-        {
-            _disableCheckTime = 0.2f; // ジャンプしたら地面判定を無効にする
-        }
+#endif
     }
 }

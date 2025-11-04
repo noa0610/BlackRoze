@@ -1,9 +1,9 @@
-﻿using BlackRose.Datas.Definitions;
-using Fungus;
-using HighElixir.Timers;
-using System;
+﻿using System;
 using UniRx;
 using UnityEngine;
+using Fungus;
+using HighElixir.Timers;
+using BlackRose.Datas.Definitions;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -13,24 +13,38 @@ namespace BlackRose.Core.Models.Units
     [RequireComponent(typeof(Rigidbody2D))]
     public class Bullet : MonoBehaviour, IDisposable
     {
+        #region === Inspector ===
+        [Header("Collision Layers")]
         [SerializeField, Tooltip("常に衝突可能なレイヤー")]
         private LayerMask _canHitLayer;
+        [SerializeField, Tooltip("初期方向")]
+        protected Vector2 _direction;
+        #endregion
 
+        #region === Fields ===
         protected LayerMask _targetLayer;
         protected BulletStatus _status;
-        [SerializeField] protected Vector2 _direction;
         protected float _currentHP;
         protected UnitBase _parent;
         protected TimerTicket _ticket;
+        #endregion
+
+        #region === Properties ===
         public Transform Transform => transform;
         public UnitBase Parent => _parent;
         public LayerMask TargetLayer { get => _targetLayer; set => _targetLayer = value; }
-
         public virtual bool CanSelfMove => true;
+        public float Damage => _status.damage;
+        #endregion
 
+        #region === Events ===
         public event Action<Bullet> OnDestoryHandle;
+        #endregion
 
-        // 生成時にステータスをセット
+        #region === Setup & Initialization ===
+        /// <summary>
+        /// 弾丸のステータスをセット（生成時に呼ばれる）
+        /// </summary>
         public void SetBulletStatus(BulletData bullet, LayerMask targetLayer)
         {
             _status = bullet.originalstatus;
@@ -38,34 +52,13 @@ namespace BlackRose.Core.Models.Units
             _targetLayer = targetLayer;
         }
 
-        public void SetDirection(Vector2 dir)
-        {
-            _direction = dir;
-        }
+        public void SetDirection(Vector2 dir) => _direction = dir;
+        public void SetParent(UnitBase parent) => _parent = parent;
 
-        public void SetParent(UnitBase parent)
-        {
-            _parent = parent;
-        }
+        public void Reflect() => _direction = -_direction;
+        #endregion
 
-        public void Reflect()
-        {
-            _direction = -_direction;
-        }
-
-        public virtual void NotifyDestoy()
-        {
-            if (OnDestoryHandle != null)
-                OnDestoryHandle(this);
-            else
-                Destroy(gameObject);
-        }
-        protected virtual void Move(float deltaTime)
-        {
-            //Debug.Log($"Move. delta:{deltaTime}");
-            transform.position += (Vector3)_direction * _status.speed * deltaTime;
-        }
-
+        #region === Core Logic ===
         public virtual void Invoke()
         {
             var gt = GlobalTimer.FixedUpdate;
@@ -73,58 +66,10 @@ namespace BlackRose.Core.Models.Units
             gt.GetReactiveProperty(_ticket).Subscribe(td => Move(-td.Delta));
             gt.Start(_ticket);
         }
-        protected virtual void OnDestroy()
+
+        protected virtual void Move(float deltaTime)
         {
-            GlobalTimer.FixedUpdate.UnRegister(_ticket);
-        }
-        protected virtual void OnTriggerEnter2D(Collider2D collision)
-        {
-            HitCheck(collision);
-        }
-
-        protected virtual void HitCheck(Collider2D collision)
-        {
-            int layerBit = 1 << collision.gameObject.layer;
-
-            // 衝突可能レイヤー
-            if ((_canHitLayer.value & layerBit) != 0)
-            {
-                Hitted_Another(collision);
-                return;
-            }
-
-            // ターゲットレイヤー
-            if ((_targetLayer.value & layerBit) != 0)
-            {
-                Hitted_Target(collision);
-                return;
-            }
-        }
-        protected virtual void Hitted_Another(Collider2D collision)
-        {
-            // 「貫通可能」なレイヤーはスルー
-            if (LayerMask.NameToLayer("Throughable") == collision.gameObject.layer)
-                return;
-
-            if (Hit()) Destroy(gameObject);
-        }
-
-        protected virtual void Hitted_Target(Collider2D collision)
-        {
-            var go = collision.gameObject;
-            if (!go.TryGetComponent<UnitBase>(out var target))
-            {
-                target = go.GetComponentInParent<UnitBase>();
-            }
-            if (target != null)
-            {
-                Debug.Log($"Hit Target: {target.UnitStatusData.unitName}");
-                if (target.IsInvincible)
-                    return;
-                UnitManager.instance.AddDamage(target, _parent, _status.damage);
-            }
-
-            if (Hit()) NotifyDestoy();
+            transform.position += (Vector3)_direction * _status.speed * deltaTime;
         }
 
         protected bool Hit()
@@ -140,10 +85,81 @@ namespace BlackRose.Core.Models.Units
             }
             return false;
         }
+        #endregion
+
+        #region === Collision Handling ===
+        protected virtual void OnTriggerEnter2D(Collider2D collision)
+        {
+            HitCheck(collision);
+        }
+
+        protected virtual void HitCheck(Collider2D collision)
+        {
+            int layerBit = 1 << collision.gameObject.layer;
+
+            // 常に衝突可能なレイヤー
+            if ((_canHitLayer.value & layerBit) != 0)
+            {
+                Hitted_Another(collision);
+                return;
+            }
+
+            // 対象レイヤー
+            if ((_targetLayer.value & layerBit) != 0)
+            {
+                Hitted_Target(collision);
+                return;
+            }
+        }
+
+        protected virtual void Hitted_Another(Collider2D collision)
+        {
+            // 「Throughable」レイヤーは貫通
+            if (LayerMask.NameToLayer("Throughable") == collision.gameObject.layer)
+                return;
+
+            if (Hit()) Destroy(gameObject);
+        }
+
+        protected virtual void Hitted_Target(Collider2D collision)
+        {
+            var go = collision.gameObject;
+            if (!go.TryGetComponent<UnitBase>(out var target))
+            {
+                target = go.GetComponentInParent<UnitBase>();
+            }
+
+            if (target != null)
+            {
+                Debug.Log($"Hit Target: {target.UnitStatusData.unitName}");
+                if (target.IsInvincible)
+                    return;
+
+                UnitManager.instance.AddDamage(target, _parent, _status.damage);
+            }
+
+            if (Hit()) NotifyDestoy();
+        }
+        #endregion
+
+        #region === Destroy & Cleanup ===
+        public virtual void NotifyDestoy()
+        {
+            if (OnDestoryHandle != null)
+                OnDestoryHandle(this);
+            else
+                Destroy(gameObject);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            GlobalTimer.FixedUpdate.UnRegister(_ticket);
+        }
 
         public void Dispose()
         {
             OnDestoryHandle = null;
         }
+        #endregion
     }
 }

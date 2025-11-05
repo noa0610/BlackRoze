@@ -1,4 +1,4 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using UnityEngine;
 
@@ -123,17 +123,17 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             _stateMachine
-            .AddTransmissions(States.idle, idleTrigger)
-            .AddTransmissions(States.attackidle, attackidleTrigger)
-            .AddTransmissions(States.lasershot, lasershotTrigger)
-            .AddTransmissions(States.lasershotidle, lasershotidleTrigger)
-            .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
-            .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
-            .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
-            .AddTransmissions(States.stun, stunTrigger)
-            .AddTransmissions(States.shockwaveidle, shockwaveidleTrigger)
-            .AddTransmissions(States.shockwaveanimaidle, shockwaveanimaidleTrigger)
-            .AddTransmissions(States.shockwave, shockwaveTrigger);
+            .AddTransitions(States.idle, idleTrigger)
+            .AddTransitions(States.attackidle, attackidleTrigger)
+            .AddTransitions(States.lasershot, lasershotTrigger)
+            .AddTransitions(States.lasershotidle, lasershotidleTrigger)
+            .AddTransitions(States.beamswordattack, beamswordattackTrigger)
+            .AddTransitions(States.beamswordattackmove, beamswordattackmoveTrigger)
+            .AddTransitions(States.fixedpositionjump, fixedpositionjumpTrigger)
+            .AddTransitions(States.stun, stunTrigger)
+            .AddTransitions(States.shockwaveidle, shockwaveidleTrigger)
+            .AddTransitions(States.shockwaveanimaidle, shockwaveanimaidleTrigger)
+            .AddTransitions(States.shockwave, shockwaveTrigger);
             // 待機
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡 
@@ -145,8 +145,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
             var lasershot = new ShootForward(_LasershotbulletData, _LasershotTargetLayer)
-            .SetDirection(Vector2.left)
-            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            .SetDirection(Vector2.left);
+            lasershot.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             // 弾発射完了時にレーザー攻撃終了トリガーを発火
             lasershot.onShootComplete.AddListener(() =>
             {
@@ -184,13 +184,14 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.beamswordattackmove, freeMove);
             // ビームソード攻撃
             var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
-            .SetDirection(Vector2.down)
-            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            .SetDirection(Vector2.down);
+            beamswordattack.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
                 // アニメの完了を待ってから Attack2end を発火
                 StartCoroutine(WaitForBeamswordAnimationThenFire());
                 // 当たり判定をトリガーに切り替え・ジャンプ先セット
+
             });
 
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
@@ -218,8 +219,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.shockwaveanimaidle, shockwaveanimaidle);
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
-            .SetDirection(Vector2.left)
-            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            .SetDirection(Vector2.left);
+            shockwave.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {

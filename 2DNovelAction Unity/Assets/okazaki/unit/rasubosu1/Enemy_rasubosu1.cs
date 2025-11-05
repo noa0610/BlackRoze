@@ -13,11 +13,11 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private Rigidbody2D _rb;
         [SerializeField] private GameObject bulletPrefab;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Transform _firewallPoints; // 必要ならInspectorでセット
-        
+
         public enum States
         {
             none,
@@ -78,11 +78,11 @@ namespace BlackRose.Core.Models.Units
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.armpunch, armpunchTrigger)
-                .AddTransmissions(States.diffusebeamgun, diffusebeamgunTrigger)
-                .AddTransmissions(States.firewall, firewallTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.attackidle, attackidleTrigger)
+                .AddTransitions(States.armpunch, armpunchTrigger)
+                .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
+                .AddTransitions(States.firewall, firewallTrigger);
             // 待機
             var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.idle, idle);
@@ -107,9 +107,9 @@ namespace BlackRose.Core.Models.Units
             // ファイアウォール
             var firewall = new ShootForward(_firewallBulletData, _firewallTargetLayer)
             .SetDirection(Vector2.right)
-            .SetMuzzle(_firewallPoints? _firewallPoints.gameObject : gameObject)
             .SetAnimeTrigger("beamswordattack")
             .SetCancelableProgress(0);
+            firewall.SetGameObject(_firewallPoints ? _firewallPoints.gameObject : gameObject);
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             firewall.onShootComplete.AddListener(() =>
             {
@@ -190,5 +190,5 @@ namespace BlackRose.Core.Models.Units
         }
 
     }
-    
+
 }

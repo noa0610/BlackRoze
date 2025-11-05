@@ -22,7 +22,7 @@ namespace BlackRose.Core.Models.Units
         private int currentAttack = 1; // 初期値は1（アタック1）
         private int nowstate = 2;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         [SerializeField] private GameObject _Lasershotmuzzle;
         [SerializeField] private BulletData _LasershotbulletData;
         [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
@@ -94,14 +94,14 @@ namespace BlackRose.Core.Models.Units
 
         //     // ステートマシンにStatesの移動先の追加
         //     _stateMachine
-        //         .AddTransmissions(States.idle, idleTrigger)
-        //         .AddTransmissions(States.attackidle, attackidleTrigger)
-        //         .AddTransmissions(States.lasershot, lasershotTrigger)
-        //         .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
-        //         .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
-        //         .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
-        //         .AddTransmissions(States.stun, stunTrigger)
-        //         .AddTransmissions(States.shockwave, shockwaveTrigger);
+        //         .AddTransitions(States.idle, idleTrigger)
+        //         .AddTransitions(States.attackidle, attackidleTrigger)
+        //         .AddTransitions(States.lasershot, lasershotTrigger)
+        //         .AddTransitions(States.beamswordattackmove, beamswordattackmoveTrigger)
+        //         .AddTransitions(States.beamswordattack, beamswordattackTrigger)
+        //         .AddTransitions(States.fixedpositionjump, fixedpositionjumpTrigger)
+        //         .AddTransitions(States.stun, stunTrigger)
+        //         .AddTransitions(States.shockwave, shockwaveTrigger);
 
         //     // 死んだときに何もしないならDeadの設定はいらない
 
@@ -400,7 +400,8 @@ namespace BlackRose.Core.Models.Units
                 _positionJump?.SetTarget(JumpSelect());
             }
             finally
-            {               _waitingForAttack2 = false;
+            {              
+                _waitingForAttack2 = false;
             }
         }
     }

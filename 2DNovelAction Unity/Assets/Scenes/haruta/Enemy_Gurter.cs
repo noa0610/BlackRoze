@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Helper;
@@ -27,7 +27,7 @@ namespace BlackRose.Core.Models.Units
 
         [SerializeField] private BulletData _bulletData;
         [SerializeField] private ShootForward shoot;
-        private static readonly Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _states = EnumWrapper.GetValueNameMap<States>();
         // ★クラスの最初あたり（GroundedUnit継承直後）に追加
         public event Action OnStunStart;
         public event Action OnStunEnd;
@@ -131,13 +131,13 @@ namespace BlackRose.Core.Models.Units
              (Triggers.Died, States.Dead,"")
             };
             _stateMachine
-            .AddTransmissions(States.Idle, idleTrigger)
-            .AddTransmissions(States.ShieldIdle, sieldidleTrigger)
-            .AddTransmissions(States.AttackWait, AttackwaitTrigger)
-            .AddTransmissions(States.ShieldTackle, ShieldTackleTrigger)
-            .AddTransmissions(States.ShoulderGrenade, SholderGrenadTrigger)
-            .AddTransmissions(States.Stun, stunTrigger)
-            .AddTransmissions(States.Idle, idleTrigger);
+            .AddTransitions(States.Idle, idleTrigger)
+            .AddTransitions(States.ShieldIdle, sieldidleTrigger)
+            .AddTransitions(States.AttackWait, AttackwaitTrigger)
+            .AddTransitions(States.ShieldTackle, ShieldTackleTrigger)
+            .AddTransitions(States.ShoulderGrenade, SholderGrenadTrigger)
+            .AddTransitions(States.Stun, stunTrigger)
+            .AddTransitions(States.Idle, idleTrigger);
 
 
 
@@ -147,7 +147,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.AttackWait, new Idle());
             _stateMachine.AddState(States.ShieldTackle, new Stun(_rb2, 1, true));
             shoot.SetBullet(_bulletData);
-            shoot.SetMuzzle(_muzzle);
+            shoot.SetGameObject(_muzzle);
             shoot.SetDirection(Direction);
             _stateMachine.AddState(States.ShoulderGrenade, shoot);
 

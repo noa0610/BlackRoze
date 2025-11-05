@@ -204,7 +204,8 @@ namespace HighElixir.StateMachine
                     throw new InvalidOperationException($"[StateMachine]このIDは既に登録されています: {id}");
             }
 
-            state.Tags.AddRange(tags);
+            if (tags != null && tags.Length > 0)
+                state.Tags.AddRange(tags);
             state.Parent = this;
             _states[id] = new() { _state = state, Parent = this, ID = id };
 

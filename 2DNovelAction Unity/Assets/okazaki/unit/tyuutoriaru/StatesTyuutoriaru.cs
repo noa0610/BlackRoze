@@ -21,6 +21,7 @@ namespace BlackRose.Core.Models.Units
             stun, // スタン
             shockwave, // ショックウェーブ
             shockwaveidle, // ショックウェーブ待機
+            shockwaveanimaidle, // ショックウェーブアニメ待機   
         }
         private enum Triggers
         {
@@ -38,6 +39,7 @@ namespace BlackRose.Core.Models.Units
             Event1, // イベント1発生
             Event2, // イベント2発生
             shockwaveidleend, // ショックウェーブ待機終了
+            shockwaveanimaidleend, // ショックウェーブアニメ待機終了
             Died,          // 死亡した（HPが０になった）
         }
         protected override void RegisterStats()
@@ -96,13 +98,20 @@ namespace BlackRose.Core.Models.Units
             // States.stun
             var stunTrigger = new[]
             {
-                (Triggers.Event2, States.shockwave,"toIdle"),
+                (Triggers.Event2, States.shockwaveidle,"toIdle"),
                 (Triggers.Died, States.dead,""),
             };
             // States.shockwaveidle
             var shockwaveidleTrigger = new[]
             {
-                (Triggers.shockwaveidleend, States.shockwave,"toShockWave"),
+                (Triggers.shockwaveidleend, States.shockwaveanimaidle,"toShockWave"),
+                (Triggers.Died, States.dead,""),
+                (Triggers.HalfHP, States.stun,"toStan")
+            };
+            // States.shockwaveanimaidle
+            var shockwaveanimaidleTrigger = new[]
+            {
+                (Triggers.shockwaveanimaidleend, States.shockwave,""),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -122,7 +131,8 @@ namespace BlackRose.Core.Models.Units
             .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
             .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
             .AddTransmissions(States.stun, stunTrigger)
-            .AddTransmissions(States.shockwaveidle, shockwaveTrigger)
+            .AddTransmissions(States.shockwaveidle, shockwaveidleTrigger)
+            .AddTransmissions(States.shockwaveanimaidle, shockwaveanimaidleTrigger)
             .AddTransmissions(States.shockwave, shockwaveTrigger);
             // 待機
             _stateMachine.AddState(States.idle, new Idle());
@@ -142,6 +152,7 @@ namespace BlackRose.Core.Models.Units
             {
                 if (nowstate == 7)
                 {
+                    nowstate = 2;
                     // 最終状態なら攻撃終了へ
                     _stateMachine.LazyChange(Triggers.Attack1end);
                 }
@@ -200,8 +211,11 @@ namespace BlackRose.Core.Models.Units
             var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 1.3f, true);
             _stateMachine.AddState(States.stun, stun);
             // ショックウェーブ待機
-            var shockwaveidle = new Idle_LazyChange(Triggers.shockwaveidleend.ToString(), 2.0f, true);
+            var shockwaveidle = new Idle_LazyChange(Triggers.shockwaveidleend.ToString(), 2.6f, true);
             _stateMachine.AddState(States.shockwaveidle, shockwaveidle);
+            // ショックウェーブアニメ待機
+            var shockwaveanimaidle = new Idle_LazyChange(Triggers.shockwaveanimaidleend.ToString(), 1.8f, true);
+            _stateMachine.AddState(States.shockwaveanimaidle, shockwaveanimaidle);
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
             .SetDirection(Vector2.left)

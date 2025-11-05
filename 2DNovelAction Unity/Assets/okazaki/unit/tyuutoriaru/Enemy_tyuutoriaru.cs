@@ -37,6 +37,8 @@ namespace BlackRose.Core.Models.Units
         // アニメ再生中フラグ（AnimaSelect の重複実行防止）
         private bool _isAnimating = false;
         private bool _waitingForAttack2 = false;
+        // lasershot ステート参照（方向を動的にセットするために保持）
+        private ShootForward _lasershotState;
         #region 
 
         // protected override void RegisterStats()
@@ -236,7 +238,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (currentAttack == 1)
             {
-                Attack2();
+                Attack1();
                 currentAttack = 2;
                 return;
             }

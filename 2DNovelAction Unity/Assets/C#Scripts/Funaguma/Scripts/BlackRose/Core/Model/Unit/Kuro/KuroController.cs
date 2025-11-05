@@ -1,7 +1,11 @@
 ﻿using BlackRose.Core.Models.Units.State;
 using HighElixir.StateMachine;
+using HighElixir.StateMachine.Extensions;
 using HighElixir.StateMachine.Extention;
+using HighElixir.Timers;
 using HighElixir.Unity.Loggings;
+using System;
+using System.Threading;
 using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -52,6 +56,11 @@ namespace BlackRose.Core.Models.Units
 
         [Header("Options")]
         [SerializeField] private float _horizontalDecel = 20f;
+        [SerializeField] private float _stunTime = 0.4f;
+        [SerializeField] private float _invincibleTime = 1.0f;
+
+        private TimerTicket _invincibleTicket;
+        private CancellationTokenSource _stunToken = new();
 
 #if UNITY_EDITOR
         public string Current_State = "";
@@ -87,7 +96,7 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterTransitions(
                 State.Idle,
                 (Trigger.moveInput, State.Move, "Walking"),
-                (Trigger.jumpInput, State.Jump, "Jump"),
+                (Trigger.jumpInput, State.Jump, "Jumping"),
                 (Trigger.falling, State.Fall, "Fall"),
                 (Trigger.stuned, State.Stun, "")
                 );
@@ -121,10 +130,31 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterAnyTransition(Trigger.death, State.Dead, "");
 
             #endregion
+            #region イベント
+            _fms.OnCompletion.Where(x => x.ID == State.Stun).Subscribe(_ =>
+            {
+                _stunToken.Cancel();
+                _stunToken = new();
+                var noUse = _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(_stunTime), Trigger.finishedStun, _stunToken.Token);
+                Timer.Start(_invincibleTicket);
+            });
+
+            #endregion
             // 起動
             _fms.Awake(State.Idle);
         }
 
+        protected override void AfterAwake()
+        {
+            base.AfterAwake();
+            _invincibleTicket = Timer.CountDownRegister(_invincibleTime, "無敵時間", () =>
+            {
+                if (IsArrivals)
+                {
+                    IsInvincible = false;
+                }
+            });
+        }
         protected override void AfterUpdate()
         {
             _fms.Update(Time.deltaTime);
@@ -141,6 +171,7 @@ namespace BlackRose.Core.Models.Units
         }
         #endregion
 
+        #region Input
         private void OnMove(InputValue input)
         {
             var vec = input.Get<Vector2>();
@@ -152,5 +183,53 @@ namespace BlackRose.Core.Models.Units
                 _fms.Send(Trigger.moveInput);
             }
         }
+
+        private void OnJump(InputValue input)
+        {
+            if (input.isPressed)
+            {
+                _fms.Send(Trigger.jumpInput);
+            }
+            else
+            {
+                _jump.Cut();
+            }
+        }
+        #endregion
+
+        #region Ground
+        protected override void OnAirToGound()
+        {
+            _jump.ResetLeaptFlag();
+            _fms.Send(Trigger.landing);
+        }
+
+        protected override void OnFall()
+        {
+            //Debug.Log("AAAAAA");
+            if (_fms.Current.id != State.Fall)
+                _fms.Send(Trigger.falling);
+        }
+        #endregion
+
+        #region Life
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            if (from is not ObjectDamageWorker)
+            {
+                _fms.Send(Trigger.stuned);
+            }
+        }
+
+        protected override void OnDeath()
+        {
+            _stunToken.Cancel();
+            _fms.Send(Trigger.death);
+            IsInvincible = true;
+
+            // ↓死亡時の処理
+
+        }
+        #endregion
     }
 }

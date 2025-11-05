@@ -67,16 +67,13 @@ namespace BlackRose.Core.Models.Units
         }
         public LayerMask AttackLayer => _attackLayer;
         public bool IsInvincible { get; set; }
+        public bool IsArrivals { get; set; } = true;
         #endregion
 
 #if UNITY_EDITOR
         #region === Debug ===
         [Header("Debug")]
-        [SerializeField] private string _currentState;
-        [SerializeField] private string _currentMode;
-        [SerializeField] private Vector2 _currentDirection;
-
-        public string CurrentState => _currentState;
+        [SerializeField] private bool _enableVisuableInvincible;
         public virtual bool ShoudBeLogging => false;
         #endregion
 #endif
@@ -120,9 +117,7 @@ namespace BlackRose.Core.Models.Units
         protected virtual void Start()
         {
             BeforeStart();
-#if UNITY_EDITOR
-            ReactiveDirection.Subscribe(v => _currentDirection = v).AddTo(this);
-#endif
+
             AfterStart();
         }
         #endregion
@@ -147,11 +142,6 @@ namespace BlackRose.Core.Models.Units
             _effectManager.Update();
 
             AfterUpdate();
-
-#if UNITY_EDITOR
-            _currentState = _stateMachine.CurrentState.key;
-            _currentMode = _stateMachine.CurrentLayer;
-#endif
         }
 
         protected virtual void FixedUpdate()
@@ -165,6 +155,7 @@ namespace BlackRose.Core.Models.Units
         #region === Status & Damage ===
         public void TakeDamage(IUnit from, float damage)
         {
+            if (!_isPlaying || !IsArrivals) return;
             if (!BeforeTakeDamage(from, ref damage)) return;
 
             if (_statusManager.TakeDamage(damage))
@@ -179,6 +170,7 @@ namespace BlackRose.Core.Models.Units
         protected virtual void OnDeath()
         {
             Debug.Log($"{_status.name}が死亡した");
+            IsArrivals = false;
         }
         #endregion
 
@@ -191,8 +183,11 @@ namespace BlackRose.Core.Models.Units
         #region === Gizmos ===
         private void OnDrawGizmosSelected()
         {
-            var pos = transform.position + new Vector3(0, 1, 0);
-            Handles.Label(pos, _currentState);
+            if (_enableVisuableInvincible && IsInvincible)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawCube(transform.position, new Vector3(2, 2, 0.1f));
+            }
         }
         #endregion
 #endif

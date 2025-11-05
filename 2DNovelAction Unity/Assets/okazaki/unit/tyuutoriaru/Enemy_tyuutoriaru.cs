@@ -24,6 +24,7 @@ namespace BlackRose.Core.Models.Units
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         [SerializeField] private GameObject _Lasershotmuzzle;
+        [SerializeField] private GameObject _beamswordmuzzle;
         [SerializeField] private BulletData _LasershotbulletData;
         [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Rigidbody2D _RB2;
@@ -238,7 +239,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (currentAttack == 1)
             {
-                Attack1();
+                Attack2();
                 currentAttack = 2;
                 return;
             }

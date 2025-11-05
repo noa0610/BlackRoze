@@ -687,8 +687,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fafcf1a151ad9c4cb1504133415ab0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 136489495}
   _status: {fileID: 11400000, guid: 8f027c1fc253958428ed83fa9c922dc6, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _muzzle: {fileID: 136489493}
+  player: {fileID: 136489495}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -717,10 +721,10 @@ MonoBehaviour:
   _invincibleTime: 0.6
   _forceEnableJump: 0
   _jump:
+    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0.7
-    _hasLeapt: 0
     _enableJumped: -1
     _cutMultiplier: 0.5
     _accel: 60
@@ -870,7 +874,7 @@ Transform:
   m_GameObject: {fileID: 136489493}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.06, y: -2.9602785, z: 0}
+  m_LocalPosition: {x: 51.6, y: -2.9602785, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -1177,8 +1181,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a758d2fd0b4acc64d9546f45dc15b188, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 247344952}
   _status: {fileID: 11400000, guid: 2bea7f548f87c4441bb8b8a42c221a45, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _muzzle: {fileID: 0}
+  player: {fileID: 247344952}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -1363,7 +1371,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b46b8e52dd9d934dbf47252fa2f7119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tag: Player
 --- !u!114 &265649481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1378,7 +1385,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _subject: {fileID: 474919869}
   _volume: {fileID: 555881417}
-  _tag: 
   _maxAmount: 0.5
   _maxTime: 1
 --- !u!61 &265649482
@@ -1571,6 +1577,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aacee48453484114e8c6f5c856f2fa4a, type: 3}
+--- !u!1 &398279397
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 398279398}
+  m_Layer: 0
+  m_Name: beamsword
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &398279398
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 398279397}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.45, y: -0.68, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1144450509}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &474919868
 GameObject:
   m_ObjectHideFlags: 0
@@ -1904,7 +1941,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _subject: {fileID: 1409860458}
   _volume: {fileID: 555881417}
-  _tag: 
   _maxAmount: 0.5
   _maxTime: 1
 --- !u!61 &596377452
@@ -1980,7 +2016,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b46b8e52dd9d934dbf47252fa2f7119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tag: Player
 --- !u!1 &695000424
 GameObject:
   m_ObjectHideFlags: 0
@@ -2537,7 +2572,7 @@ GameObject:
   m_Component:
   - component: {fileID: 992395425}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Yposition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2552,7 +2587,7 @@ Transform:
   m_GameObject: {fileID: 992395424}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.96, y: 0, z: 0}
+  m_LocalPosition: {x: 2.84, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2681,7 +2716,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b46b8e52dd9d934dbf47252fa2f7119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tag: Player
 --- !u!114 &1137947463
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2696,7 +2730,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _subject: {fileID: 1666012432}
   _volume: {fileID: 555881417}
-  _tag: 
   _maxAmount: 0.5
   _maxTime: 1
 --- !u!61 &1137947464
@@ -2801,7 +2834,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 59.1
+      value: 44.6
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2849,6 +2882,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 992395425}
+    - targetCorrespondingSourceObject: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 398279398}
     - targetCorrespondingSourceObject: {fileID: 8862649156336826451, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1482943893}
@@ -2894,8 +2930,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f6bbebcf37672d41a8af6a112f1c88c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 1144450504}
   _status: {fileID: 11400000, guid: 11c5ea8d18132e344be620495817c278, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _muzzle: {fileID: 0}
+  player: {fileID: 1144450504}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -2907,20 +2947,22 @@ MonoBehaviour:
   _anim: {fileID: 1144450508}
   closeRangeDistance: 5
   _Lasershotmuzzle: {fileID: 1482943892}
+  _beamswordmuzzle: {fileID: 398279397}
   _LasershotbulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
   _LasershotTargetLayer:
     serializedVersion: 2
     m_Bits: 1024
   _RB2: {fileID: 1144450506}
   _freeMove:
+    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
     _isStopInExit: 0
-    _accel: 30
-    _decel: 20
-    _deadZone: 0.0522
-  _beamswordBulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
+    _accel: 10
+    _decel: 0
+    _deadZone: 0
+  _beamswordBulletData: {fileID: 11400000, guid: 8db6df61fd8dd5a4db129f7dc80a0479, type: 2}
   _beamswordTargetLayer:
     serializedVersion: 2
     m_Bits: 1024
@@ -2929,6 +2971,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   _positionJump:
+    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
@@ -3046,26 +3089,26 @@ MonoBehaviour:
   _profiles:
   - profileName: yellow
     comps:
-    - id: 0
-      Comp:
-        rid: 3754870817123467266
-      Priority: 0
     - id: 1
       Comp:
-        rid: 3754870817123467268
+        rid: 6113063774406836225
       Priority: 0
+    - id: 0
+      Comp:
+        rid: 6113063774406836224
+      Priority: 7
   references:
     version: 2
     RefIds:
-    - rid: 3754870817123467266
-      type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
-      data:
-        _center: {fileID: 1144450509}
-        _range: 10
-    - rid: 3754870817123467268
+    - rid: 6113063774406836224
       type: {class: FilterByTag, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
       data:
         _tag: 1
+    - rid: 6113063774406836225
+      type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _center: {fileID: 1144450509}
+        _range: 7
 --- !u!95 &1144450508 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 1422733492570378800, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
@@ -3451,7 +3494,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3de8eb63d2462b04f85dbcc627bb49f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 136489498}
 --- !u!1 &1482943892
 GameObject:
   m_ObjectHideFlags: 0
@@ -4110,6 +4152,7 @@ MonoBehaviour:
   _cameraBounds: {fileID: 1840164403}
   _smoothSpeed: 5
   _cameraZ: -10
+  _camT: {fileID: 0}
 --- !u!114 &1840164403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4805,6 +4848,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1286135387309870284, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
+      propertyPath: _attackLayer.m_Bits
+      value: 1024
+      objectReference: {fileID: 0}
     - target: {fileID: 1286135387309870284, guid: f5a418850a31dcb4fa1a2513ff02d72c, type: 3}
       propertyPath: _suicideBombing._damage
       value: 60

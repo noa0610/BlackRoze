@@ -180,12 +180,12 @@ namespace BlackRose.Core.Models.Units
             // ビームソード攻撃移動
             var freeMove = new FreeMove(true);
             freeMove.SetAccel(30.0f);
-            freeMove.SetDecel(20.0f);
+            freeMove.SetDecel(20f);
             _stateMachine.AddState(States.beamswordattackmove, freeMove);
             // ビームソード攻撃
             var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
             .SetDirection(Vector2.down);
-            beamswordattack.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            beamswordattack.SetGameObject(_beamswordmuzzle != null ? _beamswordmuzzle : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
                 // アニメの完了を待ってから Attack2end を発火

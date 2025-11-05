@@ -2,8 +2,12 @@
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
 using HighElixir;
+using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
@@ -15,10 +19,17 @@ namespace BlackRose.Core.Models.Units
         [Header("ワープ移動")]
         [SerializeField] private float _WarpMovingRange = 5f;              // ワープ移動する範囲(初期位置の前後距離)
         [SerializeField] private float _WarpIntervalTime = 2f;             // ワープ移動間隔時間
-        [SerializeField] private float _WarpStartTime = 0.5f;              // ワープ遷移から実際にワープするまでの時間
-        private int _WarpCount = 0;                                        // ワープ回数（初期値0）
-        [SerializeField] private float _WarpCoolTime = 0;                  // ワープのクールタイム
-        [SerializeField] private float _WarpTimer = 0;                     // 遷移からワープを行うまでの計測時間
+        [SerializeField] private float _WarpBecomeInvincibleTime = 0.5f;   // ワープ遷移から無敵時間に移行するまでの時間
+        [SerializeField] private float _WarpStartTime = 0.5f;              // 無敵時間以降から実際にワープするまでの時間
+        [SerializeField] private float _WarpInvincibleTime = 2f;           // ワープの無敵時間
+        [SerializeField] private int _WarpCount = 3;                       // ワープする回数
+        private int _CurrentWarpCount = 0;
+
+        // [SerializeField] private float _WarpCoolTime = 0;                  // ワープのクールタイム
+        // [SerializeField] private float _WarpTimer = 0;                     // 遷移からワープを行うまでの計測時間
+        // private string _prevStateKey;
+
+        private int _PreviousAttackTipe = 0;                               // 前回の攻撃の種類
 
 
 
@@ -64,40 +75,74 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        protected override void AfterFixedUpdate()
+        protected async override void AfterFixedUpdate()
         {
             SearchPlayer();
-            if (IsMatchingState(States.warpidle) && _player != null)
-            {
-                TurnAround();
-                if (_WarpCoolTime <= _WarpIntervalTime)
-                {
-                    _WarpCoolTime += Time.fixedDeltaTime;
-                }
-                else
-                {
-                    Debug.Log("Change");
-                    _WarpCount++;
-                    _stateMachine.ChangeState(Triggers.Warpcooldown);
-                }
-            }
 
             if (IsMatchingState(States.beforewarp))
             {
-                _WarpTimer += Time.fixedDeltaTime;
-                if (_WarpTimer <= _WarpStartTime) return;
-                warp.SetPos(SetGroundWarpPointRandom());
-                _stateMachine.ChangeState(Triggers.WarpStart);
+
+            }
+
+            if (IsMatchingState(States.warp))
+            {
+                WarpUpdate();
             }
         }
+
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            Debug.Log("TakeDamage");
+        }
+
+        // ワープの前隙のディレイ⇒無敵時間のコルーチン開始⇒Warpに遷移
+        private async void WarpIdleExit()
+        {
+            Debug.Log($"CurrentWarpCount : {_CurrentWarpCount}");
+            if (_CurrentWarpCount >= _WarpCount)
+            {
+                _stateMachine.ChangeState(Triggers.Warpcomplete);
+            }
+
+            TurnAround();
+            await UniTask.Delay(TimeSpan.FromSeconds(_WarpBecomeInvincibleTime));
+            Invincible(_WarpInvincibleTime);
+            await UniTask.Delay(TimeSpan.FromSeconds(_WarpStartTime));
+            warp.SetPos(SetGroundWarpPointRandom());
+            _CurrentWarpCount++;
+            _stateMachine.ChangeState(Triggers.WarpStart);
+        }
         
-        // ワープ位置を決定する
+        private void WarpEnter()
+        {
+            TurnAround();
+        }
+        // ワープ後無敵時間解除でワープ待機に戻る
+        private void WarpUpdate()
+        {
+            if(IsInvincible == false)
+            {
+                _stateMachine.ChangeState(Triggers.Warpend);
+            }
+        }
+
+        // 地上のワープ先を決定
         private Vector2 SetGroundWarpPointRandom()
         {
-            Vector2 warpPoint = new(5, 0);
-            
-
+            Transform cameraPos = Camera.main.transform;
+            float warpPosX = UnityEngine.Random.Range(cameraPos.localPosition.x - _WarpMovingRange, cameraPos.localPosition.x + _WarpMovingRange);
+            Vector2 warpPoint = new Vector2(warpPosX, Transform.position.y);
             return warpPoint;
+        }
+
+        // 無敵時間開始コルーチン
+        private async void Invincible(float invincibleTime)
+        {
+            Debug.Log("Invincible Start");
+            IsInvincible = true;
+            await UniTask.Delay(TimeSpan.FromSeconds(invincibleTime));
+            Debug.Log("Invincible End");
+            IsInvincible = false;
         }
 
         private void TurnAround()
@@ -122,7 +167,7 @@ namespace BlackRose.Core.Models.Units
 
             if (distanceToPlayer <= closeRangeDistance)
             {
-                int attackIndex1 = Random.Range(0, 2); // 0〜1 の間でランダム
+                int attackIndex1 = UnityEngine.Random.Range(0, 2); // 0〜1 の間でランダム
 
                 switch (attackIndex1)
                 {
@@ -134,7 +179,7 @@ namespace BlackRose.Core.Models.Units
                         break;
                 }
             }
-            int attackIndex = Random.Range(0, 4); // 0〜3 の間でランダム
+            int attackIndex = UnityEngine.Random.Range(0, 4); // 0〜3 の間でランダム
 
             switch (attackIndex)
             {

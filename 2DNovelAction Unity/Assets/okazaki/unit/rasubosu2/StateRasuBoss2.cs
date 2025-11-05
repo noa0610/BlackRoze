@@ -146,7 +146,11 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.attackidle, attackIdle);
 
             /* ワープ待機 */
-            var warpidle = new Idle_LazyChange(Triggers.Warpcooldown.ToString(), 3f, true);
+            var warpidle = new Idle_LazyChange(Triggers.Warpcooldown.ToString(), _WarpIntervalTime, true);
+            warpidle.OnCompleted += WarpIdleExit;
+            {
+                
+            }
             _stateMachine.AddState(States.warpidle, warpidle);
 
             /* ワープ直前 */
@@ -155,6 +159,10 @@ namespace BlackRose.Core.Models.Units
 
             /* ワープ */
             warp = new Warp();
+            warp.OnCompleted += WarpEnter;
+            {
+                
+            }
             _stateMachine.AddState(States.warp, warp);
 
             /* ポインターミサイル */

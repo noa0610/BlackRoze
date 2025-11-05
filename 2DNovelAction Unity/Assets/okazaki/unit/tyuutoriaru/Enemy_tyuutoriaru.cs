@@ -254,7 +254,16 @@ namespace BlackRose.Core.Models.Units
         }
         void Attack1()
         {
-            Debug.Log("レーザー攻撃");
+            // プレイヤーの位置に合わせて射撃方向をセット（左右のみ）
+            Vector2 shootDir = Vector2.left; // デフォルト
+            if (_player != null)
+            {
+                var dir = (_player.Transform.position - transform.position).normalized;
+                if (Mathf.Abs(dir.x) > 0f) shootDir = new Vector2(Mathf.Sign(dir.x), 0f);
+            }
+            _lasershotState?.SetDirection(shootDir);
+
+            Debug.Log("レーザー攻撃 (direction=" + shootDir + ")");
             _stateMachine.ChangeState(Triggers.Attack1);
         }
 

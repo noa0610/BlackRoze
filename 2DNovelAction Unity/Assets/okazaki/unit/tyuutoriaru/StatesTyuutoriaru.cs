@@ -144,11 +144,11 @@ namespace BlackRose.Core.Models.Units
             attackIdle.OnCompleted += Attackselect;
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
-            var lasershot = new ShootForward(_LasershotbulletData, _LasershotTargetLayer)
-            .SetDirection(Vector2.left);
-            lasershot.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            // インスタンスをフィールドに保持して、発射方向は実行時に設定する
+            _lasershotState = new ShootForward(_LasershotbulletData, _LasershotTargetLayer);
+            _lasershotState.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             // 弾発射完了時にレーザー攻撃終了トリガーを発火
-            lasershot.onShootComplete.AddListener(() =>
+            _lasershotState.onShootComplete.AddListener(() =>
             {
                 if (nowstate == 7)
                 {
@@ -163,8 +163,8 @@ namespace BlackRose.Core.Models.Units
                 }
             });
 
-            _stateMachine.AddState(States.lasershot, lasershot);
-            var lasershotidle = new Idle_LazyEvent(5f);
+            _stateMachine.AddState(States.lasershot, _lasershotState);
+            var lasershotidle = new Idle_LazyEvent(1.0f);
             // 遅延完了時に呼びたい処理をOnCompletedで登録
             lasershotidle.OnCompleted += () =>
             {

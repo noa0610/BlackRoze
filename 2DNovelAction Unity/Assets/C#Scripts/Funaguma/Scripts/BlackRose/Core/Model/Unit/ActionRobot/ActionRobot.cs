@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UniRx.Triggers;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -30,6 +32,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private int _maxSuccession = 3; // 最大連射回数
         [SerializeField] private float _shootBlockTime = 0.6f; // 連射をブロックする時間
         [SerializeField] private float _invincibleTime = 0.6f; // 無敵時間
+        [SerializeField] private Animator _anim;
         private int _successionCount = 0; // 連射回数
         private float _shootPressTime = 0f; // 攻撃ボタンを押した時間
         private Vector2 _shootDirection = Vector2.right; // 攻撃方向
@@ -96,6 +99,7 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.jumpInput);
                 AfterJump();
                 Timer.Stop(nameof(_coyoteTime)); // ジャンプしたのでコヨーテタイムを終了させる
+                
             }
             if (!value.isPressed)
             {
@@ -103,15 +107,26 @@ namespace BlackRose.Core.Models.Units
             }
         }
         private void OnDash(InputValue value)
-        {
-            if (!value.isPressed)
-            {
-                _stateMachine.LazyChange(Triggers.cancelMove);
-                return;
-            }
-            if (!IsGrounded) return; // 地面にいない場合は無視
-            _stateMachine.ChangeState(Triggers.dashInput);
-        }
+{
+    // シフトキーの状態を bool で取得
+    bool isPressed = value.isPressed;
+
+    if (!isPressed)
+    {
+        _stateMachine.LazyChange(Triggers.cancelMove);
+        return;
+    }
+    if (!IsGrounded) return; // 地面にいない場合は無視
+
+    // 現在の向きを取得
+    float currentFacing = transform.localScale.x > 0 ? 1f : -1f;
+
+    // 現在向いている方向へダッシュ
+    MoveDirection = new Vector2(currentFacing, 0f);
+    Direction = MoveDirection;
+    
+    _stateMachine.ChangeState(Triggers.dashInput);
+}
         private void OnMove(InputValue value)
         {
             var d = value.Get<Vector2>();
@@ -131,11 +146,12 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.moveInput);
         }
         private void OnAttack(InputValue value)
-        {
+        {_anim.SetTrigger("toShot");
             if (value.isPressed)
             {
                 _normal.SetDirection(_shootDirection); // 攻撃方向を設定
                 Debug.Log("Shoot");
+                
                 // 入力時に一度通常攻撃を行い、その後チャージを行う
                 if (IsMatchState(StateKey.shootWait) && _successionCount >= _maxSuccession)
                 {
@@ -207,7 +223,7 @@ namespace BlackRose.Core.Models.Units
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             Timer.CountDownRegister(nameof(_coyoteTime), _coyoteTime);
-            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime, () => { Debug.Log("シュート可能"); },initializeTimer: false);
+            Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime, () => { Debug.Log("シュート可能"); }, initializeTimer: false);
             //Timer.CountDownRegister(nameof(_shootBlockTime), _shootBlockTime);
             Timer.CountDownRegister(nameof(_invincibleTime), _invincibleTime, () => IsInvincible = false);
         }
@@ -221,6 +237,22 @@ namespace BlackRose.Core.Models.Units
             this.UpdateAsObservable()
                 .Where(_ => _isPlaying)
                 .Subscribe(_ => Timer.Update(Time.deltaTime))
+                .AddTo(this);
+            this.UpdateAsObservable()
+    .Where(_ => _stateMachine != null)
+    .Subscribe(_ =>
+    {
+        Debug.Log($"[ActionRobot] Current State: {_stateMachine.CurrentState.key}");
+    })
+    .AddTo(this);
+            this.UpdateAsObservable()
+                .Where(_ => _isPlaying && MoveDirection.x != 0) // 移動入力があるときのみ
+                .Subscribe(_ =>
+                {
+                    Vector3 scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * Mathf.Sign(MoveDirection.x);
+                    transform.localScale = scale;
+                })
                 .AddTo(this);
         }
     }

@@ -1,308 +1,426 @@
-﻿using HighElixir.Timers.Internal;
+﻿using HighElixir.Implements;
+using HighElixir.Timers.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Runtime.ExceptionServices;
+using static HighElixir.Timers.Internal.CommandQueue;
 
+// Timers.cs
 namespace HighElixir.Timers
 {
     /// <summary>
-    /// ID 付きクールダウン/タイマー管理。
+    /// KEY 付きクールダウン/タイマー管理。
     /// </summary>
-    [Serializable]
     public sealed class Timer : IReadOnlyTimer, IDisposable
     {
-        [Flags]
-        private enum LazyCommand
-        {
-            Start = 1 << 0,
-            Stop = 1 << 1,
-            Reset = 1 << 2,
-            Init = 1 << 3,
-        }
-        private static readonly List<IReadOnlyTimer> _timer = new();
-        private Type _parentType;
+        private string _parentName;
+        private readonly Dictionary<TimerTicket, ITimer> _timers = new();
+
+        // 管理
+        private Action<Exception> _onError;
+        private bool _disposed;
+
+        // 外部
+        internal readonly object _lock = new object();
+        private readonly CommandQueue _commandQueue;
+        private readonly TimerFactory _timerFactory;
         private readonly IReadOnlyTimer _readonlyTimer;
-        private readonly Dictionary<string, ITimer> _timers = new(StringComparer.Ordinal);
-        private readonly Queue<(string id, LazyCommand command)> _commands = new();
-        public Type ParentType => _parentType;
-        public static IReadOnlyList<IReadOnlyTimer> AllTimers => _timer.AsReadOnly();
 
-        public int CommandCount { get; private set; }
+        // スナップショット管理用
+        private static readonly List<IReadOnlyTimer> _readOnlytimers = new();
 
-        public Timer(Type parentType = null)
+        public string ParentName
         {
-            _parentType = parentType ?? UnkouwnType.Instance;
-            _readonlyTimer = new ReadOnlyTimer(this);
-            _timer.Add(_readonlyTimer);
-        }
-        /// <summary>
-        /// \カウントダウンタイマー。既に同じ id があれば false。
-        /// </summary>
-        public bool CountDownRegister(string id, float duration, Action onFinished = null, CountType type = CountType.Time, bool initializeTimer = true)
-        {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
-            if (duration < 0f) throw new ArgumentOutOfRangeException(nameof(duration));
-            ITimer timer;
-            if (type == CountType.Time)
-                timer = new CountDownTimer(duration, onFinished);
-            else
-                timer = new TickCountDownTimer(duration, onFinished);
-            if (initializeTimer)
-                timer.Initialize();
-            return _timers.TryAdd(id, timer);
-        }
-
-        /// <summary>
-        /// カウントアップタイマー。既に同じ id があれば false。
-        /// </summary>
-        public bool CountUpRegister(string id, Action onReseted = null, CountType type = CountType.Time)
-        {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
-            ITimer timer;
-            if (type == CountType.Time)
-                timer = new CountUpTimer(onReseted);
-            else
-                timer = new TickCountUpTimer(onReseted);
-            timer.Initialize();
-            return _timers.TryAdd(id, timer);
-        }
-
-        /// <summary>
-        /// 決まった時間ごとにコールバックを呼ぶパルス式タイマー。既に同じ id があれば false。
-        /// </summary>
-        public bool PulseRegister(string id, float pulseInterval, Action onPulse = null, CountType type = CountType.Time)
-        {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException("id is null or empty", nameof(id));
-            if (pulseInterval < 0f) throw new ArgumentOutOfRangeException(nameof(pulseInterval));
-            ITimer timer;
-            if (type == CountType.Time)
-                timer = new PulseTimer(pulseInterval, onPulse) { InitialTime = pulseInterval };
-            else
-                timer = new TickPulseTimer(pulseInterval, onPulse) { InitialTime = pulseInterval };
-            timer.Initialize();
-            return _timers.TryAdd(id, timer);
-        }
-
-        /// <summary>
-        /// タイマーが存在するか。
-        /// </summary>
-        public bool Contains(string id) => _timers.ContainsKey(id);
-
-        /// <summary>
-        /// タイマーの初期値を変更。存在しなければ無視。
-        /// </summary>
-        public void ChangeDuration(string id, float newDuration)
-        {
-            if (string.IsNullOrEmpty(id)) return;
-            if (newDuration < 0f) return;
-            if (_timers.TryGetValue(id, out var t))
+            get
             {
-                t.InitialTime = newDuration;
-                if (t.Current > newDuration)
-                    t.Current = newDuration;
+                return _parentName;
+            }
+            set
+            {
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    _parentName = UnknownType.Name;
+                }
+                else
+                {
+                    _parentName = value;
+                }
+            }
+        }
+        public static IReadOnlyList<IReadOnlyTimer> AllTimers => _readOnlytimers.AsReadOnly();
+
+        // TimerWatcherから監視する用の変数
+        public int CommandCount => _commandQueue.CommandCount;
+
+        public Timer(string parentName = null)
+        {
+            _parentName = parentName ?? UnknownType.Name;
+            _readonlyTimer = new ReadOnlyTimer(this);
+            _timerFactory = new TimerFactory(this);
+            _commandQueue = new CommandQueue(1000, this);
+            _readOnlytimers.Add(_readonlyTimer);
+        }
+
+        #region 基本操作
+        /// <summary>
+        /// 進行開始。イベントや非同期から呼び出す場合は遅延実行を推奨。<br/>
+        /// 遅延実行の場合、コマンドが最大数未満の時にtrue
+        /// </summary>
+        public bool Start(TimerTicket ticket, bool init = true, bool isLazy = false)
+        {
+            if (!TryGetTimer(ticket, out var t)) return false;
+            if (isLazy)
+            {
+                var command = LazyCommand.Start | (init ? LazyCommand.Init : 0);
+                return _commandQueue.Enqueue(ticket, command);
+            }
+            if (init) t.Initialize();
+            t.Start();
+            return true;
+        }
+
+        /// <summary>
+        /// 再スタート。イベントや非同期から呼び出す場合は遅延実行を推奨。<br/>
+        /// 遅延実行の場合、コマンドが最大数未満の時にtrue
+        /// </summary>
+        public bool Restart(TimerTicket ticket, bool isLazy = false)
+        {
+            if (!TryGetTimer(ticket, out var t)) return false;
+            if (isLazy)
+            {
+                return _commandQueue.Enqueue(ticket, LazyCommand.Restart);
+            }
+            else
+            {
+                t.Restart();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 停止。イベントや非同期から呼び出す場合は遅延実行を推奨。<br/>
+        /// 遅延実行の場合、コマンドが最大数未満の時にtrue
+        /// </summary>
+        public bool Stop(TimerTicket ticket, bool init = false, bool isLazy = false)
+            => Stop_Internal(ticket, out _, init, isLazy);
+
+        /// <summary>
+        /// 停止。イベントや非同期から呼び出す場合は遅延実行を推奨。<br/>
+        /// 遅延実行の場合、コマンドが最大数未満の時にtrue
+        /// </summary>
+        public bool Stop(TimerTicket ticket, out float remaining, bool init = false)
+            => Stop_Internal(ticket, out remaining, init);
+
+        private bool Stop_Internal(TimerTicket ticket, out float remaining, bool init = false, bool isLazy = false)
+        {
+            remaining = 0;
+            if (!TryGetTimer(ticket, out var t)) return false;
+            if (isLazy)
+            {
+                return _commandQueue.Enqueue(ticket, LazyCommand.Stop | (init ? LazyCommand.Init : LazyCommand.None));
+            }
+            else
+            {
+                remaining = t.Stop();
+                if (init) t.Initialize();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// リセット。イベントや非同期から呼び出す場合は遅延実行を推奨。<br/>
+        /// 遅延実行の場合、コマンドが最大数未満の時にtrue <br/>
+        /// 対象がカウントアップの場合、完了イベントが呼ばれる。
+        /// </summary>
+        public bool Reset(TimerTicket ticket, bool isLazy = false)
+        {
+            if (!TryGetTimer(ticket, out var t)) return false;
+            if (isLazy)
+            {
+                _commandQueue.Enqueue(ticket, LazyCommand.Reset);
+                return true;
+            }
+            t.Reset();
+            return true;
+        }
+
+        /// <summary>
+        /// リセット。イベントや非同期から呼び出す場合は遅延実行を推奨。<br/>
+        /// 遅延実行の場合、コマンドが最大数未満の時にtrue
+        /// </summary>
+        public bool Initialize(TimerTicket ticket, bool isLazy = false)
+        {
+            if (!TryGetTimer(ticket, out var t)) return false;
+            if (isLazy)
+            {
+                _commandQueue.Enqueue(ticket, LazyCommand.Init);
+                return true;
+            }
+            t.Initialize();
+            return true;
+        }
+        #endregion
+
+        #region 登録処理
+
+        internal TimerTicket Register_Internal(CountType type, string name, float initTime, bool isTick, Action action = null, bool andStart = false)
+        {
+            lock (_lock)
+            {
+                if (isTick) type |= CountType.Tick;
+                var timer = _timerFactory.Create(type, initTime, action);
+                var ticket = TimerTicket.Take(name);
+                if (andStart)
+                    timer.Start();
+                _timers[ticket] = timer;
+                return ticket;
             }
         }
         /// <summary>
         /// 登録解除。存在しなければ false。
         /// </summary>
-        public bool Unregister(string id) => _timers.Remove(id);
-
-        /// <summary>
-        /// 初期値へリセット。カウント完了などのイベントから呼び出す場合は遅延実行を推奨。
-        /// </summary>
-        public bool Reset(string id, bool isLazy = false)
+        public bool UnRegister(TimerTicket ticket)
         {
-            if (_timers.TryGetValue(id, out var t))
+            lock (_lock)
             {
-                if (isLazy)
+                if (_timers.TryGetValue(ticket, out var timer))
                 {
-                    _commands.Enqueue((id, LazyCommand.Reset));
+                    timer.Dispose();
+                    _timers.Remove(ticket);
                     return true;
                 }
-                t.Reset();
-                return true;
+                return false;
             }
-            return false;
+        }
+
+        #endregion
+
+        #region 情報取得
+        public IObservable<TimeData> GetReactiveProperty(TimerTicket ticket)
+        {
+            if (TryGetTimer(ticket, out var t))
+            {
+                return t.TimeReactive;
+            }
+            return null;
         }
 
         /// <summary>
-        /// 進行開始。カウント完了などのイベントから呼び出す場合は遅延実行を推奨。
+        /// タイマーが存在するか。
         /// </summary>
-        public bool Start(string id, bool init = true, bool isLazy = false)
+        public bool Contains(TimerTicket ticket)
         {
-            if (_timers.TryGetValue(id, out var t))
+            lock (_lock)
             {
-                if (isLazy)
-                {
-                    var command = init ? LazyCommand.Init | LazyCommand.Start : LazyCommand.Start;
-                    _commands.Enqueue((id, command));
-                    return true;
-                }
-                if (init) t.Initialize();
-                t.Start();
-                return true;
+                return _timers.ContainsKey(ticket);
             }
-            return false;
-        }
-
-        /// <summary>
-        /// 停止。カウント完了などのイベントから呼び出す場合は遅延実行を推奨。
-        /// </summary>
-        public bool Stop(string id, bool init = false, bool isLazy = false)
-        {
-            if (_timers.TryGetValue(id, out var t))
-            {
-                if (isLazy)
-                {
-                    var command = init ? LazyCommand.Init | LazyCommand.Stop : LazyCommand.Stop;
-                    _commands.Enqueue((id, command));
-                    return true;
-                }
-                t.Stop();
-                if (init) t.Initialize();
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
         /// 終了済みか（登録が無ければ false）。
         /// </summary>
-        public bool IsFinished(string id)
-        {
-            return _timers.TryGetValue(id, out var t) && t is CountDownTimer && t.Current <= 0f;
-        }
+        public bool IsFinished(TimerTicket ticket) =>
+                 TryGetTimer(ticket, out var t) && t.IsFinished;
+
+        /// <summary>
+        /// 動作中か（登録が無ければ false）。
+        /// </summary>
+        public bool IsRunning(TimerTicket ticket) =>
+            TryGetTimer(ticket, out var t) && t.IsRunning;
 
         /// <summary>
         /// 現在の時間を取得。
         /// </summary>
-        public bool TryGetRemaining(string id, out float remaining)
+        public bool TryGetCurrentTime(TimerTicket ticket, out float current)
         {
-            if (_timers.TryGetValue(id, out var t))
+            if (TryGetTimer(ticket, out var t))
             {
-                remaining = t.Current;
+                current = t.Current;
                 return true;
             }
-            remaining = 0f;
+            current = 0f;
             return false;
         }
 
         /// <summary>
-        /// 経過正規化 [0..1] を取得（未登録は 1 として返す）。
+        /// 経過正規化 [0..1] を取得（未登録及びカウントアップなど正規化不可能なタイマーは 1 として返す）。
         /// </summary>
-        public float GetNormalizedElapsed(string id)
+        public bool TryGetNormalizedElapsed(TimerTicket ticket, out float elapsed)
         {
-            return _timers.TryGetValue(id, out var t) ? t.NormalizedElapsed : 1f;
+            bool res = TryGetTimer(ticket, out var t);
+            elapsed = res ? t.NormalizedElapsed : 1f;
+            return res;
         }
-
-        /// <summary>
-        /// 完了時の Action を追加。存在しない場合 false。
-        /// </summary>
-        public bool AddAction(string id, Action action)
+        public IEnumerable<TimerSnapshot> GetSnapshot()
         {
-            if (action == null) return false;
-            if (_timers.TryGetValue(id, out var t))
+            KeyValuePair<TimerTicket, ITimer>[] local;
+            lock (_lock)
             {
-                t.OnFinished += action;
-                return true;
+                local = _timers.ToArray();
             }
-            return false;
-        }
 
-        /// <summary>
-        /// 完了時の Action を削除。存在しない場合 false。
-        /// </summary>
-        public bool RemoveAction(string id, Action action)
-        {
-            if (action == null) return false;
-            if (_timers.TryGetValue(id, out var t))
+            foreach (var kv in local)
             {
-                t.OnFinished -= action;
-                return true;
+                var key = kv.Key;
+                var t = kv.Value;
+
+                float op = -1;
+                if (t.CountType.Has(CountType.Pulse))
+                    op = ((PulseTimer)t).PulseCount;
+
+                yield return new TimerSnapshot(ParentName, key, t, op);
             }
-            return false;
+        }
+        internal bool TryGetTimer(TimerTicket ticket, out ITimer timer)
+        {
+            bool found = false;
+            lock (_lock)
+            {
+                found = _timers.TryGetValue(ticket, out timer);
+            }
+            return found;
         }
 
+        #endregion
+
         /// <summary>
-        /// 毎フレーム等で呼ぶ。内部で Keys のスナップショットを取るので、
-        /// コールバック内で Unregister しても安全。
+        /// 更新処理。
         /// </summary>
         public void Update(float deltaTime)
         {
-            // 遅延コマンドの処理
-            int count = 0;
-            CommandCount = _commands.Count;
-            while (_commands.Count > 0)
-            {
-                var (timer, command) = _commands.Dequeue();
-                if ((command & LazyCommand.Init) != 0)
-                    InitializeTimer(timer);
-                if ((command & LazyCommand.Reset) != 0)
-                    Reset(timer, isLazy: false);
-                if ((command & LazyCommand.Start) != 0)
-                    Start(timer, init: false, isLazy: false);
-                if ((command & LazyCommand.Stop) != 0)
-                    Stop(timer, init: false, isLazy: false);
-                if (++count > 1000) break; // 無限ループ防止
-            }
+            _commandQueue.Update();
             if (deltaTime <= 0f) return;
 
-            // 変更に強いようにキーのスナップショットで回す
-            var ids = _timers.Keys.ToList();
-            foreach (var id in ids)
+            KeyValuePair<TimerTicket, ITimer>[] local;
+            lock (_lock)
             {
-                if (_timers.TryGetValue(id, out var t))
+                local = _timers.ToArray(); // (ticket, ITimer) をコピー
+            }
+
+            try
+            {
+                foreach (var kv in local)
                 {
+                    var t = kv.Value;
                     if (t.IsRunning)
                         t.Update(deltaTime);
                 }
             }
+            catch (Exception ex)
+            {
+                OnError(ex);
+            }
         }
 
-        public IEnumerable<TimerSnapshot> GetSnapshot()
+
+        #region タイマーへの操作
+        public ITimerEvt GetTimerEvt(TimerTicket ticket)
         {
-            // キーのスナップショットで安全に列挙
-            var ids = _timers.Keys.ToList();
-            foreach (var id in ids)
+            if (TryGetTimer(ticket, out var t))
             {
-                if (_timers.TryGetValue(id, out var t))
+                return t;
+            }
+            return null;
+        }
+        /// <summary>
+        /// 完了時の Action を追加。
+        /// </summary>
+        public IDisposable AddCompleteAction(TimerTicket ticket, Action action)
+        {
+            lock (_lock)
+            {
+                if (action != null && _timers.TryGetValue(ticket, out var t))
                 {
-                    yield return new TimerSnapshot(
-                        id,
-                        t.InitialTime,
-                        t.Current,
-                        t.NormalizedElapsed,
-                        t.IsRunning,
-                        t.GetType().Name
-                    );
+                    t.OnFinished += action;
+                    var dis = Disposable.Create(() =>
+                    {
+                        RemoveCompleteAction(ticket, action);
+                    });
+                    return dis;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 完了時の Action を削除。
+        /// </summary>
+        public void RemoveCompleteAction(TimerTicket ticket, Action action)
+        {
+            lock (_lock)
+            {
+                if (action != null && _timers.TryGetValue(ticket, out var t))
+                {
+                    t.OnFinished -= action;
+                    return;
                 }
             }
         }
 
-        public void SetSnapshot(TimerSnapshot snapshot)
+        /// <summary>
+        /// タイマーの初期値を変更。存在しなければ無視。<br/>
+        /// パルスタイマーはコールバック呼び出し頻度にかかわる(他のタイマーと扱いが異なる)ため注意
+        /// </summary>
+        public void ChangeDuration(TimerTicket ticket, float newDuration)
         {
-            Type type = Assembly.GetExecutingAssembly().GetType(snapshot.TimerClass);
-            var timer = (ITimer)Activator.CreateInstance(type);
-            timer.InitialTime = snapshot.Initialize;
-            timer.Current = snapshot.Current;
-            if (snapshot.IsRunning) timer.Start();
-            _timers[snapshot.Id] = timer;
-        }
-
-        public void Dispose()
-        {
-            _timers.Clear();
-            _commands.Clear();
-            _timer.RemoveAll(t => t == _readonlyTimer);
-        }
-
-        private void InitializeTimer(string id)
-        {
-            if (_timers.TryGetValue(id, out var t))
+            lock (_lock)
             {
-                t.Initialize();
+                if (newDuration < 0f)
+                {
+                    OnError(new ArgumentException("ChangeDuration: newDuration は 0 以上である必要があります。"));
+                    return;
+                }
+                if (_timers.TryGetValue(ticket, out var t))
+                {
+                    t.InitialTime = newDuration;
+                }
             }
         }
+        #endregion
+
+        #region エラーハンドリング
+        public void OnErrorAction(Action<System.Exception> onError)
+        {
+            _onError += onError;
+        }
+
+        internal void OnError(Exception ex)
+        {
+            if (_onError != null)
+                _onError.Invoke(ex);
+            else
+                ExceptionDispatchInfo.Capture(ex).Throw();
+        }
+        #endregion
+
+        #region Disposable
+        public void Dispose()
+        {
+            if (_disposed) return;
+            lock (_lock)
+            {
+                _disposed = true;
+                foreach (var t in _timers.Values)
+                {
+                    t.Dispose();
+                }
+                _timers.Clear();
+                _commandQueue.Dispose();
+                _readOnlytimers.Remove(_readonlyTimer);
+                _onError = null;
+            }
+        }
+
+        public static void DisposeAll()
+        {
+            for (int i = _readOnlytimers.Count - 1; i >= 0; --i)
+            {
+                _readOnlytimers[i].Dispose();
+            }
+        }
+        #endregion
+
     }
 }

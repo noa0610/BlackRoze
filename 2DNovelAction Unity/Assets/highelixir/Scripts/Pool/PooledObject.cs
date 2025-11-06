@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace HighElixir.Pool
+namespace HighElixir.Pools
 {
-    public struct PooledObject<T> : IDisposable
-        where T : UnityEngine.Object
+    public readonly struct PooledObject<T> : IPooledObject<T>
     {
-        public T Value;
-        public Pool<T> Pool;
-        public PooledObject(T value, Pool<T> pool)
+        private readonly T _value;
+        private readonly Action _onDispose;
+        public T Value => _value;
+        internal PooledObject(T value, Action onDispose)
         {
-            Value = value;
-            Pool = pool;
+            _value = value;
+            _onDispose = onDispose;
         }
 
         public void Dispose()
         {
-            Pool.Release(Value);
+            _onDispose();
         }
     }
 }

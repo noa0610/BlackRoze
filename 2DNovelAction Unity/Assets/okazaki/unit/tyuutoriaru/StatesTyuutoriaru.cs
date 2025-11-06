@@ -1,4 +1,4 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using UnityEngine;
 
@@ -106,15 +106,15 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             _stateMachine
-            .AddTransmissions(States.idle, idleTrigger)
-            .AddTransmissions(States.attackidle, attackidleTrigger)
-            .AddTransmissions(States.lasershot, lasershotTrigger)
-            .AddTransmissions(States.lasershotidle, lasershotidleTrigger)
-            .AddTransmissions(States.beamswordattack, beamswordattackTrigger)
-            .AddTransmissions(States.beamswordattackmove, beamswordattackmoveTrigger)
-            .AddTransmissions(States.fixedpositionjump, fixedpositionjumpTrigger)
-            .AddTransmissions(States.stun, stunTrigger)
-            .AddTransmissions(States.shockwave, shockwaveTrigger);
+            .AddTransitions(States.idle, idleTrigger)
+            .AddTransitions(States.attackidle, attackidleTrigger)
+            .AddTransitions(States.lasershot, lasershotTrigger)
+            .AddTransitions(States.lasershotidle, lasershotidleTrigger)
+            .AddTransitions(States.beamswordattack, beamswordattackTrigger)
+            .AddTransitions(States.beamswordattackmove, beamswordattackmoveTrigger)
+            .AddTransitions(States.fixedpositionjump, fixedpositionjumpTrigger)
+            .AddTransitions(States.stun, stunTrigger)
+            .AddTransitions(States.shockwave, shockwaveTrigger);
             // 待機
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡 
@@ -126,8 +126,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.attackidle, attackIdle);
             // レーザー攻撃
             var lasershot = new ShootForward(_LasershotbulletData, _LasershotTargetLayer)
-            .SetDirection(Vector2.left)
-            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            .SetDirection(Vector2.left);
+            lasershot.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             // 弾発射完了時にレーザー攻撃終了トリガーを発火
             lasershot.onShootComplete.AddListener(() =>
             {
@@ -149,7 +149,7 @@ namespace BlackRose.Core.Models.Units
             lasershotidle.OnCompleted += () =>
             {
                 if (_isAnimating) return; // 既に開始済みなら無視
-                _isAnimating = true;  
+                _isAnimating = true;
                 // アニメ開始（トリガー送信）
                 AnimaSelect();
                 // 非同期でアニメ進行を監視して半分になったら Attack1 を呼ぶ（fire-and-forget）
@@ -164,13 +164,13 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.beamswordattackmove, freeMove);
             // ビームソード攻撃
             var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
-            .SetDirection(Vector2.down)
-            .SetMuzzle(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
+            .SetDirection(Vector2.down);
+            beamswordattack.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             beamswordattack.onShootComplete.AddListener(() =>
             {
                 GetComponent<BoxCollider2D>().isTrigger = true;
                 _positionJump?.SetTarget(JumpSelect());
-                                _stateMachine.LazyChange(Triggers.Attack2end);
+                _stateMachine.LazyChange(Triggers.Attack2end);
             });
             _stateMachine.AddState(States.beamswordattack, beamswordattack);
             // ジャンプ
@@ -191,8 +191,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.stun, stun);
             // ショックウェーブ
             var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
-            .SetDirection(Vector2.left)
-            .SetMuzzle(_Lasershotmuzzle != null ?_Lasershotmuzzle : gameObject);
+            .SetDirection(Vector2.left);
+            shockwave.SetGameObject(_Lasershotmuzzle != null ? _Lasershotmuzzle : gameObject);
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {

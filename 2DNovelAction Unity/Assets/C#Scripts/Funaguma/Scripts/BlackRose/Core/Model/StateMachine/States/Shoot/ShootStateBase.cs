@@ -8,11 +8,14 @@ using BlackRose.Datas.Definitions;
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class ShootStateBase : StateWithAnime
+    public class ShootStateBase : StateWithAnime, IGameObjectUser
     {
         // 弾丸にセットするレイヤー
         [SerializeField] protected LayerMask _targetLayer;
         [SerializeField] protected BulletData _data;         // 発射する弾のデータ
+        [SerializeField] protected float _createPos = 0.35f;
+        [SerializeField] protected Vector2 _direction = Vector2.right;
+        [SerializeField] protected GameObject _muzzle;
         [SerializeField] protected UnityEvent _onShootComplete = new();
 
         public UnityEvent onShootComplete
@@ -40,6 +43,20 @@ namespace BlackRose.Core.Models.States
         {
             _targetLayer = layer;
         }
+        public void SetGameObject(GameObject go, params GameObject[] options)
+        {
+            _muzzle = go;
+        }
+        public ShootStateBase SetDirection(Vector2 newDirection)
+        {
+            _direction = newDirection.normalized;
+            return this;
+        }
+        public override void Enter(IState preview, UnitBase parent)
+        {
+            base.Enter(preview, parent);
+            _ = Shoot(parent);
+        }
         public override bool AllowChange(IState nextState, UnitBase parent)
         {
             if (base.AllowChange(nextState, parent)) return true;
@@ -52,5 +69,14 @@ namespace BlackRose.Core.Models.States
             await UniTask.WaitUntil(() => IsCancel(parent));
             onShootComplete?.Invoke();
         }
+
+        protected virtual void InitBullet(Bullet bullet, Vector3 dict)
+        {
+            // ステータスをセット（速度、方向、ダメージなど）
+            bullet.SetBulletStatus(_data, _targetLayer);
+            bullet.SetDirection(dict);
+            bullet.Invoke();
+        }
+
     }
 }

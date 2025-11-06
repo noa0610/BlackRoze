@@ -56,97 +56,97 @@ namespace BlackRose.Core.Models.Units
         protected override void RegisterStats()
         {
             // === 各ステートのトリガー一覧定義 ===
-            var idleTriggers = new (Triggers, StateKey)[]
+            var idleTriggers = new[]
             {
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.moveInput, StateKey.move),
-                (Triggers.dashInput, StateKey.dash),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.falling, StateKey.fall),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootInput, StateKey.shoot,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.moveInput, StateKey.move,"toWalk"),
+                (Triggers.dashInput, StateKey.dash,"toDash"),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.falling, StateKey.fall,"toFall"),
+                (Triggers.death, StateKey.dead,""),
             };
-            var shootTriggers = new (Triggers, StateKey)[]
+            var shootTriggers = new []
             {
-                (Triggers.shootComplete, StateKey.shootWait),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootComplete, StateKey.shootWait,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
 
             // 遷移候補はidleとほぼ同じだが、チャージシュートができない
-            var waitTriggers = new (Triggers, StateKey)[]
+            var waitTriggers = new []
             {
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.watingTimeHasElapsed, StateKey.idle),
-                (Triggers.moveInput, StateKey.move),
-                (Triggers.dashInput, StateKey.dash),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.falling, StateKey.fall),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootInput, StateKey.shootWait,""),
+                (Triggers.watingTimeHasElapsed, StateKey.idle,"toIdle"),
+                (Triggers.moveInput, StateKey.move,"toWalk"),
+                (Triggers.dashInput, StateKey.dash,"toDash"),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.falling, StateKey.fall,"toFall"),
+                (Triggers.death, StateKey.dead,""),
             };
-            var chargeShootTriggers = new (Triggers, StateKey)[]
+            var chargeShootTriggers = new []
             {
-                (Triggers.shootComplete, StateKey.idle),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootComplete, StateKey.idle,"toIdle"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var fullChargeShootTriggers = new (Triggers, StateKey)[]
+            var fullChargeShootTriggers = new []
             {
-                (Triggers.shootComplete, StateKey.idle),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootComplete, StateKey.idle,"toIdle"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var moveTriggers = new (Triggers, StateKey)[]
+            var moveTriggers = new []
             {
-                (Triggers.moveInput, StateKey.move),
-                (Triggers.cancelMove, StateKey.idle),
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.dashInput, StateKey.dash),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.moveInput, StateKey.move,"toWalk"),
+                (Triggers.cancelMove, StateKey.idle,"toIdle"),
+                (Triggers.shootInput, StateKey.shoot,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.dashInput, StateKey.dash,"toDash"),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var dashTriggers = new (Triggers, StateKey)[]
+            var dashTriggers = new []
             {
-                (Triggers.cancelMove, StateKey.idle),
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.cancelMove, StateKey.idle,"toIdle"),
+                (Triggers.shootInput, StateKey.shoot,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var jumpTriggers = new (Triggers, StateKey)[]
+            var jumpTriggers = new []
             {
-                (Triggers.falling, StateKey.fall),
-                (Triggers.landing, StateKey.idle),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
-                (Triggers.shootInAir, StateKey.shoot),
-                (Triggers.halfChargeInAir, StateKey.chargeShoot),
-                (Triggers.fullChargeInAir, StateKey.fullChargeShoot),
+                (Triggers.falling, StateKey.fall,""),
+                (Triggers.landing, StateKey.idle,"toIdle"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
+                (Triggers.shootInAir, StateKey.shoot,""),
+                (Triggers.halfChargeInAir, StateKey.chargeShoot,""),
+                (Triggers.fullChargeInAir, StateKey.fullChargeShoot,""),
             };
-            var fallTriggers = new (Triggers, StateKey)[]
+            var fallTriggers = new []
             {
-                (Triggers.landing, StateKey.idle),
-                (Triggers.shootInAir, StateKey.shoot),
-                (Triggers.halfChargeInAir, StateKey.chargeShoot),
-                (Triggers.fullChargeInAir, StateKey.fullChargeShoot),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.landing, StateKey.idle,"toIdle"),
+                (Triggers.shootInAir, StateKey.shoot,""),
+                (Triggers.halfChargeInAir, StateKey.chargeShoot,""),
+                (Triggers.fullChargeInAir, StateKey.fullChargeShoot,""),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var stunTriggers = new (Triggers, StateKey)[]
+            var stunTriggers = new []
             {
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.finishedStun, StateKey.idle),
-                (Triggers.death, StateKey.dead),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.finishedStun, StateKey.idle,"toIdle"),
+                (Triggers.death, StateKey.dead,"")
             };
             var deadTriggers = new (Triggers, StateKey)[]
             {

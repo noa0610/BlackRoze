@@ -13,7 +13,6 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("攻撃関連")]
         [SerializeField] private Animator _anim;
-        [SerializeField] private GameObject _muzzle;
         [SerializeField] private Rigidbody2D _rb2;
         [SerializeField] private int hp = 10;
         [SerializeField] private float attackCooldown = 3f;

@@ -49,123 +49,123 @@ namespace BlackRose.Core.Models.Units
         private ShootForward _normal;
         private ShootForward _halfCharge;
         private ShootForward _fullCharge;
-        private Dictionary<StateKey, string> _states = EnumWrapper.GetDict<StateKey>();
+        private Dictionary<StateKey, string> _states = EnumWrapper.GetValueNameMap<StateKey>();
 
         [Header("Objects")]
         [SerializeField] private GameObject _muzzle;
         protected override void RegisterStats()
         {
             // === 各ステートのトリガー一覧定義 ===
-            var idleTriggers = new (Triggers, StateKey)[]
+            var idleTriggers = new[]
             {
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.moveInput, StateKey.move),
-                (Triggers.dashInput, StateKey.dash),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.falling, StateKey.fall),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootInput, StateKey.shoot,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.moveInput, StateKey.move,"toWalk"),
+                (Triggers.dashInput, StateKey.dash,"toDash"),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.falling, StateKey.fall,"toFall"),
+                (Triggers.death, StateKey.dead,""),
             };
-            var shootTriggers = new (Triggers, StateKey)[]
+            var shootTriggers = new []
             {
-                (Triggers.shootComplete, StateKey.shootWait),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootComplete, StateKey.shootWait,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
 
             // 遷移候補はidleとほぼ同じだが、チャージシュートができない
-            var waitTriggers = new (Triggers, StateKey)[]
+            var waitTriggers = new []
             {
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.watingTimeHasElapsed, StateKey.idle),
-                (Triggers.moveInput, StateKey.move),
-                (Triggers.dashInput, StateKey.dash),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.falling, StateKey.fall),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootInput, StateKey.shootWait,""),
+                (Triggers.watingTimeHasElapsed, StateKey.idle,"toIdle"),
+                (Triggers.moveInput, StateKey.move,"toWalk"),
+                (Triggers.dashInput, StateKey.dash,"toDash"),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.falling, StateKey.fall,"toFall"),
+                (Triggers.death, StateKey.dead,""),
             };
-            var chargeShootTriggers = new (Triggers, StateKey)[]
+            var chargeShootTriggers = new []
             {
-                (Triggers.shootComplete, StateKey.idle),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootComplete, StateKey.idle,"toIdle"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var fullChargeShootTriggers = new (Triggers, StateKey)[]
+            var fullChargeShootTriggers = new []
             {
-                (Triggers.shootComplete, StateKey.idle),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.shootComplete, StateKey.idle,"toIdle"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var moveTriggers = new (Triggers, StateKey)[]
+            var moveTriggers = new []
             {
-                (Triggers.moveInput, StateKey.move),
-                (Triggers.cancelMove, StateKey.idle),
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.dashInput, StateKey.dash),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.moveInput, StateKey.move,"toWalk"),
+                (Triggers.cancelMove, StateKey.idle,"toIdle"),
+                (Triggers.shootInput, StateKey.shoot,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.dashInput, StateKey.dash,"toDash"),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var dashTriggers = new (Triggers, StateKey)[]
+            var dashTriggers = new []
             {
-                (Triggers.cancelMove, StateKey.idle),
-                (Triggers.shootInput, StateKey.shoot),
-                (Triggers.chargeShoot, StateKey.chargeShoot),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot),
-                (Triggers.jumpInput, StateKey.jump),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.cancelMove, StateKey.idle,"toIdle"),
+                (Triggers.shootInput, StateKey.shoot,""),
+                (Triggers.chargeShoot, StateKey.chargeShoot,""),
+                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
+                (Triggers.jumpInput, StateKey.jump,"toJump"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var jumpTriggers = new (Triggers, StateKey)[]
+            var jumpTriggers = new []
             {
-                (Triggers.falling, StateKey.fall),
-                (Triggers.landing, StateKey.idle),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
-                (Triggers.shootInAir, StateKey.shoot),
-                (Triggers.halfChargeInAir, StateKey.chargeShoot),
-                (Triggers.fullChargeInAir, StateKey.fullChargeShoot),
+                (Triggers.falling, StateKey.fall,""),
+                (Triggers.landing, StateKey.idle,"toIdle"),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
+                (Triggers.shootInAir, StateKey.shoot,""),
+                (Triggers.halfChargeInAir, StateKey.chargeShoot,""),
+                (Triggers.fullChargeInAir, StateKey.fullChargeShoot,""),
             };
-            var fallTriggers = new (Triggers, StateKey)[]
+            var fallTriggers = new []
             {
-                (Triggers.landing, StateKey.idle),
-                (Triggers.shootInAir, StateKey.shoot),
-                (Triggers.halfChargeInAir, StateKey.chargeShoot),
-                (Triggers.fullChargeInAir, StateKey.fullChargeShoot),
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.death, StateKey.dead),
+                (Triggers.landing, StateKey.idle,"toIdle"),
+                (Triggers.shootInAir, StateKey.shoot,""),
+                (Triggers.halfChargeInAir, StateKey.chargeShoot,""),
+                (Triggers.fullChargeInAir, StateKey.fullChargeShoot,""),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.death, StateKey.dead,""),
             };
-            var stunTriggers = new (Triggers, StateKey)[]
+            var stunTriggers = new []
             {
-                (Triggers.stuned, StateKey.stun),
-                (Triggers.finishedStun, StateKey.idle),
-                (Triggers.death, StateKey.dead),
+                (Triggers.stuned, StateKey.stun,""),
+                (Triggers.finishedStun, StateKey.idle,"toIdle"),
+                (Triggers.death, StateKey.dead,"")
             };
             var deadTriggers = new (Triggers, StateKey)[]
             {
                 // 死亡ステートからはトリガー無し or シーンリロードなど
             };
 
-            // === TransmissionGroup に登録 ===
+            // === TransitionGroup に登録 ===
             _stateMachine
-                .AddTransmissions(StateKey.idle, idleTriggers)
-                .AddTransmissions(StateKey.shootWait, waitTriggers)
-                .AddTransmissions(StateKey.shoot, shootTriggers)
-                .AddTransmissions(StateKey.chargeShoot, chargeShootTriggers)
-                .AddTransmissions(StateKey.fullChargeShoot, fullChargeShootTriggers)
-                .AddTransmissions(StateKey.move, moveTriggers)
-                .AddTransmissions(StateKey.dash, dashTriggers)
-                .AddTransmissions(StateKey.jump, jumpTriggers)
-                .AddTransmissions(StateKey.fall, fallTriggers)
-                .AddTransmissions(StateKey.stun, stunTriggers)
-                .AddTransmissions(StateKey.dead, deadTriggers);
+                .AddTransitions(StateKey.idle, idleTriggers)
+                .AddTransitions(StateKey.shootWait, waitTriggers)
+                .AddTransitions(StateKey.shoot, shootTriggers)
+                .AddTransitions(StateKey.chargeShoot, chargeShootTriggers)
+                .AddTransitions(StateKey.fullChargeShoot, fullChargeShootTriggers)
+                .AddTransitions(StateKey.move, moveTriggers)
+                .AddTransitions(StateKey.dash, dashTriggers)
+                .AddTransitions(StateKey.jump, jumpTriggers)
+                .AddTransitions(StateKey.fall, fallTriggers)
+                .AddTransitions(StateKey.stun, stunTriggers)
+                .AddTransitions(StateKey.dead, deadTriggers);
 
             // === ステートコンポーネント登録 ===
             // idle
@@ -184,8 +184,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(StateKey.shootWait, time);
 
             // shoot
-            _normal = new ShootForward(_bullets[0], _targetLayer)
-                .SetMuzzle(_muzzle);
+            _normal = new ShootForward(_bullets[0], _targetLayer);
+            _normal.SetGameObject(_muzzle);
             _normal.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -193,8 +193,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(StateKey.shoot, _normal);
 
             // chargeShoot
-            _halfCharge = new ShootForward(_bullets[1], _targetLayer)
-                .SetMuzzle(gameObject);
+            _halfCharge = new ShootForward(_bullets[1], _targetLayer);
+            _halfCharge.SetGameObject(gameObject);
             _halfCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -202,8 +202,8 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(StateKey.chargeShoot, _halfCharge);
 
             // fullChargeShoot
-            _fullCharge = new ShootForward(_bullets[2], _targetLayer)
-                .SetMuzzle(gameObject);
+            _fullCharge = new ShootForward(_bullets[2], _targetLayer);
+            _fullCharge.SetGameObject(gameObject);
             _fullCharge.onShootComplete.AsObservable().Subscribe(_ =>
             {
                 _stateMachine.ChangeState(Triggers.shootComplete);
@@ -233,7 +233,7 @@ namespace BlackRose.Core.Models.Units
                 StateKey.fall,
                 new MoveOnAir()
                 .SetAccel(20f)
-                .SetAirFriction(-20f)
+                .SetFriction(-20f)
             );
 
             // stun

@@ -13,7 +13,7 @@ namespace BlackRose.Core.Models.Helper
         /// 非モード版：from に対して複数 (trigger -> to) を一括追加
         /// 既存キーがあっても例外を投げず、安全に上書きします。
         /// </summary>
-        public static IStateMachine AddTransmissions<TTrigger, TState>(
+        public static IStateMachine AddTransitions<TTrigger, TState>(
             this IStateMachine machine,
             TState from,
             params (TTrigger trigger, TState to)[] triggers)
@@ -34,7 +34,7 @@ namespace BlackRose.Core.Models.Helper
         /// <summary>
         /// 非モード版：from に対して複数 (trigger -> to, anim) を一括追加
         /// </summary>
-        public static IStateMachine AddTransmissions<TTrigger, TState>(
+        public static IStateMachine AddTransitions<TTrigger, TState>(
             this IStateMachine machine,
             TState from,
             params (TTrigger trigger, TState to, string animationTrigger)[] triggers)
@@ -55,7 +55,7 @@ namespace BlackRose.Core.Models.Helper
         // 非モード（string）: 既存（そのまま）
         // =========================
         /// <summary>文字列版（Enumじゃない運用にも対応）</summary>
-        public static IStateMachine AddTransmissions(
+        public static IStateMachine AddTransitions(
             this IStateMachine machine,
             string from,
             params (string trigger, string to)[] triggers)
@@ -71,7 +71,7 @@ namespace BlackRose.Core.Models.Helper
 
         // ★追加：非モード（string）アニメトリガー付き
         /// <summary>文字列版：アニメトリガー付き一括登録</summary>
-        public static IStateMachine AddTransmissions(
+        public static IStateMachine AddTransitions(
             this IStateMachine machine,
             string from,
             params (string trigger, string to, string animationTrigger)[] triggers)
@@ -140,7 +140,7 @@ namespace BlackRose.Core.Models.Helper
         // ※ 名前ゆらぎ対策で既存名を残す
         // =========================
         /// <summary>文字列版モード依存</summary>
-        public static IStateMachine AddTransmissionsForLayer(
+        public static IStateMachine AddTransitionsForLayer(
             this IStateMachine machine,
             string mode,
             string from,
@@ -156,7 +156,7 @@ namespace BlackRose.Core.Models.Helper
         }
 
         // ★追加：モード依存（string）アニメトリガー付き
-        public static IStateMachine AddTransmissionsForLayer(
+        public static IStateMachine AddTransitionsForLayer(
             this IStateMachine machine,
             string mode,
             string from,
@@ -177,7 +177,7 @@ namespace BlackRose.Core.Models.Helper
         /// <summary>
         /// 非モード（Enum）：全件に同じ animationTrigger を適用
         /// </summary>
-        public static IStateMachine AddTransmissionsWithAnim<TTrigger, TState>(
+        public static IStateMachine AddTransitionsWithAnim<TTrigger, TState>(
             this IStateMachine machine,
             TState from,
             string commonAnimationTrigger,
@@ -222,12 +222,12 @@ namespace BlackRose.Core.Models.Helper
             return machine;
         }
 
-        public static IStateMachine AddTransmissions<Trigger, State>(this IStateMachine machine, State from, params (Trigger trigger, (State state, string animTrigger) to)[] triggers)
+        public static IStateMachine AddTransitions<Trigger, State>(this IStateMachine machine, State from, params (Trigger trigger, (State state, string animTrigger) to)[] triggers)
             where Trigger : Enum
             where State : Enum
         {
             foreach (var trg in triggers)
-                machine.TransmissionGroup.Add(
+                machine.TransitionGroup.Add(
                     (from.ToString(), trg.trigger.ToString()), (trg.to.state.ToString(), trg.to.animTrigger));
 
             return machine;

@@ -17,7 +17,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private Rigidbody2D _rb;
         [SerializeField] private GameObject bulletPrefab;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Transform[] _firewallPoints;// 必要ならInspectorでセット

@@ -1,26 +1,41 @@
 ﻿using BlackRose.Core.Models.Units;
-using HighElixir;
 using HighElixir.Timers;
 using System;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {
-    public class StateComp : IState, ISerializationCallbackReceiver
+    public class StateComp : IState
     {
+        [Header("タイマー")]
+        [SerializeField] private string _parentName;
         // ステート切り替えを拒否する待機フレーム数
         private Timer _timeHolders;
         protected int _waitFrame = 0;
-
-        protected Timer Timer => _timeHolders;
-        public StateComp()
+        protected TimerTicket _tickTicket;
+        protected Timer Timer
         {
-            _timeHolders = new(this.GetType());
-            _timeHolders.CountDownRegister(nameof(_waitFrame), _waitFrame, type: CountType.Tick);
+            get
+            {
+                if (_timeHolders == null)
+                {
+                    _timeHolders = new Timer(_parentName);
+                    if (_waitFrame > 0)
+                        _tickTicket = _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
+                }
+                return _timeHolders;
+            }
+        }
+
+        public event Action WaitTickHasCompleted;
+        public StateComp(string parentName = "")
+        {
+            _parentName = parentName;
+            _ = Timer;
         }
         public virtual bool AllowChange(IState nextState, UnitBase parent)
         {
-            return true; // _timeHolders.IsFinished(nameof(_waitFrame));
+            return !Timer.Contains(_tickTicket) || Timer.IsFinished(_tickTicket);
         }
 
         public virtual bool AllowEnter(IState previousState, UnitBase parent)
@@ -35,7 +50,7 @@ namespace BlackRose.Core.Models.States
         public virtual void Enter(IState previousIState, UnitBase parent)
         {
             if (_waitFrame > 0)
-                _timeHolders.Start(nameof(_waitFrame));
+                _timeHolders.Start(_tickTicket);
         }
 
         public virtual void Exit(IState nextIState, UnitBase parent)
@@ -52,24 +67,13 @@ namespace BlackRose.Core.Models.States
             _timeHolders.Update(deltaTime);
         }
 
-        public T SetWaitTick<T>(int frame, Action onFinished = null) where T : StateComp
+        public void SetWaitTick(int frame)
         {
             _waitFrame = frame;
-            _timeHolders.ChangeDuration(nameof(_waitFrame), _waitFrame);
-            return this as T;
-        }
-
-        public virtual void OnBeforeSerialize()
-        {
-        }
-
-        public void OnAfterDeserialize()
-        {
-            OnDeserialize();
-        }
-
-        public virtual void OnDeserialize()
-        {
+            if (!_timeHolders.Contains(_tickTicket))
+                _timeHolders.CountDownRegister(_waitFrame, "待機フレーム", WaitTickHasCompleted, true);
+            else
+                _timeHolders.ChangeDuration(_tickTicket, _waitFrame);
         }
     }
 }

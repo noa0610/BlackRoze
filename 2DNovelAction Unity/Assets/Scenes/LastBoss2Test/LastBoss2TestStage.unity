@@ -133,7 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5850399}
   m_Layer: 0
-  m_Name: MissileFallPoint (1)
+  m_Name: MissileFallPoint Back (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -751,12 +751,16 @@ MonoBehaviour:
   _WarpBecomeInvincibleTime: 0.5
   _WarpStartTime: 0.5
   _WarpInvincibleTime: 1
-  _WarpCount: 0
+  _WarpCount: 3
   _MissileFallPoint:
   - {fileID: 2002414330}
   - {fileID: 5850398}
+  - {fileID: 2095010260}
+  - {fileID: 559628825}
   - {fileID: 1695002181}
   - {fileID: 1900131282}
+  - {fileID: 757362508}
+  - {fileID: 737208804}
   _MissileBulletDate: {fileID: 11400000, guid: efd75f1f183ddf94da6348e701c89b04, type: 2}
   _WarpDistance: 4
   _ShotPoint: {fileID: 1504787269}
@@ -1017,6 +1021,37 @@ Transform:
   - {fileID: 2035268790}
   m_Father: {fileID: 1054408924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &559628825
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 559628826}
+  m_Layer: 0
+  m_Name: MissileFallPoint Back (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &559628826
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559628825}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -19, y: 12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 330286554}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &607130664
 GameObject:
   m_ObjectHideFlags: 0
@@ -1182,6 +1217,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 707524946}
   m_CullTransparentMesh: 1
+--- !u!1 &737208804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 737208805}
+  m_Layer: 0
+  m_Name: MissileFallPoint Flont (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &737208805
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737208804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 19, y: 12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 330286554}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &750607340
 GameObject:
   m_ObjectHideFlags: 0
@@ -1240,6 +1306,37 @@ Transform:
   m_Children:
   - {fileID: 926989121}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &757362508
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 757362509}
+  m_Layer: 0
+  m_Name: MissileFallPoint Flont (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &757362509
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 757362508}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14, y: 12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 330286554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &923892887
 GameObject:
@@ -2811,6 +2908,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LastBoss2_Shimoaka
       objectReference: {fileID: 0}
+    - target: {fileID: 3969425424043744331, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
     - target: {fileID: 7516177179727861607, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -2829,10 +2930,22 @@ PrefabInstance:
       addedObject: {fileID: 5850399}
     - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 2095010261}
+    - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 559628826}
+    - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 1695002182}
     - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1900131283}
+    - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 757362509}
+    - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 737208805}
     - targetCorrespondingSourceObject: {fileID: 1626959197532327409, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1552917907}
@@ -2929,7 +3042,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1695002182}
   m_Layer: 0
-  m_Name: MissileFallPoint (2)
+  m_Name: MissileFallPoint Flont (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3305,7 +3418,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1900131283}
   m_Layer: 0
-  m_Name: MissileFallPoint (3)
+  m_Name: MissileFallPoint Flont (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6975,7 +7088,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2002414331}
   m_Layer: 0
-  m_Name: MissileFallPoint
+  m_Name: MissileFallPoint Back (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11022,6 +11135,37 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &2095010260
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2095010261}
+  m_Layer: 0
+  m_Name: MissileFallPoint Back (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2095010261
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2095010260}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -14, y: 12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 330286554}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

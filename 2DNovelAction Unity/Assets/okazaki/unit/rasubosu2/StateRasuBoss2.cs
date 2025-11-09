@@ -7,7 +7,7 @@ namespace BlackRose.Core.Models.Units
     public partial class Enemy_rasubosu2
     {
         private Warp warp;
-        private ShootForward pointermissile;
+        private ShootMultiplePositions pointermissile;
         private ShootForward crosswave;
         private ShootForward warpShot;
         private ShootForward flashBeamSword;
@@ -23,7 +23,6 @@ namespace BlackRose.Core.Models.Units
             pointermissile,     // ポインターミサイル
             crosswave,          // クロスウェーブ
             warpShot,           // ワープショット
-            grappleSlash,       // グラップルスラッシュ
             flashBeamSword,     // フラッシュビームソード
         }
         private enum Triggers
@@ -38,12 +37,10 @@ namespace BlackRose.Core.Models.Units
             Attack2,            // 攻撃２
             Attack3,            // 攻撃３
             Attack4,            // 攻撃４
-            Attack5,            // 攻撃５
             Attack1end,         // 攻撃１した
             Attack2end,         // 攻撃２した
             Attack3end,         // 攻撃３した
             Attack4end,         // 攻撃４した
-            Attack5end,         // 攻撃5した
             Event1,             // イベント1が終わった
             Playerdead,         // プレイヤーが死亡
             Died,               // 死亡した（HPが０になった）
@@ -79,8 +76,7 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Attack1, States.pointermissile, ""),         // ポインターミサイルへ 
                 (Triggers.Attack2, States.crosswave, ""),              // クロスウェーブへ
                 (Triggers.Attack3, States.warpShot, ""),               // ワープショットへ
-                (Triggers.Attack4, States.grappleSlash, ""),           // グラップルスラッシュへ
-                (Triggers.Attack5, States.flashBeamSword, ""),         // フラッシュビームソードへ
+                (Triggers.Attack4, States.flashBeamSword, ""),         // フラッシュビームソードへ
             };
             var pointermissileTrigger = new[]                          /** ポインターミサイルステートのトリガー **/
             {
@@ -97,14 +93,9 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Attack3end, States.attackidle, ""),          // ワープショット終了で攻撃待機へ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
-            var grappleSlashTrigger = new[]                            /** グラップルスラッシュステートのトリガー **/
-            {
-                (Triggers.Attack4end, States.attackidle, ""),          // 
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
-            };
             var flashBeamSwordTrigger = new[]                          /** フラッシュビームソードステートのトリガー **/                 
             {
-                (Triggers.Attack5end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
+                (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
                 (Triggers.Died, States.dead, ""),                      // 死亡で待機
             };
 
@@ -119,7 +110,6 @@ namespace BlackRose.Core.Models.Units
                 .AddTransmissions(States.pointermissile, pointermissileTrigger)
                 .AddTransmissions(States.crosswave, crosswaveTrigger)
                 .AddTransmissions(States.warpShot, warpShotTrigger)
-                .AddTransmissions(States.grappleSlash, grappleSlashTrigger)
                 .AddTransmissions(States.flashBeamSword, flashBeamSwordTrigger);
 
             /* 待機 */
@@ -166,7 +156,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.warp, warp);
 
             /* ポインターミサイル */
-            pointermissile = new ShootForward();
+            pointermissile = new ShootMultiplePositions(_MissileBulletDate, _AttackTargetLayer).SetFiring(_MissileFallPoint, direction);
             _stateMachine.AddState(States.pointermissile, pointermissile);
 
             /* クロスウェーブ */

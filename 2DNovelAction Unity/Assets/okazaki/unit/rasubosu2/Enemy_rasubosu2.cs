@@ -14,6 +14,10 @@ namespace BlackRose.Core.Models.Units
     [RequireComponent(typeof(SearchAssistanceMono))]
     public partial class Enemy_rasubosu2 : UnitBase
     {
+        [Tooltip("攻撃選択の固定化(１，ポインタミサイル ２，クロスウェーブ ３，連続ワープショット ４，一閃ビームソード)")]
+        [SerializeField] private int FixedAttackSelect = 0;                // 攻撃選択の固定化
+
+        [Header("固有設定")]
         [SerializeField] private float closeRangeDistance = 5f;            // 近距離判定の距離
 
         [Header("ワープ移動")]
@@ -34,8 +38,9 @@ namespace BlackRose.Core.Models.Units
 
 
         [Header("ポインタミサイル")]
-        [SerializeField] private Transform[] _MissileFallPoint;            // ミサイル落下地点
-        [SerializeField] private BulletData _MIssilBulletDate;
+        [SerializeField] private GameObject[] _MissileFallPoint;            // ミサイル落下地点
+        [SerializeField] private BulletData _MissileBulletDate;
+        private Vector2 direction = Vector2.down;
 
         [Header("連続ワープショット")]
         [SerializeField] private float _WarpDistance = 4f;                 // 連続ワープショットのワープ先のプレイヤーとの距離
@@ -112,7 +117,7 @@ namespace BlackRose.Core.Models.Units
             _CurrentWarpCount++;
             _stateMachine.ChangeState(Triggers.WarpStart);
         }
-        
+
         private void WarpEnter()
         {
             TurnAround();
@@ -120,7 +125,7 @@ namespace BlackRose.Core.Models.Units
         // ワープ後無敵時間解除でワープ待機に戻る
         private void WarpUpdate()
         {
-            if(IsInvincible == false)
+            if (IsInvincible == false)
             {
                 _stateMachine.ChangeState(Triggers.Warpend);
             }
@@ -165,6 +170,26 @@ namespace BlackRose.Core.Models.Units
             if (_player == null) return;
             float distanceToPlayer = Vector3.Distance(transform.position, _player.transform.position);
 
+            if (FixedAttackSelect != 0)
+            {
+                switch (FixedAttackSelect)
+                {
+                    case 1:
+                        Attack1();
+                        break;
+                    case 2:
+                        Attack2();
+                        break;
+                    case 3:
+                        Attack3();
+                        break;
+                    case 4:
+                        Attack4();
+                        break;
+                }
+                return;
+            }
+
             if (distanceToPlayer <= closeRangeDistance)
             {
                 int attackIndex1 = UnityEngine.Random.Range(0, 2); // 0〜1 の間でランダム
@@ -172,10 +197,10 @@ namespace BlackRose.Core.Models.Units
                 switch (attackIndex1)
                 {
                     case 0:
-                        Attack4();
+                        Attack2();
                         break;
                     case 1:
-                        Attack5();
+                        Attack4();
                         break;
                 }
             }
@@ -193,7 +218,7 @@ namespace BlackRose.Core.Models.Units
                     Attack3();
                     break;
                 case 3:
-                    Attack5();
+                    Attack4();
                     break;
             }
         }
@@ -216,13 +241,8 @@ namespace BlackRose.Core.Models.Units
         }
         void Attack4()
         {
-            Debug.Log("グラップルスラッシュ");
-            _stateMachine.ChangeState(Triggers.Attack4);
-        }
-        void Attack5()
-        {
             Debug.Log("フラッシュビームソード");
-            _stateMachine.ChangeState(Triggers.Attack5);
+            _stateMachine.ChangeState(Triggers.Attack4);
         }
 
 

@@ -12,7 +12,6 @@ namespace BlackRose.Core.Models.States
     public class ShootMultiplePositions : ShootStateBase
     {
         [SerializeField] private GameObject[] _muzzles;
-        [SerializeField] private Vector2 _direction;
 
         public ShootMultiplePositions(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootMultiplePositions() : base() { }
@@ -41,10 +40,10 @@ namespace BlackRose.Core.Models.States
         protected override UniTask Shoot(UnitBase unit)
         {
             var b = _data.prefab;
-            foreach (GameObject _muzzle in _muzzles)
+            foreach (GameObject muzzle in _muzzles)
             {
                 // 弾の生成位置
-                Vector3 spawnPos = _muzzle.transform.position;
+                Vector3 spawnPos = muzzle.transform.position;
                 // 弾を生成
                 Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
                 // ステータスをセット

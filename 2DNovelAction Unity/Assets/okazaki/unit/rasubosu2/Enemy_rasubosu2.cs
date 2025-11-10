@@ -53,7 +53,7 @@ namespace BlackRose.Core.Models.Units
         [Header("攻撃相手")]
         [SerializeField] private LayerMask _AttackTargetLayer;
 
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         private SearchAssistanceMono _searchAssistance;
         private UnitBase _player;
 

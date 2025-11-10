@@ -308,11 +308,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 84487927491883128, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.83
+      value: -4.407566
       objectReference: {fileID: 0}
     - target: {fileID: 84487927491883128, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.13
+      value: -2.2605798
       objectReference: {fileID: 0}
     - target: {fileID: 84487927491883128, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1063,10 +1063,21 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1289208746987038747, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8791765610987416073}
+    - targetCorrespondingSourceObject: {fileID: 1289208746987038747, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4480632626748882926}
+    - targetCorrespondingSourceObject: {fileID: 1289208746987038747, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8222942320569739669}
   m_SourcePrefab: {fileID: 100100000, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
---- !u!1 &1690375670728182287 stripped
+--- !u!4 &38180473515206043 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4841755128826664400, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
+  m_PrefabInstance: {fileID: 4879362481599377483}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2516396170675232994 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 6107885929570908740, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
+  m_CorrespondingSourceObject: {fileID: 7015186203776995497, guid: 4f4f67c64c2750a44823e4ee0856d384, type: 3}
   m_PrefabInstance: {fileID: 4879362481599377483}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &4799380357385224243 stripped
@@ -1119,7 +1130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 285adc39e3bd18b4da02d0377b4f2ef9, type: 3}
-  m_NotificationBehavior: 0
+  m_NotificationBehavior: 1
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -1148,7 +1159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6235e4ae44e8e4d089ca09290089ea0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _targetSpriteRenderer: {fileID: 0}
+  _targetSpriteRenderer: {fileID: 4446935703852794857}
   _afterImageNum: 2
   _ignoreTimeScale: 0
   _colorList:
@@ -1237,8 +1248,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e599cba1d099e1a4897d1789a4d4bb2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 4226837423651503790}
   _status: {fileID: 11400000, guid: 74e694430bafa8d43955b80d2798c934, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _muzzle: {fileID: 2516396170675232994}
+  player: {fileID: 4226837423651503790}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -1248,80 +1263,109 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 513
   _disableCheckTime: 0.2
-  _bullets:
-  - {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
-  _targetLayer:
-    serializedVersion: 2
-    m_Bits: 2048
   _canChargeCount: 0
-  _shootBlockTime: 0.6
-  _coyoteTime: 0.2
   _normalMode:
+    _currentState: 
     _status: {fileID: 11400000, guid: 74e694430bafa8d43955b80d2798c934, type: 2}
     _jump:
-      animeTriggerName: 
-      waitForAnimeEnd: 0
-      cancelableProgress: 0.7
-      _hasLeapt: 0
+      _isStopInExit: 0
+      _accel: 20
+      _friction: 1
       _enableJumped: -1
       _cutMultiplier: 0.5
-      _accel: 20
-      _airFriction: 30
     _chargeTime:
     - 1.2
     - 2.3
+    _skillAnimeTrigger: 
     _warpRange: 6
     _preWarpDemo: {fileID: 8606556386148263991}
     _warpDemoDelta: {x: 0, y: 0.5, z: 0}
     _skillCT: 4
-    _warpState:
-      _pos: {x: 0, y: 0}
+    _intervalDelay: 1
     _shoot:
-      animeTriggerName: 
-      waitForAnimeEnd: 0
-      cancelableProgress: 0.7
-      _targetLayer:
-        serializedVersion: 2
-        m_Bits: 0
-      _data: {fileID: 0}
+      _data: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
       _createPos: 0.35
-      _direction: {x: 1, y: 0}
-      _muzzle: {fileID: 1690375670728182287}
-      _onShootComplete:
-        m_PersistentCalls:
-          m_Calls: []
-    _ct: 0
+    _half:
+      _data: {fileID: 11400000, guid: 7d9b149e3b7b53e4daea21755b942ef0, type: 2}
+      _createPos: 0.35
+    _full:
+      _data: {fileID: 11400000, guid: 18fb9e213e5caae4bb18891e532f9723, type: 2}
+      _createPos: 0.35
+    _shootCount: 0
   _lightMode:
+    _currentState: 
     _status: {fileID: 11400000, guid: 296c9d83335bbc94496cc6acfe16d5d8, type: 2}
     _jump:
-      animeTriggerName: 
-      waitForAnimeEnd: 0
-      cancelableProgress: 0.7
-      _hasLeapt: 0
+      _isStopInExit: 0
+      _accel: 20
+      _friction: 1
       _enableJumped: -1
       _cutMultiplier: 0.5
-      _accel: 20
-      _airFriction: 30
     _chargeTime:
     - 1.2
     - 2.3
+    _skillAnimeTrigger: 
+    _shoot:
+      _data: {fileID: 11400000, guid: 003bd5d23b9ab1c4cab3f5419fb9355b, type: 2}
+      _createPos: 0.35
+      _range: 25
+      _shootCount: 2
+    _half:
+      _data: {fileID: 11400000, guid: 003bd5d23b9ab1c4cab3f5419fb9355b, type: 2}
+      _createPos: 0.35
+      _range: 30
+      _shootCount: 3
+    _full:
+      _data: {fileID: 11400000, guid: 003bd5d23b9ab1c4cab3f5419fb9355b, type: 2}
+      _createPos: 0.35
+      _range: 45
+      _shootCount: 5
+    _missileData: {fileID: 11400000, guid: 421108a8ef56f074b95c369c0bf71f2e, type: 2}
   _heavyMode:
+    _currentState: 
     _status: {fileID: 11400000, guid: b41a3160fdaab3b4db6f649a7f629947, type: 2}
     _jump:
-      animeTriggerName: 
-      waitForAnimeEnd: 0
-      cancelableProgress: 0.7
-      _hasLeapt: 0
+      _isStopInExit: 0
+      _accel: 20
+      _friction: 1
       _enableJumped: -1
       _cutMultiplier: 0.5
-      _accel: 20
-      _airFriction: 30
     _chargeTime:
     - 1.2
     - 2.3
-    _reflect:
-      _lockFrame: 8
-    _reflectObj: {fileID: 6402222889682222583}
+    _skillAnimeTrigger: 
+    _shoot:
+      _data: {fileID: 11400000, guid: 56ef6a958af2c4d489f991b159fa5944, type: 2}
+      _createPos: 0.35
+      _duration: 0.5
+    _half:
+      _data: {fileID: 11400000, guid: ec28880836440304bbb8cd5e1bb89910, type: 2}
+      _createPos: 0.35
+    _laser:
+      _data: {fileID: 11400000, guid: 537f86703f076d9469ead45ea233e0fe, type: 2}
+      _createPos: 4
+      _maxScale: 18
+      _duration: 2
+  _State: 
+  _move:
+    _isStopInExit: 0
+    _accel: 20
+    _friction: 1
+  _dash:
+    _isStopInExit: 0
+    _accel: 40
+    _friction: 5
+  _moveAir:
+    _isStopInExit: 0
+    _accel: 20
+    _friction: 1
+  _shootBlockTime: 0.6
+  _coyoteTime: 0.2
+  _preWarp: {fileID: 0}
+  _attackTarget:
+    serializedVersion: 2
+    m_Bits: 2048
+  _reflectMono: {fileID: 6402222889682222583}
 --- !u!70 &1633586170173326274
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -1369,6 +1413,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 076d1c48bd5011142ba5068a99a68e61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _enable: 1
 --- !u!114 &4098037870847721841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1400,3 +1445,67 @@ MonoBehaviour:
   _normal: {fileID: 7108339969198208228, guid: cbbf38328678f2a4f92df8ae3ddce0f4, type: 3}
   _heavy: {fileID: 7108339969198208228, guid: 8b02d8c4b2ada644ebd89418124eeaad, type: 3}
   _light: {fileID: 7108339969198208228, guid: 5aa5dd2d5ed427348b1308cca21916f9, type: 3}
+--- !u!114 &4480632626748882926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5932026677178947664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7c4a7d0490642438b3fb877e41b2e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _profiles:
+  - profileName: LockShoot
+    comps:
+    - id: 
+      Comp:
+        rid: 5832285842559205377
+      Priority: 0
+    - id: 
+      Comp:
+        rid: 5832285842559205378
+      Priority: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 5832285842559205377
+      type: {class: FilterByLookingForward, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _eye: {fileID: 38180473515206043}
+        _distance: 14
+        _verticalView: 60
+        _horizontalView: 90
+        _layerMask:
+          serializedVersion: 2
+          m_Bits: 2048
+        _eyeOffset: {x: 0, y: 1.49, z: 0}
+        _eyeAngleOffset: {x: 0, y: 0, z: 0}
+        _reversing: 0
+        _deadZone: 0
+        _is2D: 1
+    - rid: 5832285842559205378
+      type: {class: FilterByTag, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _tag: 2
+--- !u!114 &8222942320569739669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5932026677178947664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bc19a8516d957c44b29a2e649815889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _searchAssistanceMono: {fileID: 4480632626748882926}
+  _profile: LockShoot
+  _prefab: {fileID: 7769685849898933544, guid: ce7fa99d77a18c14d8956817cc95ba2c, type: 3}
+  _container: {fileID: 0}
+  _markerPrefab: {fileID: 0}
+  _markerContainer: {fileID: 0}
+  _markerOffset: {x: 0, y: 1.5, z: 0}

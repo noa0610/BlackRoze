@@ -51,8 +51,6 @@ namespace BlackRose.Core.Models.Units
         private ShootForward _fullCharge;
         private Dictionary<StateKey, string> _states = EnumWrapper.GetValueNameMap<StateKey>();
 
-        [Header("Objects")]
-        [SerializeField] private GameObject _muzzle;
         protected override void RegisterStats()
         {
             // === 各ステートのトリガー一覧定義 ===

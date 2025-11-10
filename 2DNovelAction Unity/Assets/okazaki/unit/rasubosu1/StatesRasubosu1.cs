@@ -9,6 +9,7 @@ namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_rasubosu1
     {
+        private ShootForward diffusebeamgun;
         private enum States
         {
             none,
@@ -77,12 +78,12 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Died, States.dead),
             };
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.armpunch, armpunchTrigger)
-                .AddTransmissions(States.diffusebeamgun, diffusebeamgunTrigger)
-                .AddTransmissions(States.firewall, firewallTrigger)
-                .AddTransmissions(States.firewallmove, firewallmoveTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.attackidle, attackidleTrigger)
+                .AddTransitions(States.armpunch, armpunchTrigger)
+                .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
+                .AddTransitions(States.firewall, firewallTrigger)
+                .AddTransitions(States.firewallmove, firewallmoveTrigger);
             // ステート登録
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡
@@ -98,9 +99,9 @@ namespace BlackRose.Core.Models.Units
             // アームパンチ
             _stateMachine.AddState(States.armpunch, new Idle());
             // 拡散ビーム砲
-            var diffusebeamgun = new ShootForward( _diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
-            .SetDirection(Vector2.down)
-            .SetMuzzle(_diffusebeamgunPoints.Length > 0 ? _diffusebeamgunPoints[0].gameObject : gameObject    );
+            diffusebeamgun = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer);
+            diffusebeamgun.SetDirection(Vector2.down);
+            diffusebeamgun.SetGameObject(_diffusebeamgunPoints.Length > 0 ? _diffusebeamgunPoints[0].gameObject : gameObject);
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
             // ファイアウォール移動
             _stateMachine.AddState(States.firewallmove, new Idle());

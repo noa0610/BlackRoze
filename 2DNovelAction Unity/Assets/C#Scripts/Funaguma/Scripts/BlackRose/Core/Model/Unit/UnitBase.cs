@@ -12,7 +12,7 @@ using UnityEditor;
 
 namespace BlackRose.Core.Models.Units
 {
-    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Animator), typeof(Rigidbody2D)), Serializable]
+    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Rigidbody2D)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IPausable, IUnit
     {
         #region === Inspector References ===
@@ -25,6 +25,13 @@ namespace BlackRose.Core.Models.Units
 
         [Header("Objects")]
         [SerializeField] protected GameObject _muzzle;
+        [SerializeField] protected Animator _animator;
+        #endregion
+
+        #region Dirs
+        [SerializeField] private Vector2 _moveDir = Vector2.zero;
+        [SerializeField] private Vector2 _shootDir = Vector2.right;
+
         #endregion
 
         #region === Components & Managers ===
@@ -32,7 +39,6 @@ namespace BlackRose.Core.Models.Units
         private StatusManager _statusManager;
         private StatusEffectManager _effectManager;
         private SpriteEffectPlayer _spriteEffectPlayer;
-        protected Animator _animator;
         private Rigidbody2D _body2D;
         public SpriteEffectPlayer player; // 外部アクセス用
         #endregion
@@ -45,8 +51,8 @@ namespace BlackRose.Core.Models.Units
             get => _reactiveDirection.Value;
             set => _reactiveDirection.Value = value;
         }
-        public Vector2 MoveDirection { get; set; }
-        public Vector2 ShootDir { get; set; } = Vector2.right;
+        public Vector2 MoveDirection { get => _moveDir; set => _moveDir = value; }
+        public Vector2 ShootDir { get => _shootDir; set => _shootDir = value; }
         #endregion
 
         #region === Properties ===
@@ -74,6 +80,8 @@ namespace BlackRose.Core.Models.Units
         #region === Debug ===
         [Header("Debug")]
         [SerializeField] private bool _enableVisuableInvincible;
+        [SerializeField] private string _currentState;
+
         public virtual bool ShoudBeLogging => false;
         #endregion
 #endif
@@ -85,8 +93,6 @@ namespace BlackRose.Core.Models.Units
         protected virtual void BeforeAwake() { }
         protected virtual void AfterAwake() { }
         protected virtual void BeforeRegisterStats() { }
-        protected virtual void BeforeStart() { }
-        protected virtual void AfterStart() { }
 
         protected void Awake()
         {
@@ -94,7 +100,8 @@ namespace BlackRose.Core.Models.Units
             BeforeAwake();
 
             _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
-            _animator = GetComponent<Animator>();
+            if (_animator == null)
+                _animator = GetComponent<Animator>();
             _body2D = GetComponent<Rigidbody2D>();
 
             UnitManager.instance.AddUnit(this);
@@ -116,9 +123,6 @@ namespace BlackRose.Core.Models.Units
 
         protected virtual void Start()
         {
-            BeforeStart();
-
-            AfterStart();
         }
         #endregion
 
@@ -146,6 +150,9 @@ namespace BlackRose.Core.Models.Units
 
         protected virtual void FixedUpdate()
         {
+#if UNITY_EDITOR
+            _currentState = _stateMachine.CurrentState.key;
+#endif
             BeforeFixedUpdate();
             if (!_isPlaying) return;
             AfterFixedUpdate();

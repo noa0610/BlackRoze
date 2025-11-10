@@ -37,6 +37,7 @@ namespace HighElixir.StateMachine
         private (TState id, StateInfo info) _current;
         private bool _disposed;
         private bool _enableOverriding;
+        private bool _enableSelfTransition;
         #endregion
 
         #region Delegates / Hooks
@@ -51,6 +52,7 @@ namespace HighElixir.StateMachine
         public ILogger Logger { get => _logger; internal set => _logger = value; }
         public bool Awaked { get; internal set; }
         public bool IsRunning { get; internal set; }
+        public bool EnableSelfTransition => _enableSelfTransition;
         public bool Disposed => _disposed;
         public IObservable<TransitionResult> OnTransition => _onTransition;
         public IObservable<StateInfo> OnCompletion => _onCompletion;
@@ -85,6 +87,7 @@ namespace HighElixir.StateMachine
             _logger = option.Logger;
             _logLevel = option.LogLevel;
             _enableOverriding = option.EnableOverriding;
+            _enableSelfTransition = option.EnableSelfTransition;
         }
         #endregion
 
@@ -197,17 +200,24 @@ namespace HighElixir.StateMachine
             if (Awaked)
                 throw new InvalidOperationException("[StateMachine]ステートマシンは起動済みです");
 
+            state.Tags.AddRange(tags);
+            state.Parent = this;
             if (_states.ContainsKey(id))
             {
                 // 既存あり：Bind済みかつ上書き無効なら例外
                 if (_states[id].Binded && !_enableOverriding)
+                {
                     throw new InvalidOperationException($"[StateMachine]このIDは既に登録されています: {id}");
+                }
+                else
+                {
+                    _states[id]._state = state;
+                }
             }
-
-            if (tags != null && tags.Length > 0)
-                state.Tags.AddRange(tags);
-            state.Parent = this;
-            _states[id] = new() { _state = state, Parent = this, ID = id };
+            else
+            {
+                _states[id] = new() { _state = state, Parent = this, ID = id };
+            }
 
             if (state is INotifyStateCompletion)
             {
@@ -249,7 +259,7 @@ namespace HighElixir.StateMachine
             }
 
             state.RegisterTransition(evt, toState);
-
+            Log(RequiredLoggerLevel.Info, $"Registered : {fromState} = \"{evt}\" => {toState}");
             if (onTransition != null)
             {
                 return this.OnTransWhere(fromState, evt, toState)
@@ -334,9 +344,9 @@ namespace HighElixir.StateMachine
             }
             else
             {
-                if (_logger != null)
-                    Log(RequiredLoggerLevel.Error, ex);
-                else
+                //if (_logger != null)
+                //    Log(RequiredLoggerLevel.Error, ex);
+                //else
                     ExceptionDispatchInfo.Capture(ex).Throw();
             }
         }
@@ -387,9 +397,7 @@ namespace HighElixir.StateMachine
         {
             if (!TryGetStateInfo(state, out var info))
             {
-                info = new StateInfo();
-                info.ID = state;
-                _states.Add(state, info);
+                info = CreateInfo(state);
             }
             return info;
         }
@@ -404,13 +412,14 @@ namespace HighElixir.StateMachine
         {
             var info = new StateInfo();
             info.ID = state;
+            info.Parent = this;
             _states.Add(state, info);
             return info;
         }
 
         private bool IsLogEnabled(RequiredLoggerLevel level) => (_logLevel & level) != 0;
 
-        private void Log(RequiredLoggerLevel level, string message)
+        internal void Log(RequiredLoggerLevel level, string message)
         {
             if (_logger == null || !IsLogEnabled(level)) return;
             switch (level)

@@ -33,7 +33,6 @@ namespace HighElixir.StateMachine
             if (!skipIfExisting || !_queue.Contains(item))
             {
                 _queue.Enqueue(item);
-                _stateMachine.Logger?.Info($"[EventQueue]Remaining {_queue.Count}");
                 return true;
             }
             return false;

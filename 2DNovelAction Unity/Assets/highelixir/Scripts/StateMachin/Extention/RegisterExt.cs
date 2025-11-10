@@ -2,6 +2,7 @@
 using HighElixir.Implements.Observables;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace HighElixir.StateMachine.Extention
 {
@@ -17,10 +18,12 @@ namespace HighElixir.StateMachine.Extention
             OnTransWhere<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TState from, TEvt evt, TState to)
             
         {
-            return s.OnTransition.Where(x =>
-                    x.FromState.Equals(from) &&
-                    x.Event.Equals(evt) &&
-                    x.ToState.Equals(to));
+            return s.OnTransition.Where(x => {
+                bool flg1 = x.FromState.Equals(from);
+                bool flg2 = x.Event.Equals(evt);
+                bool flg3 =  x.ToState.Equals(to);
+                return flg1 && flg2 && flg3;
+            });
         }
 
         /// <summary>

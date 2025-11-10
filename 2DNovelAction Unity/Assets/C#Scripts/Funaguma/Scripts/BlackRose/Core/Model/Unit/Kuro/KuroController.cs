@@ -1,6 +1,5 @@
 ﻿using BlackRose.Core.Models.Units.State;
 using HighElixir.StateMachine;
-using HighElixir.StateMachine.Extensions;
 using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
 using HighElixir.Unity.Loggings;
@@ -159,7 +158,6 @@ namespace BlackRose.Core.Models.Units
         {
             _fms.Update(Time.deltaTime);
 
-
             if (Mathf.Abs(MoveDirection.x) < 0.01f && Rigidbody2D != null)
             {
                 var v = Rigidbody2D.velocity;
@@ -189,6 +187,7 @@ namespace BlackRose.Core.Models.Units
             if (input.isPressed)
             {
                 _fms.Send(Trigger.jumpInput);
+                AfterJump();
             }
             else
             {

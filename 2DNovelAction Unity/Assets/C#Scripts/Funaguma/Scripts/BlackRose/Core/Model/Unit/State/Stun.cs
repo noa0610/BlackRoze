@@ -19,11 +19,10 @@ namespace BlackRose.Core.Models.Units.State
 
         public override void Enter()
         {
-            Cont.Animator.SetFloat("StunTime", _stunTime);
             Cont.Rigidbody2D.velocity = Vector2.zero;
             var dir = Cont.Direction.x < 0 ? -1 : 1;
             Cont.Rigidbody2D.AddForce(_knockbackDirection * dir * KnockbackForce, ForceMode2D.Impulse); // Apply knockback force
-            Cont.SpriteEffectPlayer.AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, 1.5f);
+            Cont.SpriteEffectPlayer.AddEffect(SpriteEffectHolders.SpriteEffects.Blinking, _stunTime);
             Cont.StatusEffectManager.AddEffect(StatusEffectHolder.instance.Stun.EffectFactory());
             _command.Execute(0);
         }

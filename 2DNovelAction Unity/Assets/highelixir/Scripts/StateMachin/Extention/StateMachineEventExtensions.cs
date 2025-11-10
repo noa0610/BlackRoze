@@ -2,12 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HighElixir.StateMachine.Extensions
+namespace HighElixir.StateMachine.Extention
 {
     public static class StateMachineEventExtensions
     {
         #region Send Event with Delay
-        public static async Task SendEventWithDelayAsync<TCont, TEvt, TState>(
+        public static async Task<bool> SendEventWithDelayAsync<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TimeSpan delay,
             TEvt evt,
@@ -15,7 +15,11 @@ namespace HighElixir.StateMachine.Extensions
         {
             await Task.Delay(delay, token);
             if (!token.IsCancellationRequested)
-                stateMachine.Send(evt);
+            {
+                stateMachine.LazySend(evt);
+                return true;
+            }
+            return false;
         }
 
         public static async Task SendEventWithDelayAsync<TCont, TEvt, TState>(
@@ -28,6 +32,8 @@ namespace HighElixir.StateMachine.Extensions
         #endregion
 
         #region Send Event and Temporarily Lock Exit
+
+        // アンロックイベントは常に呼ばれる
         public static async Task SendEventAndLockExitAsync<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TEvt evt,
@@ -36,6 +42,7 @@ namespace HighElixir.StateMachine.Extensions
             Action onUnlock = null)
             => await stateMachine.SendEventAndLockExitAsync(evt, lockDuration, DefaultLockGuard, token, onUnlock);
 
+        // アンロックイベントは常に呼ばれる
         public static async Task SendEventAndLockExitAsync<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TEvt evt,
@@ -52,10 +59,8 @@ namespace HighElixir.StateMachine.Extensions
                 stateInfo.AllowExitFunc += lockPredicate;
                 await Task.Delay(lockDuration, token);
                 if (stateInfo != null)
-                {
                     stateInfo.AllowExitFunc -= lockPredicate;
-                    onUnlock?.Invoke();
-                }
+                onUnlock?.Invoke();
             }
         }
 

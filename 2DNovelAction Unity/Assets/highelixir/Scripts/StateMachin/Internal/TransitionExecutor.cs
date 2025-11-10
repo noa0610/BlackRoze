@@ -21,8 +21,11 @@ namespace HighElixir.StateMachine.Internal
             // 遷移候補探索
             if (!current._transitionMap.TryGetValue(evt, out var to) &&
                 !_anyTransition.TryGetValue(evt, out to))
-                return false;
+            {
 
+                //FailedLog($"not found Transition, {current} with \"{evt}\"");
+                return false;
+            }
             // チェック
             if (!ValidateTransition(current, to)) return false;
 
@@ -35,8 +38,12 @@ namespace HighElixir.StateMachine.Internal
         {
             try
             {
+                if (!_machine.EnableSelfTransition && from.ID.Equals(to)) return false;
+
                 if (!_machine.TryGetStateInfo(to, out var toState))
+                {
                     return false;
+                }
                 if (!toState.Binded)
                     throw new InvalidOperationException($"[{to} does not bind.]");
                 if ((from.allowExitFunc != null && !from.allowExitFunc(toState)) || !from.State.AllowExit())
@@ -70,6 +77,11 @@ namespace HighElixir.StateMachine.Internal
             toState.SubHost?.OnParentEnter();
 
             _machine.Current = (to, toState);
+        }
+
+        private void FailedLog(string because)
+        {
+            _machine.Log(RequiredLoggerLevel.Info, $"Transition Faild, because : {because}");
         }
     }
 

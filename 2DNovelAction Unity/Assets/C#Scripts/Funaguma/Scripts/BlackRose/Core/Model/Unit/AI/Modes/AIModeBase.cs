@@ -61,7 +61,7 @@ namespace BlackRose.Core.Models.Units
             var op = new StateMachineOption<AIController, AITriggers, SubState>(_parent);
             op.Logger = _parent.logger;
             op.QueueMode = HighElixir.StateMachine.QueueMode.DoEverything;
-            op.LogLevel = RequiredLoggerLevel.ERRORS;
+            op.LogLevel = RequiredLoggerLevel.ERROR;
             op.EnableOverriding = true;
 
             _stateMachine = new(op);

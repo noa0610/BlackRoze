@@ -11,9 +11,9 @@ namespace HighElixir.StateMachine
         Warning = 1 << 1,
         Error = 1 << 2,
         Fatal = 1 << 3,
-        INFOS = Info | Warning,
-        ERRORS = Error | Fatal,
-        ALL = INFOS | ERRORS,
+        INFO = Info | Warning,
+        ERROR = Error | Fatal,
+        ALL = INFO | ERROR,
     }
     public sealed class StateMachineOption<TCont, TEvt, TState>
     {
@@ -24,6 +24,12 @@ namespace HighElixir.StateMachine
         // ステート上書きのルール
         // falseの場合、上書きしようとすると例外をスローする
         public bool EnableOverriding { get; set; } = false;
+
+        /// <summary>
+        /// 自己遷移の許可
+        /// falseの場合、自己遷移を拒否する
+        /// </summary>
+        public bool EnableSelfTransition { get; set; } = false;
 
         // ロガー(null以外の場合、ログ出力が有効化される)
         public ILogger Logger { get; set; } = null;

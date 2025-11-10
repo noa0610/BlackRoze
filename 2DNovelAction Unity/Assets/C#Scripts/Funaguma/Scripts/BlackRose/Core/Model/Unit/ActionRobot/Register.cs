@@ -1,257 +1,258 @@
-﻿using BlackRose.Core.Models.Helper;
-using BlackRose.Core.Models.States;
-using HighElixir;
-using System.Collections.Generic;
+﻿using BlackRose.Core.Models.Units.State;
+using Cysharp.Threading.Tasks;
+using HighElixir.StateMachine;
+using HighElixir.StateMachine.Extention;
+using HighElixir.Unity.Loggings;
+using System;
+using System.Threading;
 using UniRx;
 using UnityEngine;
+
 namespace BlackRose.Core.Models.Units
 {
+    // ステート登録を担当するpartial
     public partial class ActionRobot
     {
-        private enum StateKey
-        {
-            none, // 状態なし
-            idle,
-            shoot,
-            chargeShoot,
-            fullChargeShoot,
-            shootWait, // 連射待機()
-            move,
-            dash,
-            stun,
-            jump,
-            fall,
-            dead,
-        }
-        private enum Triggers
+        public enum StateKey
         {
             none,
+
+            // 移動系
+            idle,
+            landing,
+            move,
+            dash,
+            fall,
+            jump,
+
+            // 射撃関連
+            shoot,
+            halfChargeShoot,
+            fullChargeShoot,
+            shootInterval,
+
+            // 被弾、死亡
+            stun,
+            dead,
+        }
+        public enum Triggers
+        {
+            none,
+
+            // 移動関連
             moveInput,
             dashInput,
             cancelMove,
-            shootInput,
-            chargeShoot,
-            fullChargeShoot,
-            shootComplete,
-            death,
+            cancelDash,
             falling,
             jumpInput,
             landing,
-            stuned,
-            finishedStun,
+            landed,
+
+            // 攻撃関連
+            shootInput,
+            halfChargeShoot,
+            fullChargeShoot,
+            shootComplete,
             shootInAir,
             halfChargeInAir,
             fullChargeInAir,
-            watingTimeHasElapsed, // 攻撃待機中に攻撃しなかった場合に呼ばれる
-        }
-        [Header("States")]
-        [SerializeField] private Jump _jump;
-        private ShootForward _normal;
-        private ShootForward _halfCharge;
-        private ShootForward _fullCharge;
-        private Dictionary<StateKey, string> _states = EnumWrapper.GetValueNameMap<StateKey>();
+            waitingTimeHasElapsed,
 
-        [Header("Objects")]
-        [SerializeField] private GameObject _muzzle;
+            // 被弾関連
+            death,
+            stuned,
+            finishedStun,
+        }
+
+        private StateMachine<UnitBase, Triggers, StateKey> _fms;
+
+        #region ステート
+        [Header("States")]
+        //
+        [SerializeField] private Jump<UnitBase> _jump;
+        [SerializeField] private MoveOnGround<UnitBase> _moveOnGround;
+        [SerializeField] private MoveOnAir<UnitBase> _air;
+        [SerializeField] private DashOnGround<UnitBase> _dash;
+
+        //
+        [SerializeField] private ShootForward<UnitBase> _normal;
+        [SerializeField] private ShootForward<UnitBase> _halfCharge;
+        [SerializeField] private ShootForward<UnitBase> _fullCharge;
+
+        //
+        [SerializeField] private Stun<UnitBase> _stun;
+
+        #endregion
+
+        #region 非同期、時間管理系
+        private CancellationTokenSource _cancellableActionToken;
+
+        #endregion
+
+#if UNITY_EDITOR
+        [SerializeField] private string _currentState_fms = "idle";
+#endif
         protected override void RegisterStats()
         {
-            // === 各ステートのトリガー一覧定義 ===
-            var idleTriggers = new[]
+            #region FMS初期化
+            StateMachineOption<UnitBase, Triggers, StateKey> option = new(this);
+            option.Logger = new UnityLogger();
+#if UNITY_EDITOR
+            option.LogLevel = RequiredLoggerLevel.ALL;
+            _fms = new(option);
+            _fms.OnTransition.Subscribe(info => _currentState_fms = info.ToState.ToString()).AddTo(this);
+            //_fms.OnTransition.Subscribe(info =>
+            //{
+            //    Debug.Log(info.ToString());
+            //}).AddTo(this);
+#else
+            option.LogLevel = RequiredLoggerLevel.Fatal;
+            _fms = new(option);
+#endif
+            #endregion
+            //var ac = _playerInput.actions.FindActionMap("Player").FindAction("Move");
+            //_fms.OnTransition.Where(_ => _playerInput != null).Subscribe(_ =>
+            //{
+            //    OnMove(ac.ReadValue<Vector2>());
+            //}).AddTo(this);
+            #region ステートマシン、一括追加
+            _fms.RegisterProcessor = new StateProcessor<UnitBase, Triggers, StateKey>((id, info) =>
             {
-                (Triggers.shootInput, StateKey.shoot,""),
-                (Triggers.chargeShoot, StateKey.chargeShoot,""),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
-                (Triggers.moveInput, StateKey.move,"toWalk"),
-                (Triggers.dashInput, StateKey.dash,"toDash"),
-                (Triggers.jumpInput, StateKey.jump,"toJump"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.falling, StateKey.fall,"toFall"),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var shootTriggers = new []
-            {
-                (Triggers.shootComplete, StateKey.shootWait,""),
-                (Triggers.chargeShoot, StateKey.chargeShoot,""),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-            };
+                if (id == StateKey.dead) return;
+                if (id == StateKey.stun) return;
 
-            // 遷移候補はidleとほぼ同じだが、チャージシュートができない
-            var waitTriggers = new []
-            {
-                (Triggers.shootInput, StateKey.shootWait,""),
-                (Triggers.watingTimeHasElapsed, StateKey.idle,"toIdle"),
-                (Triggers.moveInput, StateKey.move,"toWalk"),
-                (Triggers.dashInput, StateKey.dash,"toDash"),
-                (Triggers.jumpInput, StateKey.jump,"toJump"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.falling, StateKey.fall,"toFall"),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var chargeShootTriggers = new []
-            {
-                (Triggers.shootComplete, StateKey.idle,"toIdle"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var fullChargeShootTriggers = new []
-            {
-                (Triggers.shootComplete, StateKey.idle,"toIdle"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var moveTriggers = new []
-            {
-                (Triggers.moveInput, StateKey.move,"toWalk"),
-                (Triggers.cancelMove, StateKey.idle,"toIdle"),
-                (Triggers.shootInput, StateKey.shoot,""),
-                (Triggers.chargeShoot, StateKey.chargeShoot,""),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
-                (Triggers.dashInput, StateKey.dash,"toDash"),
-                (Triggers.jumpInput, StateKey.jump,"toJump"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var dashTriggers = new []
-            {
-                (Triggers.cancelMove, StateKey.idle,"toIdle"),
-                (Triggers.shootInput, StateKey.shoot,""),
-                (Triggers.chargeShoot, StateKey.chargeShoot,""),
-                (Triggers.fullChargeShoot, StateKey.fullChargeShoot,""),
-                (Triggers.jumpInput, StateKey.jump,"toJump"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var jumpTriggers = new []
-            {
-                (Triggers.falling, StateKey.fall,""),
-                (Triggers.landing, StateKey.idle,"toIdle"),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-                (Triggers.shootInAir, StateKey.shoot,""),
-                (Triggers.halfChargeInAir, StateKey.chargeShoot,""),
-                (Triggers.fullChargeInAir, StateKey.fullChargeShoot,""),
-            };
-            var fallTriggers = new []
-            {
-                (Triggers.landing, StateKey.idle,"toIdle"),
-                (Triggers.shootInAir, StateKey.shoot,""),
-                (Triggers.halfChargeInAir, StateKey.chargeShoot,""),
-                (Triggers.fullChargeInAir, StateKey.fullChargeShoot,""),
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.death, StateKey.dead,""),
-            };
-            var stunTriggers = new []
-            {
-                (Triggers.stuned, StateKey.stun,""),
-                (Triggers.finishedStun, StateKey.idle,"toIdle"),
-                (Triggers.death, StateKey.dead,"")
-            };
-            var deadTriggers = new (Triggers, StateKey)[]
-            {
-                // 死亡ステートからはトリガー無し or シーンリロードなど
-            };
+                if (info.HasTagOnChild("Tokened"))
+                {
+                    info.OnExit.Subscribe(_ => _cancellableActionToken?.Cancel());
+                }
+                if (info.HasTagOnChild("Shoot"))
+                    info.RegisterTransition(Triggers.shootComplete, StateKey.shootInterval, "foo");
 
-            // === TransitionGroup に登録 ===
-            _stateMachine
-                .AddTransitions(StateKey.idle, idleTriggers)
-                .AddTransitions(StateKey.shootWait, waitTriggers)
-                .AddTransitions(StateKey.shoot, shootTriggers)
-                .AddTransitions(StateKey.chargeShoot, chargeShootTriggers)
-                .AddTransitions(StateKey.fullChargeShoot, fullChargeShootTriggers)
-                .AddTransitions(StateKey.move, moveTriggers)
-                .AddTransitions(StateKey.dash, dashTriggers)
-                .AddTransitions(StateKey.jump, jumpTriggers)
-                .AddTransitions(StateKey.fall, fallTriggers)
-                .AddTransitions(StateKey.stun, stunTriggers)
-                .AddTransitions(StateKey.dead, deadTriggers);
+                if (info.HasTagOnChild("Cancelable"))
+                {
+                    if (info.HasTagOnChild("InAir"))
+                    {
+                        info.RegisterTransition(Triggers.shootInAir, StateKey.shoot, "toShot");
+                        info.RegisterTransition(Triggers.halfChargeInAir, StateKey.halfChargeShoot, "toShot");
+                        info.RegisterTransition(Triggers.fullChargeInAir, StateKey.fullChargeShoot, "toShot");
+                    }
+                    else
+                    {
+                        if (id != StateKey.dash)
+                            info.RegisterTransition(Triggers.moveInput, StateKey.move, "toWalk");
+                        info.RegisterTransition(Triggers.dashInput, StateKey.dash, "toDash");
+                        info.RegisterTransition(Triggers.jumpInput, StateKey.jump, "toJump");
+                    }
+                    info.RegisterTransition(Triggers.falling, StateKey.fall, "toFall");
+                    info.RegisterTransition(Triggers.shootInput, StateKey.shoot, "toShot");
+                    info.RegisterTransition(Triggers.halfChargeShoot, StateKey.halfChargeShoot, "toShot");
+                    info.RegisterTransition(Triggers.fullChargeShoot, StateKey.fullChargeShoot, "toShot");
+                }
+                info.RegisterTransition(Triggers.stuned, StateKey.stun, "foo");
+                info.RegisterTransition(Triggers.landing, StateKey.landing, "foo");
+            });
+            #endregion
 
-            // === ステートコンポーネント登録 ===
+
+            #region === 各ステートのトリガー一覧定義 ===
+
+            // ShootWait : Cancelable
+            _fms.RegisterTransition(StateKey.shootInterval, Triggers.waitingTimeHasElapsed, StateKey.idle, "toIdle");
+
+            // Move : Cancelable
+            _fms.RegisterTransition(StateKey.move, Triggers.cancelMove, StateKey.idle, "toIdle");
+            _fms.RegisterTransitions(StateKey.dash,
+                (Triggers.cancelDash, StateKey.move, "toWalk"),
+                (Triggers.cancelMove, StateKey.idle, "toIdle"));
+
+
+            _fms.RegisterTransition(StateKey.stun, Triggers.finishedStun, StateKey.idle, "toIdle");
+
+            _fms.RegisterAnyTransition(Triggers.landing, StateKey.landing, "toLand");
+            _fms.RegisterTransition(StateKey.landing, Triggers.landed, StateKey.idle, "toIdle");
+
+            _fms.RegisterAnyTransition(Triggers.death, StateKey.dead, "");
+            #endregion
+
+            #region === ステートコンポーネント登録 ===
             // idle
-            _stateMachine.AddState(
-                StateKey.idle,
-                new Idle() // 何も動かさないデフォルトステート
-            );
+            _fms.RegisterState(StateKey.idle, new Idle<UnitBase>(), "Cancelable");
 
-            var time = new Idle_LazyEvent(0.3f, false);
-            time.OnCompleted += () =>
+            var hook = _fms.RegisterState(StateKey.landing, new Idle<UnitBase>(), "Tokened");
+            //hook.OnEnter.Subscribe(_ =>
+            //{
+            //    var token = Take();
+            //    var unused = _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(0.2f), Triggers.landed, token);
+            //});
+
+            hook = _fms.RegisterState(StateKey.shootInterval, new Idle<UnitBase>(), "Cancelable", "Tokened");
+            hook.OnEnter.Subscribe(info =>
             {
-                //Debug.Log("攻撃待機終了");
-                _successionCount = 0;
-                _stateMachine.LazyChange(Triggers.watingTimeHasElapsed);
-            };
-            _stateMachine.AddState(StateKey.shootWait, time);
+                var token = Take();
+                UniTask.Create(async () =>
+                {
+                    if (await _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(_intervalTime), Triggers.waitingTimeHasElapsed, token))
+                    {
+                        //Debug.Log("AAAAAA");
+                        _successionCount = 0;
+                    }
+                });
+
+            });
 
             // shoot
-            _normal = new ShootForward(_bullets[0], _targetLayer);
-            _normal.SetGameObject(_muzzle);
-            _normal.onShootComplete.AsObservable().Subscribe(_ =>
+            _fms.RegisterState(StateKey.shoot, _normal, "Shoot");
+            _fms.RegisterState(StateKey.halfChargeShoot, _halfCharge, "Shoot");
+            _fms.RegisterState(StateKey.fullChargeShoot, _fullCharge, "Shoot");
+            _fms.OnCompletion.Where(x => x.HasTagOnChild("Shoot")).Subscribe(_ =>
             {
-                _stateMachine.ChangeState(Triggers.shootComplete);
+                _fms.LazySend(Triggers.shootComplete);
             }).AddTo(this);
-            _stateMachine.AddState(StateKey.shoot, _normal);
 
-            // chargeShoot
-            _halfCharge = new ShootForward(_bullets[1], _targetLayer);
-            _halfCharge.SetGameObject(gameObject);
-            _halfCharge.onShootComplete.AsObservable().Subscribe(_ =>
-            {
-                _stateMachine.ChangeState(Triggers.shootComplete);
-            }).AddTo(this);
-            _stateMachine.AddState(StateKey.chargeShoot, _halfCharge);
-
-            // fullChargeShoot
-            _fullCharge = new ShootForward(_bullets[2], _targetLayer);
-            _fullCharge.SetGameObject(gameObject);
-            _fullCharge.onShootComplete.AsObservable().Subscribe(_ =>
-            {
-                _stateMachine.ChangeState(Triggers.shootComplete);
-            }).AddTo(this);
-            _stateMachine.AddState(StateKey.fullChargeShoot, _fullCharge);
             // move
-            _stateMachine.AddState(
-                StateKey.move,
-                new MoveOnGround()
-            );
-
-            // dash
-            _stateMachine.AddState(
-                StateKey.dash,
-                new DashOnGround(this)
-            );
+            _fms.RegisterState(StateKey.move, _moveOnGround, "Cancelable");
+            _fms.RegisterState(StateKey.fall, _air, "Cancelable", "InAir");
+            hook = _fms.RegisterState(StateKey.dash, _dash, "Cancelable");
+            hook.OnEnter.Subscribe(_ =>
+            {
+                _trailRenderer.emitting = true;
+            }).AddTo(this);
+            _fms.OnTransition.Where(res => res.FromState == StateKey.dash && res.ToState != StateKey.jump).Subscribe(res =>
+            {
+                _trailRenderer.emitting = false;
+            }).AddTo(this);
 
             // jump
-            _jump = new Jump();
-            _stateMachine.AddState(
-                StateKey.jump,
-                _jump
-                );
-
-            // fall
-            _stateMachine.AddState(
-                StateKey.fall,
-                new MoveOnAir()
-                .SetAccel(20f)
-                .SetFriction(-20f)
-            );
+            _fms.RegisterState(StateKey.jump, _jump, "InAir", "Cancelable");
 
             // stun
-            _stunState = new Stun(_rigidbody, 0.7f, false)
-                .SetKnockback(_stunKnockback);
-            _stunState.OnCompleted += () =>
-            {
-                Debug.Log("スタン終了");
-                _stateMachine.LazyChange(Triggers.finishedStun);
-                IsInvincible = false;
-            };
-            _stateMachine.AddState(StateKey.stun, _stunState);
+            _fms.RegisterState(StateKey.stun, _stun, "Tokened");
 
             // dead
-            _stateMachine.AddState(
-                StateKey.dead,
-                new Idle()
-            );
+            _fms.RegisterState(StateKey.dead, new Idle<UnitBase>());
+
+            #endregion
+
+            // 起動
+            _fms.Awake(StateKey.idle);
+
+
+            // UnitBase側のエラーを防ぐための仮登録
+            _stateMachine.AddState(StateKey.idle, new States.Idle());
+        }
+
+        protected override void AfterUpdate()
+        {
+            _fms.Update(Time.deltaTime);
+        }
+
+        private CancellationToken Take()
+        {
+            _cancellableActionToken?.Cancel();
+            _cancellableActionToken?.Dispose();
+            _cancellableActionToken = new();
+            return _cancellableActionToken.Token;
         }
     }
 }

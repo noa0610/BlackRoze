@@ -17,18 +17,22 @@ namespace BlackRose
     public abstract class GroundedUnit : UnitBase
     {
         [Header("Ground Check")]
-        [SerializeField] private Transform _groundCheck;           // 足元チェック用のTransform
-        [SerializeField] private Vector3 _landingCheckOffset = new(0, 0, 0); // 着地判定を取る際のオフセット
-        [SerializeField] private float _groundCheckRadius = 0.1f;  // チェック半径
-        [SerializeField] private LayerMask _groundLayer;           // 地面Layer
-        [SerializeField] private float _disableCheckTime = 0.2f; // 地面判定を無効にする
+        [SerializeField] protected Transform _groundCheck;           // 足元チェック用のTransform
+        [SerializeField] protected float _groundCheckRadius = 0.1f;  // チェック半径
+        [SerializeField] protected LayerMask _groundLayer;           // 地面Layer
+        [SerializeField] protected Vector3 _landingCheckOffset = new(0, 0, 0); // 着地判定を取る際のオフセット
+        [SerializeField] protected float _disableCheckTime = 0.2f; // 地面判定を無効にする
+
+
         private TimerTicket _ticket;
-        public bool IsGrounded { get; private set; }
-        public GroundState GroundState { get; private set; } = GroundState.Landing;
         private ReactiveCommand _onAirToGround = new();
+        private ReactiveProperty<GroundState> _groundState = new(GroundState.Landing);
+
+        public IObservable<GroundState> CurrentGroundState => _groundState;
         public IObservable<Unit> OnAirToGround => _onAirToGround; // 地面に着地したときのコールバック
 
-        private bool IsFall => GroundState == GroundState.Falling;
+        public bool IsGrounded => _groundState.Value == GroundState.Landing;
+        private bool IsFall => _groundState.Value == GroundState.Falling;
         public virtual void AfterJump()
         {
             Timer.Start(_ticket, true, true);
@@ -51,20 +55,20 @@ namespace BlackRose
                     _onAirToGround?.Execute(); // 地面に着地したときのコールバックを呼び出す
                     Timer.Start(_ticket, true, true);
                 }
-                IsGrounded = true;
-                GroundState = GroundState.Landing;
+                _groundState.Value = GroundState.Landing;
                 OnGrounded(); // 地面にいる場合の処理
+                //Debug.Log($"Result:{_groundState.Value}");
                 return;
             }
             if (Rigidbody2D.velocity.y < 0)
             {
                 OnFall(); // 落下中の処理
-                GroundState = GroundState.Falling;
+                _groundState.Value = GroundState.Falling;
             }
             else
-                GroundState = GroundState.Rising;
-            IsGrounded = false;
+                _groundState.Value = GroundState.Rising;
             OnUnGrounded();
+            //Debug.Log($"Result:{_groundState.Value}");
         }
         /// <summary>
         /// 一定時間ごとに呼ばれ、着地している場合に呼ばれる

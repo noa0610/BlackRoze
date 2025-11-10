@@ -6,11 +6,10 @@ using System.Linq;
 
 namespace BlackRose
 {
-    [RequireComponent(typeof(SpriteRenderer))]
     public class SpriteEffectPlayer : MonoBehaviour
     {
         private List<SpriteEffectDataHolder> _spriteEffects = new();
-        private SpriteRenderer _spriteRenderer;
+        [SerializeField] private GameObject _tagetRenderer;
 
         public void AddEffect(SpriteEffectHolders.SpriteEffects spriteEffects, float duration, float speed = 1f)
         {
@@ -27,10 +26,7 @@ namespace BlackRose
         }
 
         // === Unity Lifecycle ===
-        private void Awake()
-        {
-            _spriteRenderer = GetComponent<SpriteRenderer>();
-        }
+
         private void Update()
         {
             var dT = Time.deltaTime;

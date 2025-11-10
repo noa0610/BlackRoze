@@ -4,7 +4,6 @@ using HighElixir;
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
-
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_rasubosu1
@@ -16,6 +15,7 @@ namespace BlackRose.Core.Models.Units
             dead,
             attackidle,
             armpunch,
+            armpunchidle,
             diffusebeamgun,
             firewall,
             firewallmove,
@@ -27,6 +27,8 @@ namespace BlackRose.Core.Models.Units
             Attackcooldown,
             firewallmoveend,
             Attack1,
+            Attack1loop,
+            Attack1loopend,
             Attack2,
             Attack3,
             Attack4,
@@ -53,11 +55,17 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Playerdead, States.idle),
                 (Triggers.Died, States.dead),
                 (Triggers.Attack1, States.armpunch),
-                (Triggers.Attack2, States.diffusebeamgun),
-                (Triggers.Attack3, States.firewallmove),
+                (Triggers.Attack2, States.armpunch),
+                (Triggers.Attack3, States.armpunch),
             };
             var armpunchTrigger = new[]
             {
+                (Triggers.Attack1loop, States.armpunchidle),
+                (Triggers.Died, States.dead),
+            };
+            var armpunchidleTrigger = new[]
+            {
+                (Triggers.Attack1loopend, States.armpunch),
                 (Triggers.Attack1end, States.attackidle),
                 (Triggers.Died, States.dead),
             };
@@ -77,34 +85,66 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Died, States.dead),
             };
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.armpunch, armpunchTrigger)
-                .AddTransmissions(States.diffusebeamgun, diffusebeamgunTrigger)
-                .AddTransmissions(States.firewall, firewallTrigger)
-                .AddTransmissions(States.firewallmove, firewallmoveTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.attackidle, attackidleTrigger)
+                .AddTransitions(States.armpunch, armpunchTrigger)
+                .AddTransitions(States.armpunchidle, armpunchidleTrigger)
+                .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
+                .AddTransitions(States.firewall, firewallTrigger)
+                .AddTransitions(States.firewallmove, firewallmoveTrigger);
             // ステート登録
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡
             _stateMachine.AddState(States.dead, new Idle());
             // 攻撃待機
             var attackIdle = new Idle_LazyEvent(5f);
-            // 遅延完了時に呼びたい処理をOnCompletedで登録
             attackIdle.OnCompleted += Attackjudgement;
-            {
-                
-            }
             _stateMachine.AddState(States.attackidle, attackIdle);
             // アームパンチ
-            _stateMachine.AddState(States.armpunch, new Idle());
+            var armpunch = new ShootForward(_armpunchBulletData, _armpunchTargetLayer)
+            .SetDirection(Vector2.down);
+            armpunch.SetGameObject(_armpunchPoint != null ? _armpunchPoint : gameObject);
+            armpunch.onShootComplete.AddListener(() =>
+            {
+                if (punchcount == 3)
+                {
+                    // 最終状態なら攻撃終了へ
+                    punchcount = 0;
+                    _stateMachine.LazyChange(Triggers.Attack1end);
+                }
+                else
+                {
+                    ++punchcount;
+                    // 続けるなら Attack1loop を発火して armpunch に戻す（transmission で armpunch->armpunchidle に遷移）
+                    _stateMachine.LazyChange(Triggers.Attack1loop);
+                }
+            });
+            _stateMachine.AddState(States.armpunch, armpunch);
+            var armpunchidle = new Idle_LazyEvent(5f);
+            armpunchidle.OnCompleted += () =>
+            {
+                // Attack1loopend を発火して armpunch に戻す（transmission で armpunchidle->armpunch に遷移）
+                _stateMachine.LazyChange(Triggers.Attack1loopend);
+            };
+            _stateMachine.AddState(States.armpunchidle, armpunchidle);
             // 拡散ビーム砲
-            var diffusebeamgun = new ShootForward( _diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
-            .SetDirection(Vector2.down)
-            .SetMuzzle(_diffusebeamgunPoints.Length > 0 ? _diffusebeamgunPoints[0].gameObject : gameObject    );
+            var diffusebeamgun = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
+            .SetDirection(Vector2.down);
+            diffusebeamgun.SetGameObject(_diffusebeamgunPoint != null ? _diffusebeamgunPoint : gameObject);
+            diffusebeamgun.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.ChangeState(Triggers.Attack2end);
+            });
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
-            // ファイアウォール移動
-            _stateMachine.AddState(States.firewallmove, new Idle());
             // ファイアウォール
+            var firewall = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
+            .SetDirection(Vector2.left);
+            firewall.SetGameObject(_diffusebeamgunPoint != null ? _diffusebeamgunPoint : gameObject);
+            firewall.onShootComplete.AddListener(() =>
+            {
+                firewallRayCast();
+                _stateMachine.ChangeState(Triggers.Attack3end);
+            });
             _stateMachine.AddState(States.firewall, new Idle());
         }
     }

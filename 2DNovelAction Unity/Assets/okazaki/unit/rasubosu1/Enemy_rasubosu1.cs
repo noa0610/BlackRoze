@@ -5,13 +5,13 @@ using UnityEngine;
 using HighElixir;
 using System.Collections.Generic;
 using BlackRose.Datas.Definitions;
-
+using BlackRose.Core.Models.Objects;
 
 
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    
+
     public partial class Enemy_rasubosu1 : UnitBase
     {
         [SerializeField] private Rigidbody2D _rb;
@@ -22,8 +22,17 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Transform[] _firewallPoints;// 必要ならInspectorでセット
         [SerializeField] private BulletData _diffusebeamgunBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _diffusebeamgunTargetLayer; 
-        [SerializeField] private Transform[] _diffusebeamgunPoints;// 必要ならInspectorでセット
+        [SerializeField] private LayerMask _diffusebeamgunTargetLayer;
+        [SerializeField] private GameObject _diffusebeamgunPoint;// 必要ならInspectorでセット
+        [SerializeField] private BulletData _armpunchBulletData; // 必要ならInspectorでセット
+        [SerializeField] private LayerMask _armpunchTargetLayer;
+        [SerializeField] private GameObject _armpunchPoint;// 必要ならInspectorでセット
+        private int punchcount = 0;
+        [SerializeField] private DamageFloorMaker _damageFloorMaker; // Inspector でセット
+    [SerializeField] private float _damageFloorDuration = 3f;    // ダメージ床の持続時間
+    [SerializeField] private float _damageFloorLength = 5f;      // ダメージ床の最大長さ
+    [SerializeField] private LayerMask _raycastLayer;            // Raycast用レイヤー
+
 
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
@@ -63,9 +72,8 @@ namespace BlackRose.Core.Models.Units
         }
         public void Attackjudgement()
         {
-            int attackIndex = UnityEngine.Random.Range(0, 3); // 0〜3 の間でランダム
-
-            switch (attackIndex)
+            int choice = Random.Range(0, 3);
+            switch (choice)
             {
                 case 0:
                     Attack1();
@@ -82,13 +90,13 @@ namespace BlackRose.Core.Models.Units
         void Attack1()
         {
             Debug.Log("アームパンチ");
-            _stateMachine.ChangeState(Triggers.Attack3);
+            _stateMachine.ChangeState(Triggers.Attack1);
         }
 
         void Attack2()
         {
             Debug.Log("拡散ビーム砲");
-            _stateMachine.ChangeState(Triggers.Attack3);
+            _stateMachine.ChangeState(Triggers.Attack2);
         }
         void Attack3()
         {
@@ -96,6 +104,31 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.Attack3);
         }
 
+        void firewallRayCast()
+        {
+            if (_damageFloorMaker == null) return;
+
+        foreach (var point in _firewallPoints)
+        {
+            // 下方向に Raycast を打つ
+            RaycastHit2D hit = Physics2D.Raycast(
+                point.position + Vector3.up * 2f, 
+                Vector2.down, 
+                10f, 
+                _raycastLayer
+            );
+
+            if (hit.collider != null)
+            {
+                // 床を生成（ヒットした位置を起点に）
+                _damageFloorMaker.Create(
+                    hit.point,           // 生成位置
+                    _damageFloorDuration,// 持続時間
+                    _damageFloorLength   // 最大長さ
+                );
+            }
+        }
+        }
     }
 
 }

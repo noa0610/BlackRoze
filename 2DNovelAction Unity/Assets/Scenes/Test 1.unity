@@ -687,8 +687,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fafcf1a151ad9c4cb1504133415ab0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 136489495}
   _status: {fileID: 11400000, guid: 8f027c1fc253958428ed83fa9c922dc6, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _muzzle: {fileID: 136489493}
+  player: {fileID: 136489495}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -715,12 +719,13 @@ MonoBehaviour:
   _maxSuccession: 3
   _shootBlockTime: 0.6
   _invincibleTime: 0.6
+  _anim: {fileID: 0}
   _forceEnableJump: 0
   _jump:
+    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0.7
-    _hasLeapt: 0
     _enableJumped: -1
     _cutMultiplier: 0.5
     _accel: 60
@@ -870,12 +875,13 @@ Transform:
   m_GameObject: {fileID: 136489493}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.06, y: -2.9602785, z: 0}
+  m_LocalPosition: {x: 56.58, y: -2.9602785, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1869725133}
   - {fileID: 90989515}
+  - {fileID: 450023746}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &181595850
@@ -1177,8 +1183,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a758d2fd0b4acc64d9546f45dc15b188, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 247344952}
   _status: {fileID: 11400000, guid: 2bea7f548f87c4441bb8b8a42c221a45, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _muzzle: {fileID: 0}
+  player: {fileID: 247344952}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -1188,7 +1198,24 @@ MonoBehaviour:
   _firewallTargetLayer:
     serializedVersion: 2
     m_Bits: 1024
-  _firewallPoints: {fileID: 1142938393}
+  _firewallPoints:
+  - {fileID: 0}
+  _diffusebeamgunBulletData: {fileID: 11400000, guid: a5a8562a4e27aab459dcf253619ecb4b, type: 2}
+  _diffusebeamgunTargetLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _diffusebeamgunPoint: {fileID: 1142938392}
+  _armpunchBulletData: {fileID: 11400000, guid: b687c05afe6a60545aeaf1f249d67549, type: 2}
+  _armpunchTargetLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _armpunchPoint: {fileID: 450023745}
+  _damageFloorMaker: {fileID: 1129220301}
+  _damageFloorDuration: 3
+  _damageFloorLength: 5
+  _raycastLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &247344952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1363,7 +1390,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b46b8e52dd9d934dbf47252fa2f7119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tag: Player
 --- !u!114 &265649481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1378,7 +1404,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _subject: {fileID: 474919869}
   _volume: {fileID: 555881417}
-  _tag: 
   _maxAmount: 0.5
   _maxTime: 1
 --- !u!61 &265649482
@@ -1571,6 +1596,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aacee48453484114e8c6f5c856f2fa4a, type: 3}
+--- !u!1 &450023745
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 450023746}
+  m_Layer: 10
+  m_Name: armpunchPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &450023746
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450023745}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 136489503}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &474919868
 GameObject:
   m_ObjectHideFlags: 0
@@ -1904,7 +1960,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _subject: {fileID: 1409860458}
   _volume: {fileID: 555881417}
-  _tag: 
   _maxAmount: 0.5
   _maxTime: 1
 --- !u!61 &596377452
@@ -1980,7 +2035,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b46b8e52dd9d934dbf47252fa2f7119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tag: Player
 --- !u!1 &695000424
 GameObject:
   m_ObjectHideFlags: 0
@@ -2619,6 +2673,51 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aacee48453484114e8c6f5c856f2fa4a, type: 3}
+--- !u!1 &1129220300
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1129220302}
+  - component: {fileID: 1129220301}
+  m_Layer: 0
+  m_Name: dmm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1129220301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1129220300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44db59e6c42520943b11b822a8f81e9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _damageFloorPref: {fileID: 5833446635671542313, guid: e3a1043ba4591394a8e0761c4ec7f290, type: 3}
+--- !u!4 &1129220302
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1129220300}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1137947461
 GameObject:
   m_ObjectHideFlags: 0
@@ -2650,7 +2749,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b46b8e52dd9d934dbf47252fa2f7119, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tag: Player
 --- !u!114 &1137947463
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2665,7 +2763,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _subject: {fileID: 1666012432}
   _volume: {fileID: 555881417}
-  _tag: 
   _maxAmount: 0.5
   _maxTime: 1
 --- !u!61 &1137947464
@@ -2754,7 +2851,7 @@ Transform:
   m_GameObject: {fileID: 1142938392}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.94999695, y: -2.17, z: 0}
+  m_LocalPosition: {x: 0.94999695, y: 3.44, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2860,8 +2957,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f6bbebcf37672d41a8af6a112f1c88c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 1144450504}
   _status: {fileID: 11400000, guid: 11c5ea8d18132e344be620495817c278, type: 2}
+  _attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _muzzle: {fileID: 0}
+  player: {fileID: 1144450504}
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 0, y: 0}
@@ -2879,6 +2980,7 @@ MonoBehaviour:
     m_Bits: 1024
   _RB2: {fileID: 1144450506}
   _freeMove:
+    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
@@ -2895,6 +2997,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   _positionJump:
+    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
@@ -3417,7 +3520,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3de8eb63d2462b04f85dbcc627bb49f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 136489498}
 --- !u!1 &1482943892
 GameObject:
   m_ObjectHideFlags: 0
@@ -3918,6 +4020,7 @@ MonoBehaviour:
   _cameraBounds: {fileID: 1840164403}
   _smoothSpeed: 5
   _cameraZ: -10
+  _camT: {fileID: 0}
 --- !u!114 &1840164403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4714,3 +4817,4 @@ SceneRoots:
   - {fileID: 77449238}
   - {fileID: 247344950}
   - {fileID: 1144450500}
+  - {fileID: 1129220302}

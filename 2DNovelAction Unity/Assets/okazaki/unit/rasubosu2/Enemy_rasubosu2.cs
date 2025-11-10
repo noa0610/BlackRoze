@@ -29,6 +29,11 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private int _WarpCount = 3;                       // ワープする回数
         private int _CurrentWarpCount = 0;
 
+        /* メモ：現在のワープの処理動作 */
+        /*  
+         * 
+        */
+
         // [SerializeField] private float _WarpCoolTime = 0;                  // ワープのクールタイム
         // [SerializeField] private float _WarpTimer = 0;                     // 遷移からワープを行うまでの計測時間
         // private string _prevStateKey;
@@ -111,10 +116,13 @@ namespace BlackRose.Core.Models.Units
 
             TurnAround();
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpBecomeInvincibleTime));
+            // 無敵時間開始
             Invincible(_WarpInvincibleTime);
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpStartTime));
+            // 位置をセット
             warp.SetPos(SetGroundWarpPointRandom());
             _CurrentWarpCount++;
+            // ワープで移動
             _stateMachine.ChangeState(Triggers.WarpStart);
         }
 
@@ -122,6 +130,7 @@ namespace BlackRose.Core.Models.Units
         {
             TurnAround();
         }
+        
         // ワープ後無敵時間解除でワープ待機に戻る
         private void WarpUpdate()
         {

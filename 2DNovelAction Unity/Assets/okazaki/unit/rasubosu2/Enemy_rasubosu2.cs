@@ -104,15 +104,15 @@ namespace BlackRose.Core.Models.Units
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.attackidle, attackidleTrigger)
-                .AddTransmissions(States.warpidle, warpidleTrigger)
-                .AddTransmissions(States.warp, warpTrigger)
-                .AddTransmissions(States.pointermissile, pointermissileTrigger)
-                .AddTransmissions(States.crosswave, crosswaveTrigger)
-                .AddTransmissions(States.warpShot, warpShotTrigger)
-                .AddTransmissions(States.grappleSlash, grappleSlashTrigger)
-                .AddTransmissions(States.flashBeamSword, flashBeamSwordTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.attackidle, attackidleTrigger)
+                .AddTransitions(States.warpidle, warpidleTrigger)
+                .AddTransitions(States.warp, warpTrigger)
+                .AddTransitions(States.pointermissile, pointermissileTrigger)
+                .AddTransitions(States.crosswave, crosswaveTrigger)
+                .AddTransitions(States.warpShot, warpShotTrigger)
+                .AddTransitions(States.grappleSlash, grappleSlashTrigger)
+                .AddTransitions(States.flashBeamSword, flashBeamSwordTrigger);
             // 待機
             var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
             _stateMachine.AddState(States.idle, idle);

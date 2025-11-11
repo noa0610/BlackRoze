@@ -18,7 +18,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _bulletData;
         [SerializeField] private Rigidbody2D _rb2;
 
-        private static readonly Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
+        private static readonly Dictionary<States, string> _states = EnumWrapper.GetValueNameMap<States>();
 
         public enum States
         {
@@ -75,34 +75,34 @@ namespace BlackRose.Core.Models.Units
         protected override void RegisterStats()
         {
             _stateMachine
-                .AddTransmissions(States.idle, new[]
+                .AddTransitions(States.idle, new[]
                 {
                     (Triggers.MissingPlayer, States.move),
                     (Triggers.FoundPlayer, States.Encount),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransmissions(States.move, new[]
+                .AddTransitions(States.move, new[]
                 {
                     (Triggers.FoundPlayer, States.Encount),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransmissions(States.Encount, new[]
+                .AddTransitions(States.Encount, new[]
                 {
                     (Triggers.AttackRange, States.shootReady),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransmissions(States.shootReady, new[]
+                .AddTransitions(States.shootReady, new[]
                 {
                     (Triggers.shoot,States.shoot),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransmissions(States.shoot, new[]
+                .AddTransitions(States.shoot, new[]
 {
     (Triggers.AttackEnd, States.idle),   // ← 3発撃ち終わったらIdleに戻る
     (Triggers.Damage, States.knockBack)
 })
 
-                .AddTransmissions(States.knockBack, new[]
+                .AddTransitions(States.knockBack, new[]
                 {
                     (Triggers.None, States.idle),
                     (Triggers.Died, States.dead)
@@ -114,7 +114,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.shootReady, new Idle()); // アニメーション専用
 
             attack.SetBullet(_bulletData);
-            attack.SetMuzzle(_muzzle);
+            attack.SetGameObject(_muzzle);
             attack.SetCancelableProgress(0);
 
             _stateMachine.AddState(States.shoot, attack);

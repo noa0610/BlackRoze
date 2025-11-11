@@ -4,6 +4,8 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Datas.Definitions;
 using System;
 using UnityEngine;
+using BlackRose.Core.Models.Units.Helpers;
+using Cysharp.Threading.Tasks;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -77,10 +79,10 @@ namespace BlackRose.Core.Models.Units
 
             // 砲塔の向き更新
             Direction = _looking.Direction;
+            ShootDir = _looking.Direction;
             // ステートの判断
             if (_shootIntervalCount <= 0f && IsMatchState(States.inVigilance) && _looking.IsLookingTarget(35f))
             {
-                _shoot.SetDirection(Direction);
                 _stateMachine.ChangeState(Triggers.ShootReady);
             }
             else if (_trishootIntervalCount <= 0f && IsMatchState(States.shootInterval))
@@ -96,6 +98,10 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        protected override void OnDeath()
+        {
+            GetComponent<BreakHelper>().InvokeBreak().Forget();
+        }
         private bool IsMatchState(States state)
         {
             return _stateMachine.CurrentState.key == _states[state];

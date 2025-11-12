@@ -926,7 +926,13 @@ MonoBehaviour:
   _currentState: 
   _currentMode: 
   _currentDirection: {x: 1, y: 0}
-  FixedAttackSelect: 1
+  _groundCheck: {fileID: 161153202}
+  _groundCheckRadius: 0.1
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  _disableCheckTime: 0.2
+  FixedAttackSelect: 2
   closeRangeDistance: 5
   _WarpMovingRange: 10
   _WarpIntervalTime: 0.5
@@ -950,7 +956,13 @@ MonoBehaviour:
   _WarpDistance: 4
   _ShotPoint: {fileID: 1504787269}
   _ShotBulletDate: {fileID: 0}
-  _CrossWaveWarpPoint: {fileID: 330286554}
+  _CrossWaveSenterPoint: {fileID: 330286546}
+  _CrossWaveBulletDate: {fileID: 11400000, guid: 59fa42f6e73de1e489279d5a00a67398, type: 2}
+  _CrossWaveShootCount: 4
+  _CrossWaveShootIntervalTime: 0.3
+  _CrossWaveWarpPosY: 3
+  _CrossWaveStartTime: 1.1
+  _CrossWaveEndTime: 1.2
   _AttackTargetLayer:
     serializedVersion: 2
     m_Bits: 1024
@@ -1474,7 +1486,6 @@ GameObject:
   m_Component:
   - component: {fileID: 750607343}
   - component: {fileID: 750607342}
-  - component: {fileID: 750607341}
   m_Layer: 0
   m_Name: unitmanager
   m_TagString: Untagged
@@ -1482,18 +1493,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &750607341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 750607340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3de8eb63d2462b04f85dbcc627bb49f4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &750607342
 MonoBehaviour:
   m_ObjectHideFlags: 0

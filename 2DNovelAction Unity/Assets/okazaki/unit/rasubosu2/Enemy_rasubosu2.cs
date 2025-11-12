@@ -3,6 +3,7 @@ using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
+using Fungus;
 using HighElixir;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    public partial class Enemy_rasubosu2 : UnitBase
+    public partial class Enemy_rasubosu2 : GroundedUnit
     {
+        [Header("攻撃固定")]
         [Tooltip("攻撃選択の固定化(１，ポインタミサイル ２，クロスウェーブ ３，連続ワープショット ４，一閃ビームソード)")]
         [SerializeField] private int FixedAttackSelect = 0;                // 攻撃選択の固定化
 
@@ -40,24 +42,16 @@ namespace BlackRose.Core.Models.Units
         private int _CurrentWarpCount = 0;
 
         /* メモ：現在のワープの処理動作 */
-        /*  Idle_LazyChange
+        /*  
          * 
          */
-
-        // [SerializeField] private float _WarpCoolTime = 0;                  // ワープのクールタイム
-        // [SerializeField] private float _WarpTimer = 0;                     // 遷移からワープを行うまでの計測時間
-        // private string _prevStateKey;
-
-        private int _PreviousAttackTipe = 0;                               // 前回の攻撃の種類
-
-
 
 
         [Header("ポインタミサイル")]
         [SerializeField] private GameObject[] _MissileFallPoint;            // ミサイル落下地点
         [SerializeField] private BulletData _MissileBulletDate;
         [SerializeField] private float _MissileFallTime = 1f;
-        [SerializeField] private float _MissileEndTime = 1.5f;
+        [SerializeField] private float _MissileEndTime = 1.2f;
         private Vector2 direction = Vector2.down;
 
 
@@ -68,7 +62,21 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _ShotBulletDate;
 
         [Header("クロスウェーブ")]
-        [SerializeField] private Transform _CrossWaveWarpPoint;
+        [SerializeField] private GameObject _CrossWaveSenterPoint;
+        [SerializeField] private BulletData _CrossWaveBulletDate;
+        [SerializeField] private int _CrossWaveShootCount = 4;
+        [SerializeField] private float _CrossWaveShootIntervalTime = 0.3f;
+        [SerializeField] private float _CrossWaveWarpPosY = 3f;
+
+        [Tooltip("無敵解除 → クロスウェーブ攻撃発動")]
+        [SerializeField] private float _CrossWaveStartTime = 1.5f;
+
+        [Tooltip("クロスウェーブ攻撃終了 → ワープで戻る")]
+        [SerializeField] private float _CrossWaveEndTime = 1.2f;
+        private int _CurrentCrossWaveShootCount = 0;
+
+        private Rigidbody2D _rb2d;
+        private float gravity;
 
         [Header("攻撃相手")]
         [SerializeField] private LayerMask _AttackTargetLayer;
@@ -94,6 +102,8 @@ namespace BlackRose.Core.Models.Units
         protected override void Start()
         {
             base.Start();
+            _rb2d = GetComponent<Rigidbody2D>();
+            gravity = _rb2d.gravityScale;
         }
 
         private void SearchPlayer()
@@ -116,7 +126,7 @@ namespace BlackRose.Core.Models.Units
             if (_prevStateKey != curKey)
             {
                 // 状態遷移が発生した直後の処理(beforewarp)
-                if (curKey == _stateNames[States.beforewarp])
+                if (curKey == _stateNames[States.beforewarp] || curKey == _stateNames[States.crosswavebeforewarp] || curKey == _stateNames[States.crosswaveend])
                 {
                     _didBeforeWarpStartThisEntry = false; // 新しい入場なのでガードをリセット
                     // Enter と同タイミングで一回だけ呼ぶ
@@ -146,7 +156,7 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.Warpcomplete);
             }
         }
-        
+
         private async void WarpBeforeStart()
         {
             TurnAround();
@@ -155,11 +165,28 @@ namespace BlackRose.Core.Models.Units
             // 無敵時間開始
             IsInvincible = true;
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpStartTime));
-            // 位置をセット
-            warp.SetPos(SetGroundWarpPointRandom());
-            _CurrentWarpCount++;
-            // ワープで移動
-            _stateMachine.ChangeState(Triggers.Warp);
+
+            if (IsMatchingState(States.beforewarp))
+            {
+                // 位置をセット
+                warp.SetPos(SetGroundWarpPointRandom());
+                _CurrentWarpCount++;
+                // ワープで移動
+                _stateMachine.ChangeState(Triggers.Warp);
+            }
+            else if (IsMatchingState(States.crosswavebeforewarp))
+            {
+                // 画面中央へ位置セット
+                _rb2d.gravityScale = 0;
+                crosswavewarp.SetPos(SetAirWarpPointCenter());
+                _stateMachine.ChangeState(Triggers.Warp);
+            }
+            else if (IsMatchingState(States.crosswaveend))
+            {
+                _rb2d.gravityScale = gravity;
+                crosswavewarp.SetPos(SetGroundWarpPointRandom());
+                _stateMachine.ChangeState(Triggers.Warp);
+            }
         }
 
         private async void WarpEnter()
@@ -168,8 +195,19 @@ namespace BlackRose.Core.Models.Units
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpInvincibleRemovedTime));
             // 無敵時間解除
             IsInvincible = false;
-            await UniTask.Delay(TimeSpan.FromSeconds(_WarpEndTime));
-            _stateMachine.ChangeState(Triggers.Warpend);
+
+            if (IsMatchingState(States.warp))
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_WarpEndTime));
+                _stateMachine.ChangeState(Triggers.Warpend);
+            }
+            else if (IsMatchingState(States.crosswavewarp))
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveStartTime));
+                Vector2 shootDirection = (UnityEngine.Random.value < 0.5) ? Vector2.down : new Vector2(1, 1).normalized;
+                crosswave.SetDirection(shootDirection);
+                _stateMachine.ChangeState(Triggers.Attack2);
+            }
         }
 
 
@@ -180,14 +218,49 @@ namespace BlackRose.Core.Models.Units
         {
             Transform cameraPos = Camera.main.transform;
             float warpPosX = UnityEngine.Random.Range(cameraPos.localPosition.x - _WarpMovingRange, cameraPos.localPosition.x + _WarpMovingRange);
-            Vector2 warpPoint = new Vector2(warpPosX, Transform.position.y);
+            float warpPosY = 0;
+
+            if (IsGrounded)
+            {
+                warpPosY = transform.position.y;
+            }
+            else
+            {
+                Ray2D ray = new Ray2D(transform.position, -transform.up); // Rayを生成、-transform.upは進行方向
+                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 1f);//Raycastを生成
+                warpPosY = hit.collider.transform.position.y;
+            }
+
+            Vector2 warpPoint = new Vector2(warpPosX, warpPosY);
             return warpPoint;
         }
-        
+
+        // 画面中央のワープ先を決定
+        private Vector2 SetAirWarpPointCenter()
+        {
+            Transform cameraPos = Camera.main.transform;
+            float warpPosX = cameraPos.transform.localPosition.x;
+            float warpPosY = cameraPos.transform.localPosition.y + _CrossWaveWarpPosY;
+            Vector2 warpPoint = new Vector2(warpPosX, warpPosY);
+            return warpPoint;
+        }
+
         private async void MissileEnter()
         {
             await UniTask.Delay(TimeSpan.FromSeconds(_MissileEndTime));
             _stateMachine.ChangeState(Triggers.Attack1end);
+        }
+
+        private async void CrossWaveEnter()
+        {
+            for (int i = 1; i <= _CrossWaveShootCount; i++)
+            {
+                crosswave.DirectShoot(this);
+                await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveShootIntervalTime));
+            }
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveEndTime));
+            _stateMachine.ChangeState(Triggers.Attack2end);
         }
 
 
@@ -277,23 +350,23 @@ namespace BlackRose.Core.Models.Units
 
         void Attack1()
         {
-            Debug.Log("ポインターミサイル");
+            Debug.Log("ポインターミサイル開始");
             _stateMachine.ChangeState(Triggers.Attack1start);
         }
 
         void Attack2()
         {
-            Debug.Log("クロスウェーブ");
+            Debug.Log("クロスウェーブ開始");
             _stateMachine.ChangeState(Triggers.Attack2start);
         }
         void Attack3()
         {
-            Debug.Log("ワープショット");
+            Debug.Log("ワープショット開始");
             _stateMachine.ChangeState(Triggers.Attack3start);
         }
         void Attack4()
         {
-            Debug.Log("フラッシュビームソード");
+            Debug.Log("フラッシュビームソード開始");
             _stateMachine.ChangeState(Triggers.Attack4start);
         }
 

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1895216487117397908}
   - component: {fileID: 4556189089795485556}
   - component: {fileID: 877960113547814319}
-  - component: {fileID: -7712979938376021806}
+  - component: {fileID: 6486702428606210875}
   m_Layer: 0
   m_Name: shootersBullet
   m_TagString: Untagged
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 10.973, y: 2.43, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -116,7 +116,7 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -149,7 +149,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 2
---- !u!114 &-7712979938376021806
+--- !u!114 &6486702428606210875
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,9 +158,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 276441993556260194}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6ab31a9f5286f746995ca98751215a9, type: 3}
+  m_Script: {fileID: 11500000, guid: 4fcde69ba608d3d4194b6029e6016202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _canHitLayer:
     serializedVersion: 2
-    m_Bits: 1025
+    m_Bits: 1024
+  _direction: {x: -1, y: 0}
+  initialForce: 10

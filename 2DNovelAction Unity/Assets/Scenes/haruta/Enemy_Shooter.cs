@@ -322,6 +322,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask groundLayer;   // 地面レイヤー
 
         private int moveDirection = 1; // 右向きスタート
+    // Flip 周りの保護（短時間に複数回反転されないようにする）
+    private float _lastFlipTime = 0f;
+    [SerializeField] private float _flipCooldown = 0.1f; // 秒
 
 
         private void CheckEnvironment()
@@ -345,9 +348,21 @@ namespace BlackRose.Core.Models.Units
 
         private void Flip()
         {
-            moveDirection *= -1; // 方向を反転
-            transform.Rotate(0, 180, 0); // 見た目を反転
-            Direction = new Vector2(moveDirection, 0); // ← これでMoveOnGroundの移動方向も変わる
+            // クールダウン中は無視
+            if (Time.time - _lastFlipTime < _flipCooldown) return;
+
+            _lastFlipTime = Time.time;
+
+            // 方向フラグを反転
+            moveDirection *= -1;
+
+            // 回転ではなく localScale を用いて見た目を反転（他クラスと挙動を統一）
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * Mathf.Sign(moveDirection);
+            transform.localScale = scale;
+
+            // 移動/攻撃方向を更新
+            Direction = new Vector2(moveDirection, 0);
         }
         
 

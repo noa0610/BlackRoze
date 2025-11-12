@@ -6,6 +6,7 @@ using HighElixir;
 using System.Collections.Generic;
 using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Objects;
+using System.Collections;
 
 
 namespace BlackRose.Core.Models.Units
@@ -14,13 +15,8 @@ namespace BlackRose.Core.Models.Units
 
     public partial class Enemy_rasubosu1 : UnitBase
     {
-        [SerializeField] private Rigidbody2D _rb;
-        [SerializeField] private GameObject bulletPrefab;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
-        [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private Transform[] _firewallPoints;// 必要ならInspectorでセット
         [SerializeField] private BulletData _diffusebeamgunBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _diffusebeamgunTargetLayer;
         [SerializeField] private GameObject _diffusebeamgunPoint;// 必要ならInspectorでセット
@@ -28,12 +24,6 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _armpunchTargetLayer;
         [SerializeField] private GameObject _armpunchPoint;// 必要ならInspectorでセット
         private int punchcount = 0;
-        [SerializeField] private DamageFloorMaker _damageFloorMaker; // Inspector でセット
-    [SerializeField] private float _damageFloorDuration = 3f;    // ダメージ床の持続時間
-    [SerializeField] private float _damageFloorLength = 5f;      // ダメージ床の最大長さ
-    [SerializeField] private LayerMask _raycastLayer;            // Raycast用レイヤー
-
-
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
         {
@@ -47,6 +37,7 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
+
         }
 
         protected override void AfterFixedUpdate()
@@ -103,32 +94,38 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("ファイアウォール");
             _stateMachine.ChangeState(Triggers.Attack3);
         }
+        public GameObject prefab;    // インスペクタで割り当てるプレハブ
+    public Transform point;      // インスペクタで割り当てる発射位置（point）
+    public float speed = 5f;     // 移動速度（右->左なので Vector3.left を使う）
+    public float lifetime = 10f; // 自動破棄までの時間（秒）
 
-        void firewallRayCast()
+        void Udetobasi()
+    {
+        if (prefab == null || point == null)
         {
-            if (_damageFloorMaker == null) return;
+            Debug.LogWarning("prefab または point が設定されていません。");
+            return;
+        }
 
-        foreach (var point in _firewallPoints)
+        // point 位置にプレハブ生成
+        GameObject obj = Instantiate(prefab, point.position, point.rotation);
+
+        // Rigidbody2D を取得
+        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+        if (rb != null)
         {
-            // 下方向に Raycast を打つ
-            RaycastHit2D hit = Physics2D.Raycast(
-                point.position + Vector3.up * 2f, 
-                Vector2.down, 
-                10f, 
-                _raycastLayer
-            );
+            // 右→左に進む（X軸マイナス方向）
+            rb.velocity = Vector2.left * speed;
+        }
+        else
+        {
+            Debug.LogWarning("生成したプレハブに Rigidbody2D がありません。");
+        }
 
-            if (hit.collider != null)
-            {
-                // 床を生成（ヒットした位置を起点に）
-                _damageFloorMaker.Create(
-                    hit.point,           // 生成位置
-                    _damageFloorDuration,// 持続時間
-                    _damageFloorLength   // 最大長さ
-                );
-            }
-        }
-        }
+        // 一定時間後に自動削除
+        Destroy(obj, lifetime);
     }
+    }
+
 
 }

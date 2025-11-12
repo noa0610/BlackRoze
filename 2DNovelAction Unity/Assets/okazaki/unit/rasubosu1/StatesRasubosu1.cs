@@ -52,37 +52,32 @@ namespace BlackRose.Core.Models.Units
             };
             var attackidleTrigger = new[]
             {
-                (Triggers.Playerdead, States.idle),
-                (Triggers.Died, States.dead),
-                (Triggers.Attack1, States.armpunch),
-                (Triggers.Attack2, States.armpunch),
-                (Triggers.Attack3, States.armpunch),
+                (Triggers.Playerdead, States.idle,""),
+                (Triggers.Died, States.dead,""),
+                (Triggers.Attack1, States.firewall,""),
+                (Triggers.Attack2, States.firewall,""),
+                (Triggers.Attack3, States.firewall,"")
             };
             var armpunchTrigger = new[]
             {
-                (Triggers.Attack1loop, States.armpunchidle),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack1loop, States.armpunchidle,""),
+                (Triggers.Died, States.dead,"")
             };
             var armpunchidleTrigger = new[]
             {
-                (Triggers.Attack1loopend, States.armpunch),
-                (Triggers.Attack1end, States.attackidle),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack1loopend, States.armpunch,""),
+                (Triggers.Attack1end, States.attackidle,""),
+                (Triggers.Died, States.dead,"")
             };
             var diffusebeamgunTrigger = new[]
             {
-                (Triggers.Attack2end, States.attackidle),
-                (Triggers.Died, States.dead),
-            };
-            var firewallmoveTrigger = new[]
-            {
-                (Triggers.firewallmoveend, States.firewall),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack2end, States.attackidle,""),
+                (Triggers.Died, States.dead,"")
             };
             var firewallTrigger = new[]
             {
-                (Triggers.Attack3end, States.attackidle),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack3end, States.attackidle,""),
+                (Triggers.Died, States.dead,"")
             };
             _stateMachine
                 .AddTransitions(States.idle, idleTrigger)
@@ -90,8 +85,7 @@ namespace BlackRose.Core.Models.Units
                 .AddTransitions(States.armpunch, armpunchTrigger)
                 .AddTransitions(States.armpunchidle, armpunchidleTrigger)
                 .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
-                .AddTransitions(States.firewall, firewallTrigger)
-                .AddTransitions(States.firewallmove, firewallmoveTrigger);
+                .AddTransitions(States.firewall, firewallTrigger);
             // ステート登録
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡
@@ -137,15 +131,13 @@ namespace BlackRose.Core.Models.Units
             });
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
             // ファイアウォール
-            var firewall = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
-            .SetDirection(Vector2.left);
-            firewall.SetGameObject(_diffusebeamgunPoint != null ? _diffusebeamgunPoint : gameObject);
-            firewall.onShootComplete.AddListener(() =>
+            var firewall = new Idle_LazyEvent(5f);
+            firewall.OnCompleted += () =>
             {
-                firewallRayCast();
+                Udetobasi();
                 _stateMachine.ChangeState(Triggers.Attack3end);
-            });
-            _stateMachine.AddState(States.firewall, new Idle());
+            };
+            _stateMachine.AddState(States.firewall, firewall);
         }
     }
 }

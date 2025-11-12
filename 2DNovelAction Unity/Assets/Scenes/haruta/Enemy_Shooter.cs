@@ -14,7 +14,6 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("攻撃関連")]
         [SerializeField] private Animator _anim;
-        [SerializeField] private GameObject _muzzle;
         [SerializeField] private BulletData _bulletData;
         [SerializeField] private Rigidbody2D _rb2;
 

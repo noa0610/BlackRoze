@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7333477883841852803}
   - component: {fileID: 8489512718284515008}
-  - component: {fileID: 5329392442816677152}
   - component: {fileID: -6154703371997583296}
   - component: {fileID: -8381216389615061597}
+  - component: {fileID: 9103901003500308599}
   m_Layer: 0
   m_Name: Gurdersbullet
   m_TagString: Untagged
@@ -87,21 +87,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &5329392442816677152
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8200441657282752572}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6ab31a9f5286f746995ca98751215a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _canHitLayer:
-    serializedVersion: 2
-    m_Bits: 1024
 --- !u!58 &-6154703371997583296
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -164,3 +149,20 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &9103901003500308599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8200441657282752572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fcde69ba608d3d4194b6029e6016202, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _canHitLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _direction: {x: -1, y: 1.732}
+  initialForce: 10

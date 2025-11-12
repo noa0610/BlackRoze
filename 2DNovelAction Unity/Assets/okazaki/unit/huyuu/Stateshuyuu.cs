@@ -5,7 +5,7 @@ namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_huyuu
     {
-
+        [SerializeField] private float ExplosionDelay = 0f;
         public enum States
         {
             none,
@@ -60,6 +60,7 @@ namespace BlackRose.Core.Models.Units
 
             //爆発
             // 爆発イベント（OnExplode）で死亡トリガーを発火
+            _suicideBombing.SetDelay(ExplosionDelay);
             _suicideBombing.OnCompleted += () =>
             {
                 Debug.Log("Enemy_huyuu: 爆発アニメーションが完了しました。");

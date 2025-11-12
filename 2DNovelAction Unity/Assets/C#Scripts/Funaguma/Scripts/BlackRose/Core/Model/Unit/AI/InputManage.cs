@@ -46,9 +46,7 @@ namespace BlackRose.Core.Models.Units
             CurrentMode.OnInputMove(d);
             Direction = new Vector2((d.x == 0 || ShouldBeBlockFlip ? Direction.x : d.x), d.y);
             ShootDir = new Vector2((d.x == 0 || ShouldBeBlockFlip ? ShootDir.x : d.x), d.y);
-            if (d.x == 0)
-                _fms.LazySend(AITriggers.cancelMove);
-            else
+            if (d.x != 0)
                 _fms.LazySend(AITriggers.moveInput);
         }
 

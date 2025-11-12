@@ -35,15 +35,18 @@ namespace BlackRose
         private static void Blinking(GameObject root, Value data)
         {
             var t = data.time;
-            Color c = sprite.color;
-            float a;
-            if (!data.mustRemove)
-                a = Mathf.Clamp01(Mathf.Sin(t * (2 * Mathf.PI / Mathf.Max(data.remainingDuration / data.duration, 0.5f)) * data.speed));
-            else
-                a = 1f;
-            c.a = a;
-            sprite.color = c;
-
+            var sprites = root.GetComponentsInChildren<SpriteRenderer>();
+            foreach (var sprite in sprites)
+            {
+                Color c = sprite.color;
+                float a;
+                if (!data.mustRemove)
+                    a = Mathf.Clamp01(Mathf.Sin(t * (2 * Mathf.PI / Mathf.Max(data.remainingDuration / data.duration, 0.5f)) * data.speed));
+                else
+                    a = 1f;
+                c.a = a;
+                sprite.color = c;
+            }
         }
     }
 }

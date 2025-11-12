@@ -1,6 +1,4 @@
-﻿using AIE2D;
-using BlackRose.Core.Models.Objects;
-using Fungus;
+﻿using HighElixir;
 using HighElixir.Timers;
 using UnityEngine;
 
@@ -8,8 +6,7 @@ namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(
         typeof(Rigidbody2D),
-        typeof(UnityEngine.InputSystem.PlayerInput),
-        typeof(DynamicAfterImageEffect2DPlayer)
+        typeof(UnityEngine.InputSystem.PlayerInput)
         )]
     public partial class AIController : GroundedUnit
     {
@@ -28,7 +25,6 @@ namespace BlackRose.Core.Models.Units
         // === UnityLifeCycle ===
         protected override void BeforeAwake()
         {
-            _dPlayer = GetComponent<DynamicAfterImageEffect2DPlayer>();
             _flippingUnit = GetComponent<AutoFlipHelper>();
             TimerRegist();
             ModeRegist();

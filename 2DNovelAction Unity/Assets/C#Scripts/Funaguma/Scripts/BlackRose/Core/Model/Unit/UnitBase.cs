@@ -19,6 +19,7 @@ namespace BlackRose.Core.Models.Units
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected LayerMask _attackLayer;
+        [SerializeField] protected Animator _animator;
 
         [Header("StateMachine")]
         [SerializeField] public static bool _isPlaying = true;

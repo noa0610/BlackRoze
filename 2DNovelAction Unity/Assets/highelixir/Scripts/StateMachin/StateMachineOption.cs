@@ -26,8 +26,8 @@ namespace HighElixir.StateMachine
         public bool EnableOverriding { get; set; } = false;
 
         /// <summary>
-        /// 自己遷移の許可
-        /// falseの場合、自己遷移を拒否する
+        /// 自己遷移の可否
+        /// false の場合、自己遷移は行えない
         /// </summary>
         public bool EnableSelfTransition { get; set; } = false;
 

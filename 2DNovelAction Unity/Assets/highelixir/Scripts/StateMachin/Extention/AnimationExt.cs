@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace HighElixir.StateMachine.Extention
 {
-    #region Transition Extension
     /// <summary>
     /// ステートマシンとUnity Animatorの連携拡張
     /// <br/>StateMachineの遷移イベントをAnimator Triggerに変換する
@@ -16,7 +15,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// AnimatorのTrigger操作をラップする購読制御クラス
         /// </summary>
-        public class AnimationBinder : IDisposable
+        public class AnimationBinding : IDisposable
         {
             private string _name;
             private Animator _animator;
@@ -70,7 +69,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 遷移イベントを購読し、Animator Triggerを発火する
         /// </summary>
-        public static AnimationBinder Subscribe<TCont, TEvt, TState>(
+        public static AnimationBinding Subscribe<TCont, TEvt, TState>(
             this IObservable<StateMachine<TCont, TEvt, TState>.TransitionResult> ontrans,
             TCont cont,
             string animTrigger)
@@ -80,7 +79,6 @@ namespace HighElixir.StateMachine.Extention
             var wr = cont.GetWrapper(animTrigger);
             wr.disposable = ontrans.Subscribe(_ =>
             {
-                Debug.Log($"{_.FromState}から{_.ToState}に遷移し、{wr.name}を発火しました : {_.Event}");
                 if (wr == null || !wr.IsValid) return;
                 wr.animator.ResetTrigger(wr.name);
                 wr.animator.SetTrigger(wr.name);
@@ -90,7 +88,7 @@ namespace HighElixir.StateMachine.Extention
 
         #region ▼ 単体登録 ▼
 
-        public static AnimationBinder RegisterTransition<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState>.StateInfo info, TEvt evt, TState toState, string animTrigger, Func<StateMachine<TCont, TEvt, TState>.TransitionResult, bool> predicate = null)
+        public static AnimationBinding RegisterTransition<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState>.StateInfo info, TEvt evt, TState toState, string animTrigger, Func<StateMachine<TCont, TEvt, TState>.TransitionResult, bool> predicate = null)
             where TCont : Component
         {
             info.RegisterTransition(evt, toState);
@@ -102,7 +100,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 通常の遷移にAnimator Trigger発火を紐づける（条件付き）
         /// </summary>
-        public static AnimationBinder RegisterTransition<TCont, TEvt, TState>(
+        public static AnimationBinding RegisterTransition<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TState fromState,
             TEvt evt,
@@ -114,14 +112,14 @@ namespace HighElixir.StateMachine.Extention
         {
             stateMachine.RegisterTransition(fromState, evt, toState);
             return stateMachine.OnTransWhere(fromState, evt, toState)
-                               .Where(predicate ??= _ => true)
+                               .Where(predicate)
                                .Subscribe(stateMachine.Context, animTrigger);
         }
 
         /// <summary>
         /// 通常の遷移にAnimator Trigger発火を紐づける（条件なし）
         /// </summary>
-        public static AnimationBinder RegisterTransition<TCont, TEvt, TState>(
+        public static AnimationBinding RegisterTransition<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TState fromState,
             TEvt evt,
@@ -135,7 +133,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 任意遷移にAnimator Trigger発火を紐づける（条件付き）
         /// </summary>
-        public static AnimationBinder RegisterAnyTransition<TCont, TEvt, TState>(
+        public static AnimationBinding RegisterAnyTransition<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TEvt evt,
             TState toState,
@@ -153,7 +151,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 任意遷移にAnimator Trigger発火を紐づける（条件なし）
         /// </summary>
-        public static AnimationBinder RegisterAnyTransition<TCont, TEvt, TState>(
+        public static AnimationBinding RegisterAnyTransition<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> stateMachine,
             TEvt evt,
             TState toState,
@@ -170,7 +168,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 任意遷移のTrigger発火を複数登録する（条件付き）
         /// </summary>
-        public static Dictionary<(TEvt evt, TState toState), AnimationBinder>
+        public static Dictionary<(TEvt evt, TState toState), AnimationBinding>
             RegisterAnyTransitions<TCont, TEvt, TState>(
                 this StateMachine<TCont, TEvt, TState> stateMachine,
                 params (TEvt evt, TState toState, string animTrigger,
@@ -178,7 +176,7 @@ namespace HighElixir.StateMachine.Extention
             where TCont : Component
 
         {
-            var res = new Dictionary<(TEvt evt, TState toState), AnimationBinder>();
+            var res = new Dictionary<(TEvt evt, TState toState), AnimationBinding>();
             foreach (var trans in transes)
                 res.Add((trans.evt, trans.toState),
                     stateMachine.RegisterAnyTransition(trans.evt, trans.toState, trans.animTrigger, trans.predicate));
@@ -188,14 +186,14 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 任意遷移のTrigger発火を複数登録する（条件なし）
         /// </summary>
-        public static Dictionary<(TEvt evt, TState toState), AnimationBinder>
+        public static Dictionary<(TEvt evt, TState toState), AnimationBinding>
             RegisterAnyTransitions<TCont, TEvt, TState>(
                 this StateMachine<TCont, TEvt, TState> stateMachine,
                 params (TEvt evt, TState toState, string animTrigger)[] transes)
             where TCont : Component
 
         {
-            var res = new Dictionary<(TEvt evt, TState toState), AnimationBinder>();
+            var res = new Dictionary<(TEvt evt, TState toState), AnimationBinding>();
             foreach (var trans in transes)
                 res.Add((trans.evt, trans.toState),
                     stateMachine.RegisterAnyTransition(trans.evt, trans.toState, trans.animTrigger));
@@ -205,7 +203,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 通常遷移のTrigger発火を複数登録する（条件付き）
         /// </summary>
-        public static Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinder>
+        public static Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinding>
             RegisterTransitions<TCont, TEvt, TState>(
                 this StateMachine<TCont, TEvt, TState> stateMachine,
                 TState fromState,
@@ -214,7 +212,7 @@ namespace HighElixir.StateMachine.Extention
             where TCont : Component
 
         {
-            var res = new Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinder>();
+            var res = new Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinding>();
             foreach (var trans in transes)
                 res.Add((fromState, trans.evt, trans.toState),
                     stateMachine.RegisterTransition(fromState, trans.evt, trans.toState, trans.animTrigger, trans.predicate));
@@ -224,7 +222,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// 通常遷移のTrigger発火を複数登録する（条件なし）
         /// </summary>
-        public static Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinder>
+        public static Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinding>
             RegisterTransitions<TCont, TEvt, TState>(
                 this StateMachine<TCont, TEvt, TState> stateMachine,
                 TState fromState,
@@ -232,7 +230,7 @@ namespace HighElixir.StateMachine.Extention
             where TCont : Component
 
         {
-            var res = new Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinder>();
+            var res = new Dictionary<(TState fromState, TEvt evt, TState toState), AnimationBinding>();
             foreach (var trans in transes)
                 res.Add((fromState, trans.evt, trans.toState),
                     stateMachine.RegisterTransition(fromState, trans.evt, trans.toState, trans.animTrigger));
@@ -245,7 +243,7 @@ namespace HighElixir.StateMachine.Extention
         /// <summary>
         /// すべてのアニメ購読を破棄する
         /// </summary>
-        public static void DisposeAll(this IEnumerable<AnimationBinder> wrappers)
+        public static void DisposeAll(this IEnumerable<AnimationBinding> wrappers)
         {
             foreach (var w in wrappers)
                 w?.Dispose();
@@ -253,17 +251,14 @@ namespace HighElixir.StateMachine.Extention
 
         #region private
 
-        private static AnimationBinder GetWrapper<TCont>(this TCont cont, string trigger)
+        private static AnimationBinding GetWrapper<TCont>(this TCont cont, string trigger)
             where TCont : Component
         {
-            if (!cont.TryGetComponent<Animator>(out var anim))
-            {
-                anim = cont.GetComponentInChildren<Animator>(true);
-                if (anim == null)
-                    throw new MissingComponentException($"[StateMachine_Anim]{cont.name}にAnimatorがアタッチされていません");
-            }
+            if (!cont.TryGetComponent<Animator>(out var anim) &&
+                (anim = cont.GetComponentInChildren<Animator>()) == null)
+                throw new MissingComponentException($"[StateMachine_Anim]{cont.name}にAnimatorがアタッチされていません");
 
-            return new AnimationBinder()
+            return new AnimationBinding()
             {
                 name = trigger,
                 animator = anim
@@ -275,14 +270,13 @@ namespace HighElixir.StateMachine.Extention
                 p.type == AnimatorControllerParameterType.Trigger &&
                 p.nameHash == hash);
 
-        private static bool Check(AnimationBinder wrapper)
+        private static bool Check(AnimationBinding wrapper)
         {
             if (wrapper.Disposed) return false;
             if (wrapper.animator == null) return false;
             return wrapper.animator.HasTrigger(wrapper.hash);
         }
 
-        #endregion
         #endregion
     }
 }

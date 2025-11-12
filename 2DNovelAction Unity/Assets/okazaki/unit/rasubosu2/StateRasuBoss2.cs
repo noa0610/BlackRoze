@@ -1,5 +1,6 @@
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using Fungus;
 using Unity.VisualScripting;
 using UnityEngine;
 namespace BlackRose.Core.Models.Units
@@ -14,25 +15,30 @@ namespace BlackRose.Core.Models.Units
         public enum States
         {
             none,
-            idle,               // 待機
-            dead,               // 死亡
-            warpidle,           // ワープ待機
-            beforewarp,         // ワープ直前
-            warp,               // ワープ 
-            attackidle,         // 攻撃待機
-            pointermissile,     // ポインターミサイル
-            crosswave,          // クロスウェーブ
-            warpShot,           // ワープショット
-            flashBeamSword,     // フラッシュビームソード
+            idle,                 // 待機
+            dead,                 // 死亡
+            warpidle,             // ワープ待機
+            beforewarp,           // ワープ直前
+            warp,                 // ワープ 
+            attackidle,           // 攻撃待機
+            pointermissilebefore, // ポインタミサイル直前
+            pointermissile,       // ポインターミサイル
+            crosswave,            // クロスウェーブ
+            warpShot,             // ワープショット
+            flashBeamSword,       // フラッシュビームソード
         }
         private enum Triggers
         {
             None,
             Warpcooldown,       // ワープクールダウンした
-            WarpStart,          // ワープ開始
+            Warp,               // ワープ
             Warpend,            // ワープ移動終了
             Warpcomplete,       // ワープ完了
             Attackcooldown,     // 攻撃クールダウンした
+            Attack1start,       // 攻撃１開始
+            Attack2start,       // 攻撃２開始
+            Attack3start,       // 攻撃３開始
+            Attack4start,       // 攻撃４開始
             Attack1,            // 攻撃１
             Attack2,            // 攻撃２
             Attack3,            // 攻撃３
@@ -55,32 +61,37 @@ namespace BlackRose.Core.Models.Units
             };
             var warpidleTrigger = new[]                                /** ワープ待機ステートのトリガー **/
             {
-                (Triggers.Warpcooldown, States.beforewarp, ""),        // ワープクールダウンでワープ直前へ
+                (Triggers.Warpcooldown, States.beforewarp, "WarpStart"),// ワープクールダウンでワープ直前へ
                 (Triggers.Warpcomplete, States.attackidle, ""),        // ワープ完了で攻撃待機へ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
-            var beforewarpTrigger = new[]                              /** ワープ直前のステートのトリガー **/
+            var beforewarpTrigger = new[]                              /** ワープ直前ステートのトリガー **/
             {
-                (Triggers.WarpStart, States.warp, ""),                 // ワープ開始でワープへ
+                (Triggers.Warp, States.warp, "toWarp"),                // ワープ開始でワープへ
                 (Triggers.Died, States.dead, "")                       // 死亡で死へ
             };
             var warpTrigger = new[]                                    /** ワープステートのトリガー **/
             {
-                (Triggers.Warpend, States.warpidle, ""),               // ワープ移動終了でワープ待機へ
+                (Triggers.Warpend, States.warpidle, "toIdle"),         // ワープ移動終了でワープ待機へ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             var attackidleTrigger = new[]                              /** 攻撃待機ステートのトリガー **/
             {
                 (Triggers.Playerdead, States.idle, ""),                // プレイヤーが死亡で待機へ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
-                (Triggers.Attack1, States.pointermissile, ""),         // ポインターミサイルへ 
-                (Triggers.Attack2, States.crosswave, ""),              // クロスウェーブへ
-                (Triggers.Attack3, States.warpShot, ""),               // ワープショットへ
-                (Triggers.Attack4, States.flashBeamSword, ""),         // フラッシュビームソードへ
+                (Triggers.Attack1start, States.pointermissilebefore, "MissileStart"), // ポインターミサイルへ 
+                (Triggers.Attack2start, States.crosswave, ""),              // クロスウェーブへ
+                (Triggers.Attack3start, States.warpShot, ""),               // ワープショットへ
+                (Triggers.Attack4start, States.flashBeamSword, ""),         // フラッシュビームソードへ
+            }; 
+            var beforepointermissileTrigger = new[]                    /** ポインターミサイル直前ステートのトリガー **/
+            {
+                (Triggers.Attack1, States.pointermissile, "toMissile"), // ポインターミサイルへ       
+                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             var pointermissileTrigger = new[]                          /** ポインターミサイルステートのトリガー **/
             {
-                (Triggers.Attack1end, States.warpidle, ""),            // ポインターミサイル終了で攻撃待機へ       
+                (Triggers.Attack1end, States.warpidle, "toIdle"),      // ポインターミサイル終了で攻撃待機へ       
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             var crosswaveTrigger = new[]                               /** ステートのトリガー **/     
@@ -107,6 +118,7 @@ namespace BlackRose.Core.Models.Units
                 .AddTransitions(States.warpidle, warpidleTrigger)
                 .AddTransitions(States.beforewarp, beforewarpTrigger)
                 .AddTransitions(States.warp, warpTrigger)
+                .AddTransitions(States.pointermissilebefore, beforepointermissileTrigger)
                 .AddTransitions(States.pointermissile, pointermissileTrigger)
                 .AddTransitions(States.crosswave, crosswaveTrigger)
                 .AddTransitions(States.warpShot, warpShotTrigger)
@@ -131,15 +143,15 @@ namespace BlackRose.Core.Models.Units
             // 遅延完了時に呼びたい処理をOnCompletedで登録
             attackIdle.OnCompleted += AttackSelect;
             {
-                
+
             }
             _stateMachine.AddState(States.attackidle, attackIdle);
 
             /* ワープ待機 */
             var warpidle = new Idle_LazyChange(Triggers.Warpcooldown.ToString(), _WarpIntervalTime, true);
-            warpidle.OnCompleted += WarpIdleExit;
+            warpidle.OnCompleted += WarpIdleStay;
             {
-                
+
             }
             _stateMachine.AddState(States.warpidle, warpidle);
 
@@ -151,23 +163,27 @@ namespace BlackRose.Core.Models.Units
             warp = new Warp();
             warp.OnCompleted += WarpEnter;
             {
-                
+
             }
             _stateMachine.AddState(States.warp, warp);
 
+            var pointermissilebefore = new Idle_LazyChange(Triggers.Attack1.ToString(), _MissileFallTime);
+            _stateMachine.AddState(States.pointermissilebefore, pointermissilebefore);
+
             /* ポインターミサイル */
             pointermissile = new ShootMultiplePositions(_MissileBulletDate, _AttackTargetLayer).SetFiring(_MissileFallPoint, direction);
+            pointermissile.onShootComplete.AddListener(MissileEnter);
             _stateMachine.AddState(States.pointermissile, pointermissile);
 
             /* クロスウェーブ */
             crosswave = new ShootForward();
             _stateMachine.AddState(States.crosswave, crosswave);
 
-            /* ワープショット */ 
+            /* ワープショット */
             warpShot = new ShootForward();
             _stateMachine.AddState(States.warpShot, warpShot);
 
-            /* フラッシュビームソード */ 
+            /* フラッシュビームソード */
             flashBeamSword = new ShootForward();
             _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
         }

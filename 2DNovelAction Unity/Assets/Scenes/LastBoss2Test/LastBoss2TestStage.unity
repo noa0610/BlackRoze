@@ -293,7 +293,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4799380357385224243, guid: 5035d05dbaaf46d4fb6bca1aefddb5f2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.1
+      value: -1.42
       objectReference: {fileID: 0}
     - target: {fileID: 4799380357385224243, guid: 5035d05dbaaf46d4fb6bca1aefddb5f2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -347,6 +347,10 @@ PrefabInstance:
       propertyPath: _reflectMono
       value: 
       objectReference: {fileID: 1734713466}
+    - target: {fileID: 8083421311622036413, guid: 5035d05dbaaf46d4fb6bca1aefddb5f2, type: 3}
+      propertyPath: _attackLayer.m_Bits
+      value: 2048
+      objectReference: {fileID: 0}
     - target: {fileID: 8083421311622036413, guid: 5035d05dbaaf46d4fb6bca1aefddb5f2, type: 3}
       propertyPath: _attackTarget.m_Bits
       value: 2048
@@ -916,7 +920,7 @@ MonoBehaviour:
   _status: {fileID: 11400000, guid: b885b73d80a2f7d4fa157e12c87a8337, type: 2}
   _attackLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   _muzzle: {fileID: 0}
   player: {fileID: 330286550}
   _currentState: 
@@ -926,9 +930,10 @@ MonoBehaviour:
   closeRangeDistance: 5
   _WarpMovingRange: 10
   _WarpIntervalTime: 0.5
-  _WarpBecomeInvincibleTime: 0.5
+  _WarpInvincibleSettingTime: 0.5
   _WarpStartTime: 0.5
-  _WarpInvincibleTime: 1
+  _WarpInvincibleRemovedTime: 0.3
+  _WarpEndTime: 0.3
   _WarpCount: 3
   _MissileFallPoint:
   - {fileID: 2002414330}
@@ -940,6 +945,8 @@ MonoBehaviour:
   - {fileID: 757362508}
   - {fileID: 737208804}
   _MissileBulletDate: {fileID: 11400000, guid: efd75f1f183ddf94da6348e701c89b04, type: 2}
+  _MissileFallTime: 0.8
+  _MissileEndTime: 1.1
   _WarpDistance: 4
   _ShotPoint: {fileID: 1504787269}
   _ShotBulletDate: {fileID: 0}

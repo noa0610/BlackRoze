@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
 
 namespace BlackRose
 {
-    [RequireComponent(typeof(SpriteRenderer))]
     public class SpriteEffectPlayer : MonoBehaviour
     {
         private List<SpriteEffectDataHolder> _spriteEffects = new();

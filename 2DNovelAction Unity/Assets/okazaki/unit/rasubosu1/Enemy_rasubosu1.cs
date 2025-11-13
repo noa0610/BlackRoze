@@ -23,6 +23,10 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _armpunchBulletData; // 必要ならInspectorでセット
         [SerializeField] private LayerMask _armpunchTargetLayer;
         [SerializeField] private GameObject _armpunchPoint;// 必要ならInspectorでセット
+        [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
+        [SerializeField] private LayerMask _firewallTargetLayer;
+        [SerializeField] private GameObject _firewallPoint;// 必要ならInspectorでセット
+        [SerializeField] private GameObject _biribiriPoint;// 必要ならInspectorでセット
         private int punchcount = 0;
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
@@ -43,17 +47,6 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
-            // 見た目の向き変更など既存処理
-            if (_player != null)
-            {
-                Direction = (_player.Transform.position - transform.position).normalized;
-                if (Direction.x != 0)
-                {
-                    var scale = transform.localScale;
-                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
-                    transform.localScale = scale;
-                }
-            }
             // beamswordattackステート中のみ判定
 
         }
@@ -100,31 +93,33 @@ namespace BlackRose.Core.Models.Units
     public float lifetime = 10f; // 自動破棄までの時間（秒）
 
         void Udetobasi()
-    {
-        if (prefab == null || point == null)
         {
-            Debug.LogWarning("prefab または point が設定されていません。");
-            return;
-        }
+            if (prefab == null || point == null)
+            {
+                Debug.LogWarning("prefab または point が設定されていません。");
+                return;
+            }
 
-        // point 位置にプレハブ生成
-        GameObject obj = Instantiate(prefab, point.position, point.rotation);
+            // point 位置にプレハブ生成
+            GameObject obj = Instantiate(prefab, point.position, point.rotation);
 
-        // Rigidbody2D を取得
-        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            // 右→左に進む（X軸マイナス方向）
-            rb.velocity = Vector2.left * speed;
-        }
-        else
-        {
-            Debug.LogWarning("生成したプレハブに Rigidbody2D がありません。");
-        }
+            // Rigidbody2D を取得
+            Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                // 右→左に進む（X軸マイナス方向）
+                rb.velocity = Vector2.left * speed;
+            }
+            else
+            {
+                Debug.LogWarning("生成したプレハブに Rigidbody2D がありません。");
+            }
+            
 
-        // 一定時間後に自動削除
-        Destroy(obj, lifetime);
-    }
+            // 一定時間後に自動削除
+            Destroy(obj, lifetime);
+        }
+    
     }
 
 

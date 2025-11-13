@@ -134,6 +134,7 @@ namespace BlackRose.Core.Models.Units
                 if (nowstate == 7)
                 {
                     // 最終状態なら攻撃終了へ
+                    nowstate = 2;
                     _stateMachine.LazyChange(Triggers.Attack1end);
                 }
                 else

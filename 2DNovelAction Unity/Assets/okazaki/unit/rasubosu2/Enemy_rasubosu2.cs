@@ -52,14 +52,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _MissileBulletDate;
         [SerializeField] private float _MissileFallTime = 1f;
         [SerializeField] private float _MissileEndTime = 1.2f;
-        private Vector2 direction = Vector2.down;
+        private Vector2 missiledirection = Vector2.down;
 
 
-
-        [Header("連続ワープショット")]
-        [SerializeField] private float _WarpDistance = 4f;                 // 連続ワープショットのワープ先のプレイヤーとの距離
-        [SerializeField] private GameObject _ShotPoint;                    // 連続ワープショット発射位置
-        [SerializeField] private BulletData _ShotBulletDate;
 
         [Header("クロスウェーブ")]
         [SerializeField] private GameObject _CrossWaveSenterPoint;
@@ -73,13 +68,30 @@ namespace BlackRose.Core.Models.Units
 
         [Tooltip("クロスウェーブ攻撃終了 → ワープで戻る")]
         [SerializeField] private float _CrossWaveEndTime = 1.2f;
-        private int _CurrentCrossWaveShootCount = 0;
+
+
+
+        [Header("連続ワープショット")]
+        [SerializeField] private float _WarpCloseDistance = 3f;            // 連続ワープショットのワープ先のプレイヤーとの距離
+        [SerializeField] private GameObject _ShotPoint;                    // 連続ワープショット発射位置
+        [SerializeField] private BulletData _ShotBulletDate;
+
+        [Tooltip("無敵解除 → ショット攻撃発動")]
+        [SerializeField] private float _ShotStartTime = 0.5f;
+        [Tooltip("ショット攻撃発動 → ワープまで")]
+        [SerializeField] private float _WarpShotEndTime = 0.6f;
+
+        [SerializeField] private int _WarpShotCount = 4;
+        [Range(0, 1)]
+        [SerializeField] private float _ShotForwardprobability = 0.6f;
+        private CapsuleCollider2D capcol2D;
+        private int _currentWarpShotCount = 0;
+        private bool forwardShot;
+        private Vector2 warpshootDirection;
+        private string animeTrigger;
 
         private Rigidbody2D _rb2d;
         private float gravity;
-
-        [Header("攻撃相手")]
-        [SerializeField] private LayerMask _AttackTargetLayer;
 
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         private SearchAssistanceMono _searchAssistance;
@@ -103,6 +115,7 @@ namespace BlackRose.Core.Models.Units
         {
             base.Start();
             _rb2d = GetComponent<Rigidbody2D>();
+            capcol2D = GetComponent<CapsuleCollider2D>();
             gravity = _rb2d.gravityScale;
         }
 
@@ -121,12 +134,15 @@ namespace BlackRose.Core.Models.Units
         {
             SearchPlayer();
 
-            // 現在ステートが beforewarp に「変わった瞬間」を検知して一度だけ実行
+            // 現在ステートがワープ直前のステートに 変わった瞬間 を検知して一度だけ実行
             var curKey = _stateMachine.CurrentState.key;
             if (_prevStateKey != curKey)
             {
-                // 状態遷移が発生した直後の処理(beforewarp)
-                if (curKey == _stateNames[States.beforewarp] || curKey == _stateNames[States.crosswavebeforewarp] || curKey == _stateNames[States.crosswaveend])
+                if (curKey == _stateNames[States.beforewarp] ||
+                    curKey == _stateNames[States.crosswave_beforewarp] ||
+                    curKey == _stateNames[States.crosswave_end] ||
+                    curKey == _stateNames[States.warpShot_beforewarp] ||
+                    curKey == _stateNames[States.warpShot_chain])
                 {
                     _didBeforeWarpStartThisEntry = false; // 新しい入場なのでガードをリセット
                     // Enter と同タイミングで一回だけ呼ぶ
@@ -164,6 +180,8 @@ namespace BlackRose.Core.Models.Units
 
             // 無敵時間開始
             IsInvincible = true;
+            _rb2d.gravityScale = 0;
+            capcol2D.isTrigger = true;
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpStartTime));
 
             if (IsMatchingState(States.beforewarp))
@@ -174,18 +192,49 @@ namespace BlackRose.Core.Models.Units
                 // ワープで移動
                 _stateMachine.ChangeState(Triggers.Warp);
             }
-            else if (IsMatchingState(States.crosswavebeforewarp))
+            else if (IsMatchingState(States.crosswave_beforewarp))
             {
                 // 画面中央へ位置セット
-                _rb2d.gravityScale = 0;
                 crosswavewarp.SetPos(SetAirWarpPointCenter());
                 _stateMachine.ChangeState(Triggers.Warp);
             }
-            else if (IsMatchingState(States.crosswaveend))
+            else if (IsMatchingState(States.crosswave_end))
             {
-                _rb2d.gravityScale = gravity;
+                // 地上を目指して位置をセット
                 crosswavewarp.SetPos(SetGroundWarpPointRandom());
                 _stateMachine.ChangeState(Triggers.Warp);
+            }
+            else if (IsMatchingState(States.warpShot_beforewarp))
+            {
+                _currentWarpShotCount = 0;
+
+                // プレイヤー左右へ位置セット
+                warpShotwarp.SetPos(SetGroundWarpPointClose());
+                // 前方か斜方か
+                forwardShot = (UnityEngine.Random.value < _ShotForwardprobability) ? true : false;
+                animeTrigger = (forwardShot == true) ? "ShotForward" : "ShotOblique";
+                _animator.SetTrigger(animeTrigger);
+                _stateMachine.ChangeState(Triggers.Warp);
+
+            }
+            else if (IsMatchingState(States.warpShot_chain))
+            {
+                
+                if (_currentWarpShotCount >= _WarpShotCount)
+                {
+                    // ワープ後にワープ待機に戻る
+                    warp.SetPos(SetGroundWarpPointRandom());
+                    _stateMachine.ChangeState(Triggers.Warp);
+                }
+                else
+                {
+                    // ワープショット継続
+                    warpShotwarp.SetPos(SetGroundWarpPointClose());
+                    forwardShot = (UnityEngine.Random.value < _ShotForwardprobability) ? true : false;
+                    animeTrigger = (forwardShot == true) ? "ShotForward" : "ShotOblique";
+                    _animator.SetTrigger(animeTrigger);
+                    _stateMachine.ChangeState(Triggers.Attack3chain);
+                }
             }
         }
 
@@ -195,18 +244,30 @@ namespace BlackRose.Core.Models.Units
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpInvincibleRemovedTime));
             // 無敵時間解除
             IsInvincible = false;
+            _rb2d.gravityScale = gravity;
+            capcol2D.isTrigger = false;
 
             if (IsMatchingState(States.warp))
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(_WarpEndTime));
                 _stateMachine.ChangeState(Triggers.Warpend);
             }
-            else if (IsMatchingState(States.crosswavewarp))
+            else if (IsMatchingState(States.crosswave_warp))
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveStartTime));
+                // 上下左右か斜め方向か
                 Vector2 shootDirection = (UnityEngine.Random.value < 0.5) ? Vector2.down : new Vector2(1, 1).normalized;
+                // 発射方向をセット
                 crosswave.SetDirection(shootDirection);
                 _stateMachine.ChangeState(Triggers.Attack2);
+            }
+            else if (IsMatchingState(States.warpShot_warp))
+            {
+                warpshootDirection = (forwardShot == true) ? Direction.normalized : new Vector2(Direction.x, 1).normalized;
+                // 発射方向をセット
+                warpShot.SetDirection(warpshootDirection);
+                await UniTask.Delay(TimeSpan.FromSeconds(_ShotStartTime));
+                _stateMachine.ChangeState(Triggers.Attack3);
             }
         }
 
@@ -218,7 +279,7 @@ namespace BlackRose.Core.Models.Units
         {
             Transform cameraPos = Camera.main.transform;
             float warpPosX = UnityEngine.Random.Range(cameraPos.localPosition.x - _WarpMovingRange, cameraPos.localPosition.x + _WarpMovingRange);
-            float warpPosY = 0;
+            float warpPosY;
 
             if (IsGrounded)
             {
@@ -245,6 +306,91 @@ namespace BlackRose.Core.Models.Units
             return warpPoint;
         }
 
+        // プレイヤーの近くにワープ先を決定
+        private Vector2 SetGroundWarpPointClose()
+        {
+            if (_player == null)
+            {
+                Debug.Log("プレイヤー未発見");
+                return transform.position;
+            }
+
+            Vector2 playerPos = _player.transform.position;
+
+            // 左右方向にセット（初期は左方向）
+            Vector2[] targetOffsets = new Vector2[]
+            {
+                new Vector2(-_WarpCloseDistance, 0),  // 左
+                new Vector2(_WarpCloseDistance, 0)    // 右
+            };
+            Vector2[] warpCandidates = new Vector2[2];
+            bool[] isValid = new bool[2];
+
+            var coll = capcol2D;
+            Vector2 size = coll.size;
+            float radius = size.x * 0.5f;
+            float angle = 0f;
+            int mask = LayerMask.GetMask("Ground");
+
+            for (int i = 0; i < 2; i++)
+            {
+                Vector2 targetPos = playerPos + targetOffsets[i];
+
+                // ===== カプセルキャストで経路をチェック =====
+                RaycastHit2D hit = Physics2D.CapsuleCast(
+                    playerPos,
+                    size,
+                    CapsuleDirection2D.Vertical,
+                    angle,
+                    targetOffsets[i].normalized,
+                    targetOffsets[i].magnitude,
+                    mask
+                );
+
+                if (hit.collider != null)
+                {
+                    targetPos = hit.point - targetOffsets[i].normalized * 0.05f;
+                }
+                // ===== 最終チェック (OverlapCircle) =====
+                // 目的地が空いてるか調べる
+                bool blocked = Physics2D.OverlapCircle(targetPos, radius, mask);
+
+                if (!blocked)
+                {
+                    warpCandidates[i] = targetPos;
+                    isValid[i] = true;
+                }
+            }
+
+            Ray2D ray = new Ray2D(transform.position, -transform.up);
+            RaycastHit2D rayhit = Physics2D.Raycast(ray.origin, ray.direction, 1f);
+            float warpPosY = rayhit.collider.transform.position.y;
+
+            // 左を指定
+            if (isValid[0] && !isValid[1])
+            {
+                Debug.Log("左");
+                return new Vector2(warpCandidates[0].x, warpPosY);
+            }
+            // 右を指定
+            if (isValid[1] && !isValid[0])
+            {
+                Debug.Log("右");
+                return new Vector2(warpCandidates[1].x, warpPosY);
+            }
+            // 左右どちらかを選ぶ
+            if (isValid[0] && isValid[1])
+            {
+                Debug.Log("左右どっちか");
+                return UnityEngine.Random.value< 0.5 ? new Vector2(warpCandidates[0].x, warpPosY) : new Vector2(warpCandidates[1].x, warpPosY);
+            }
+
+            // いずれも不可な場合は画面中央へ移動
+            Debug.Log("プレイヤー左右へのワープ不可能");
+            Transform cameraPos = Camera.main.transform;
+            return new Vector2(cameraPos.transform.localPosition.x, warpPosY);
+        }
+
         private async void MissileEnter()
         {
             await UniTask.Delay(TimeSpan.FromSeconds(_MissileEndTime));
@@ -261,6 +407,13 @@ namespace BlackRose.Core.Models.Units
 
             await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveEndTime));
             _stateMachine.ChangeState(Triggers.Attack2end);
+        }
+
+        private async void WarpShotEnter()
+        {
+            _currentWarpShotCount++;
+            await UniTask.Delay(TimeSpan.FromSeconds(_WarpShotEndTime));
+            _stateMachine.ChangeState(Triggers.Attack3end);
         }
 
 
@@ -280,6 +433,7 @@ namespace BlackRose.Core.Models.Units
             if (_player != null)
             {
                 Direction = (_player.Transform.position - transform.position).normalized;
+                Direction = (Direction.x > 0) ? Vector2.right : Vector2.left;
                 if (Direction.x != 0)
                 {
                     var scale = transform.localScale;

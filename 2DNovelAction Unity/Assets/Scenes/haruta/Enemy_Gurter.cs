@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Helper;
@@ -13,7 +13,7 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("攻撃関連")]
         [SerializeField] private Animator _anim;
-        [SerializeField] private Rigidbody2D _rb2;
+    
         [SerializeField] private int hp = 10;
         [SerializeField] private float attackCooldown = 3f;
         [SerializeField] private float idleStartWait = 2f; // ← 新規追加：最初の待機時間
@@ -26,7 +26,17 @@ namespace BlackRose.Core.Models.Units
 
         [SerializeField] private BulletData _bulletData;
         [SerializeField] private ShootForward shoot;
-        private static readonly Dictionary<States, string> _states = EnumWrapper.GetValueNameMap<States>();
+        // EnumWrapper.GetDict の代わりに直接 Dictionary を作成
+        private static readonly Dictionary<States, string> _states = new Dictionary<States, string>()
+{
+    { States.Idle, "Idle" },
+    { States.ShieldIdle, "ShieldIdle" },
+    { States.AttackWait, "AttackWait" },
+    { States.ShieldTackle, "ShieldTackle" },
+    { States.ShoulderGrenade, "ShoulderGrenade" },
+    { States.Stun, "Stun" },
+    { States.Dead, "Dead" }
+};
         // ★クラスの最初あたり（GroundedUnit継承直後）に追加
         public event Action OnStunStart;
         public event Action OnStunEnd;
@@ -34,6 +44,7 @@ namespace BlackRose.Core.Models.Units
         public event Action OnAttackEnd;
         [SerializeField] private Animator animator;
         private bool _isStunning = false;
+    private bool _isAttacking = false; // タックルの攻撃開始/終了管理
 
 
 
@@ -144,7 +155,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.Idle, new Idle());
             _stateMachine.AddState(States.ShieldIdle, new Idle());
             _stateMachine.AddState(States.AttackWait, new Idle());
-            _stateMachine.AddState(States.ShieldTackle, new Stun(_rb2, 1, true));
+            _stateMachine.AddState(States.ShieldTackle, new Stun(Rigidbody2D, 1, true));
             shoot.SetBullet(_bulletData);
             shoot.SetGameObject(_muzzle);
             shoot.SetDirection(Direction);
@@ -154,7 +165,7 @@ namespace BlackRose.Core.Models.Units
 
 
             // ✅ スタンステートをインスペクタ値で設定
-            var stunState = new Stun(_rb2, stunDuration, true)
+            var stunState = new Stun(Rigidbody2D, stunDuration, true)
                 .SetKnockback(stunKnockbackDir); // ノックバック方向設定
             stunState.KnockbackForce = stunKnockbackForce; // ノックバック力設定
 
@@ -210,7 +221,7 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.Died);
                 return;
             }
-            if ( IsMatchingState(States.AttackWait)||IsMatchingState(States.ShieldIdle))
+            if (IsMatchingState(States.AttackWait) || IsMatchingState(States.ShieldIdle))
             {
                 SearchPlayer();
             }
@@ -220,25 +231,32 @@ namespace BlackRose.Core.Models.Units
             if (cooldownTimer > 0)
                 cooldownTimer -= Time.fixedDeltaTime;
 
-            if (IsMatchingState(States.ShieldTackle) || IsMatchingState(States.ShoulderGrenade))
+            // 攻撃状態の開始/終了はイベントで通知してシールド側に処理させる
+            if (IsMatchingState(States.ShieldTackle))
             {
-                if (IsMatchingState(States.ShieldTackle))
+                // ShieldTackle に入った瞬間だけ発火
+                if (!_isAttacking)
                 {
-                    // 攻撃判定ONイベント
-                    _shieldDefense?.SetAttack(true);
+                    _isAttacking = true;
+                    OnAttackStart?.Invoke(); // シールドに攻撃ONを通知
                 }
-                else
-                {
-                    // 攻撃判定OFFイベント
-                    _shieldDefense?.SetAttack(false);
-                }
+
                 cooldownTimer = attackCooldown;
             }
+            else
+            {
+                // ShieldTackle から出たら攻撃終了を通知（連続で呼ばれないようフラグで制御）
+                if (_isAttacking)
+                {
+                    _isAttacking = false;
+                    OnAttackEnd?.Invoke(); // シールドに攻撃OFFを通知
+                }
+            }
             // シールドタックル開始時
-            if(IsMatchingState(States.ShieldTackle))
+            if (IsMatchingState(States.ShieldTackle))
             {
                 tackletime -= Time.fixedDeltaTime;
-                if(tackletime<0)
+                if (tackletime < 0)
                 {
                     StateMachine.ChangeState(Triggers.CooldownEnd);
                 }
@@ -249,7 +267,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (!_isStunning) return; // 二重実行防止
 
-            
+
             animator.SetTrigger("stunrecover"); // ✅ リカバーアニメーション再生
         }
 
@@ -273,7 +291,7 @@ namespace BlackRose.Core.Models.Units
         {
             _isStunning = false;
             animator.SetTrigger("stunrecover");
-            OnStunEnd?.Invoke();  
+            OnStunEnd?.Invoke();
         }
 
         public void shootEnd()
@@ -282,18 +300,45 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.CooldownEnd);
             animator.SetTrigger("idle");
         }
-        // private void RecoverFromStun()
-        // {
-
-        //     OnStunEnd?.Invoke(); // シールドを再有効化
-        // }
 
 
         private bool IsMatchingState(States state)
         {
             return _stateMachine.CurrentState.key == _states[state];
         }
+        // ...existing code...
         [SerializeField] private float angleDeg = 30f; // ここで角度を変更してください（例：30度）
+
+        // gurder が指定する発射角度を外部から取得できるようにする
+        public float AngleDeg => angleDeg;
+        // 現在の向き（右:+1, 左:-1）を外部で使いたい場合
+        public int FacingSign => transform.localScale.x >= 0f ? 1 : -1;
+
+                // --- 近接攻撃（タックル）で使用する攻撃力を外部に公開 ---
+                // 優先順: ScriptableObject の _bulletData に設定された値 -> UnitStatusData.power -> フォールバック(1f)
+                public float MeleeAttackPower
+                {
+                    get
+                    {
+                        if (_bulletData != null)
+                        {
+                            // BulletData 側のフィールド名に合わせて調整してください（例: power / damage）
+                            // BulletData には BulletStatus originalstatus があり、ダメージは originalstatus.damage に入っている
+                            try
+                            {
+                                return _bulletData.originalstatus.damage;
+                            }
+                            catch { }
+                        }
+
+                        if (this.UnitStatusData != null)
+                            return this.UnitStatusData.power;
+
+                        return 1f;
+                    }
+                }
+
+// ...existing code...（例：30度）
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
@@ -318,7 +363,9 @@ namespace BlackRose.Core.Models.Units
 
                 // 角度を考慮した発射方向（向きに応じてX符号を反転）
                 Vector2 shootDir = new Vector2(direction * Mathf.Cos(angleRad), Mathf.Sin(angleRad)).normalized;
-
+                //現状弾に力を加えていない
+                // bulletを継承したスクリプトを作成した後一度だけ弾に力を加えるようなコードを書く
+                //速度を与えるように書き換える
 
                 Direction = facingVector;
 
@@ -340,7 +387,7 @@ namespace BlackRose.Core.Models.Units
                     animator.SetTrigger("tackle");
                     _stateMachine.ChangeState(Triggers.NearAttack);
                     cooldownTimer = attackCooldown;
-                     
+
                 }
                 else if (_searchAssistance.Execute("renge", list, out _))
                 {
@@ -348,7 +395,7 @@ namespace BlackRose.Core.Models.Units
                     _stateMachine.ChangeState(Triggers.FarAttack);
                     animator.SetTrigger("shoot");
                     cooldownTimer = attackCooldown;
-                    
+
                 }
                 else
                 {
@@ -358,7 +405,7 @@ namespace BlackRose.Core.Models.Units
             if (IsMatchingState(States.ShieldIdle) && _searchAssistance.Execute("renge", list, out _))
             {
                 _stateMachine.ChangeState(Triggers.FoundPlayer);
-                
+
             }
 
 

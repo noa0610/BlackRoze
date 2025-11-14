@@ -101,7 +101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canHitLayer:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 0
+  _direction: {x: 0, y: 0}
 --- !u!61 &7412910521578516600
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -173,4 +174,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 2
+  m_Constraints: 7

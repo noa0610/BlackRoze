@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.Helper;
@@ -23,6 +24,7 @@ namespace BlackRose.Core.Models.Units
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         [SerializeField] private GameObject _Lasershotmuzzle;
+        [SerializeField] private GameObject _beamswordmuzzle;
         [SerializeField] private BulletData _LasershotbulletData;
         [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
         [SerializeField] private Rigidbody2D _RB2;
@@ -35,6 +37,9 @@ namespace BlackRose.Core.Models.Units
         private bool _waitingForAttack1 = false;
         // アニメ再生中フラグ（AnimaSelect の重複実行防止）
         private bool _isAnimating = false;
+        private bool _waitingForAttack2 = false;
+        // lasershot ステート参照（方向を動的にセットするために保持）
+        private ShootForward _lasershotState;
         #region 
 
         // protected override void RegisterStats()
@@ -234,7 +239,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (currentAttack == 1)
             {
-                Attack1();
+                Attack2();
                 currentAttack = 2;
                 return;
             }
@@ -250,7 +255,16 @@ namespace BlackRose.Core.Models.Units
         }
         void Attack1()
         {
-            Debug.Log("レーザー攻撃");
+            // プレイヤーの位置に合わせて射撃方向をセット（左右のみ）
+            Vector2 shootDir = Vector2.left; // デフォルト
+            if (_player != null)
+            {
+                var dir = (_player.Transform.position - transform.position).normalized;
+                if (Mathf.Abs(dir.x) > 0f) shootDir = new Vector2(Mathf.Sign(dir.x), 0f);
+            }
+            _lasershotState?.SetDirection(shootDir);
+
+            Debug.Log("レーザー攻撃 (direction=" + shootDir + ")");
             _stateMachine.ChangeState(Triggers.Attack1);
         }
 
@@ -292,14 +306,14 @@ namespace BlackRose.Core.Models.Units
             else if (nowstate == 4)
             {
                 Debug.Log("Enemy_tyuutoriaru: アニメーション状態4からの遷移");
-                _anim.SetTrigger("toShot_Up");
+                _anim.SetTrigger("toShot_Medium");
                 nowstate = 5;
                 return;
             }
             else if (nowstate == 5)
             {
                 Debug.Log("Enemy_tyuutoriaru: アニメーション状態5からの遷移");
-                _anim.SetTrigger("toShot_Medium");
+                _anim.SetTrigger("toShot_Up");
                 nowstate = 6;
                 return;
             }
@@ -335,12 +349,14 @@ namespace BlackRose.Core.Models.Units
                 const int maxTransitionFrames = 300; // 約5秒（60FPS想定）
                 while (_anim.GetCurrentAnimatorStateInfo(0).shortNameHash == startHash && attempts++ < maxTransitionFrames)
                 {
-                    await UniTask.Yield(PlayerLoopTiming.Update);                }
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+                }
                 // 新しいステートの進行度が 0.5 以上になるまで待つ（タイムアウト付き）
                 attempts = 0;
                 const int maxProgressFrames = 600; // 約10秒                
                 while (_anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f && attempts++ < maxProgressFrames)
-                {                    await UniTask.Yield(PlayerLoopTiming.Update);
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update);
                 }
 
                 // 進行度到達後に一度だけ Attack1 を呼ぶ
@@ -356,6 +372,46 @@ namespace BlackRose.Core.Models.Units
             {
                 _waitingForAttack1 = false;
                 _isAnimating = false;
+            }
+        }
+        private IEnumerator WaitForBeamswordAnimationThenFire()
+        {
+            if (_waitingForAttack2) yield break;
+            _waitingForAttack2 = true;
+            try
+            {
+                if (_anim == null)
+                {
+                    _stateMachine.LazyChange(Triggers.Attack2end);
+                    yield break;
+                }
+
+                // 1フレーム待ってアニメ遷移を反映+                yield return null;
+                // 目標ステートの変化を待つ（短タイムアウト）
+                int startHash = _anim.GetCurrentAnimatorStateInfo(0).shortNameHash;
+                float waitTime = 0f;
+                const float maxWait = 5f;
+                while (_anim.GetCurrentAnimatorStateInfo(0).shortNameHash == startHash && waitTime < maxWait)
+                {
+                    waitTime += Time.deltaTime;
+                    yield return null;
+                }
+                // 新しいステートの進行度が 1.0 に達するまで待つ（ループの可能性を考慮）
+                waitTime = 0f;
+                while (_anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.8f && waitTime < maxWait)
+                {
+                    waitTime += Time.deltaTime;
+                    yield return null;
+                }
+
+                // アニメ完了後にステート遷移
+                _stateMachine.LazyChange(Triggers.Attack2end);
+                GetComponent<BoxCollider2D>().isTrigger = true;
+                _positionJump?.SetTarget(JumpSelect());
+            }
+            finally
+            {              
+                _waitingForAttack2 = false;
             }
         }
     }

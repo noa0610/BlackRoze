@@ -142,13 +142,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7715998041784455733}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.88, y: 2.24, z: 0}
-  m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
+  m_LocalRotation: {x: -0, y: -0, z: -0.0008369981, w: 0.9999997}
+  m_LocalPosition: {x: 0.17111367, y: 0.31115246, z: 0}
+  m_LocalScale: {x: 0.7692306, y: 0.7692306, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5464085432662094372}
-  m_Father: {fileID: 140094738944830844}
+  m_Father: {fileID: 6188713851738059360}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &2216258952845111185
 BoxCollider2D:
@@ -208,7 +208,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isAttackEnabled: 0
+  attackCollider: {fileID: 0}
   isDefenseEnabled: 1
+  damageScale: 1
+  tackleStunDuration: 0.5
+  knockbackDirection: {x: 1, y: 0.6}
+  knockbackForce: 8
+  inspectorDamageScale: 1
+  inspectorStunDuration: 0.5
 --- !u!61 &3557677484652931407
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -293,10 +300,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2272767455261737482, guid: 93af96077621c804abb2b85cb37fc971, type: 3}
-      propertyPath: managedReferences[6833280287476023296]._range
-      value: 5.7
-      objectReference: {fileID: 0}
     - target: {fileID: 5293365150635828082, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.15
@@ -339,24 +342,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6466560329703750417, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_Name
-      value: Guarder Animation Variant 1
+      value: Guarder Animation Variant restoration
       objectReference: {fileID: 0}
     - target: {fileID: 6466560329703750417, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2272767455261737482, guid: 93af96077621c804abb2b85cb37fc971, type: 3}
+      propertyPath: managedReferences[6833280287476023296]._range
+      value: 5.7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 5293365150635828082, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
-      insertIndex: 1
-      addedObject: {fileID: 1004655648606090371}
     - targetCorrespondingSourceObject: {fileID: 5293365150635828082, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4816869675306539957}
     - targetCorrespondingSourceObject: {fileID: 2278866822800873386, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2245493120480130779}
+    - targetCorrespondingSourceObject: {fileID: 2118594625815149678, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1004655648606090371}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6466560329703750417, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       insertIndex: -1
@@ -646,7 +653,6 @@ MonoBehaviour:
     m_Bits: 512
   _disableCheckTime: 0.2
   _anim: {fileID: 5648569111994715141}
-  _rb2: {fileID: 7845776195118431531}
   hp: 10
   attackCooldown: 3
   idleStartWait: 2.5
@@ -675,6 +681,11 @@ MonoBehaviour:
 --- !u!95 &5648569111994715141 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 497585418214162955, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
+  m_PrefabInstance: {fileID: 5225434384607317518}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6188713851738059360 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2118594625815149678, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
   m_PrefabInstance: {fileID: 5225434384607317518}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &6279233588308842916 stripped

@@ -1,187 +1,210 @@
-﻿using UnityEngine;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
+using HighElixir;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
+using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    public class Enemy_rasubosu2 : UnitBase
+    public partial class Enemy_rasubosu2 : UnitBase
     {
-        public enum States
+        [Tooltip("攻撃選択の固定化(１，ポインタミサイル ２，クロスウェーブ ３，連続ワープショット ４，一閃ビームソード)")]
+        [SerializeField] private int FixedAttackSelect = 0;                // 攻撃選択の固定化
+
+        [Header("固有設定")]
+        [SerializeField] private float closeRangeDistance = 5f;            // 近距離判定の距離
+
+        [Header("ワープ移動")]
+        [SerializeField] private float _WarpMovingRange = 5f;              // ワープ移動する範囲(初期位置の前後距離)
+        [SerializeField] private float _WarpIntervalTime = 2f;             // ワープ移動間隔時間
+        [SerializeField] private float _WarpBecomeInvincibleTime = 0.5f;   // ワープ遷移から無敵時間に移行するまでの時間
+        [SerializeField] private float _WarpStartTime = 0.5f;              // 無敵時間以降から実際にワープするまでの時間
+        [SerializeField] private float _WarpInvincibleTime = 2f;           // ワープの無敵時間
+        [SerializeField] private int _WarpCount = 3;                       // ワープする回数
+        private int _CurrentWarpCount = 0;
+
+        // [SerializeField] private float _WarpCoolTime = 0;                  // ワープのクールタイム
+        // [SerializeField] private float _WarpTimer = 0;                     // 遷移からワープを行うまでの計測時間
+        // private string _prevStateKey;
+
+        private int _PreviousAttackTipe = 0;                               // 前回の攻撃の種類
+
+
+
+        [Header("ポインタミサイル")]
+        [SerializeField] private GameObject[] _MissileFallPoint;            // ミサイル落下地点
+        [SerializeField] private BulletData _MissileBulletDate;
+        private Vector2 direction = Vector2.down;
+
+        [Header("連続ワープショット")]
+        [SerializeField] private float _WarpDistance = 4f;                 // 連続ワープショットのワープ先のプレイヤーとの距離
+        [SerializeField] private GameObject _ShotPoint;                    // 連続ワープショット発射位置
+        [SerializeField] private BulletData _ShotBulletDate;
+
+        [Header("クロスウェーブ")]
+        [SerializeField] private Transform _CrossWaveWarpPoint;
+
+        [Header("攻撃相手")]
+        [SerializeField] private LayerMask _AttackTargetLayer;
+
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
+        private SearchAssistanceMono _searchAssistance;
+        private UnitBase _player;
+
+
+        protected override void AfterAwake()
         {
-            none,
-            idle,// 待機
-            dead,// 死亡
-            warpidle, // ワープ待機
-            warp, // ワープ 
-            attackidle, // 攻撃待機
-            pointermissile, // ポインターミサイル
-            crosswave, // クロスウェーブ
-            warpShot, // ワープショット
-            grappleSlash, // グラップルスラッシュ
-            flashBeamSword, // フラッシュビームソード
-        }
-        private enum Triggers
-        {
-            None,
-            Warpcooldown, // ワープクールダウンした
-            Warpreturn, // ワープに戻る
-            Warpend, // ワープ終了
-            Warpcomplete, // ワープ完了
-            Attackcooldown, // 攻撃クールダウンした
-            Attack1,       // 攻撃１
-            Attack2,       // 攻撃２
-            Attack3,       // 攻撃３
-            Attack4,       // 攻撃４
-            Attack5,       // 攻撃5
-            Attack1end,    // 攻撃１した
-            Attack2end,    // 攻撃２した
-            Attack3end,    // 攻撃３した
-            Attack4end,    // 攻撃４した
-            Attack5end,    // 攻撃5した
-            Event1,        // イベント1が終わった
-            Playerdead,    // プレイヤーが死亡
-            Died,          // 死亡した（HPが０になった）
+            _searchAssistance = GetComponent<SearchAssistanceMono>();
+            _stateMachine.ChangeState(Triggers.Event1);
         }
 
-        [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
-        private Transform playerTransform;
-
-
-        protected override void RegisterStats()
-        {
-            // トランスミッショングループを作成
-            var idleTrigger = new[]                                // 待機ステートのトリガー
-            {
-                (Triggers.Event1, States.warpidle),              // イベント1発生で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var warpidleTrigger = new[]                            // ワープ待機ステートのトリガー
-            {
-                (Triggers.Warpcooldown, States.warp),               // ワープクールダウンでワープへ
-                (Triggers.Warpcomplete, States.attackidle),         // ワープ完了で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var warpTrigger = new[]                                // ワープステートのトリガー
-            {
-                (Triggers.Warpend, States.warp),              // ワープ終了でワープへ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー
-            {
-                (Triggers.Playerdead, States.idle),                // プレイヤーが死亡で待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-                (Triggers.Attack1, States.pointermissile),         //ポインターミサイルへ 
-                (Triggers.Attack2, States.crosswave),              //クロスウェーブへ
-                (Triggers.Attack3, States.warpShot),               //ワープショットへ
-                (Triggers.Attack4, States.grappleSlash),           // グラップルスラッシュへ
-                (Triggers.Attack5, States.flashBeamSword),         // フラッシュビームソードへ
-            };
-            var pointermissileTrigger = new[]                      //ポインターミサイルステートのトリガー        
-            {
-                (Triggers.Attack1end, States.warpidle),          //ポインターミサイル終了で攻撃待機へ       
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var crosswaveTrigger = new[]                           //ステートのトリガー           
-            {
-                (Triggers.Attack2end, States.warpidle),          // クロスウェーブ終了で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var warpShotTrigger = new[]                            // ワープショットステートのトリガー
-            {
-                (Triggers.Attack3end, States.attackidle),          //  ワープショット終了で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var grappleSlashTrigger = new[]                        //グラップルスラッシュステートのトリガー
-            {
-                (Triggers.Attack4end, States.attackidle),          // 
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            var flashBeamSwordTrigger = new[]                      // フラッシュビームソードステートのトリガー                  
-            {
-                (Triggers.Attack5end, States.attackidle),          // フラッシュビームソード終了で攻撃待機へ
-                (Triggers.Died, States.dead),                      // 死亡で死へ
-            };
-            // ステートマシンにStatesの移動先の追加
-            _stateMachine
-                .AddTransitions(States.idle, idleTrigger)
-                .AddTransitions(States.attackidle, attackidleTrigger)
-                .AddTransitions(States.warpidle, warpidleTrigger)
-                .AddTransitions(States.warp, warpTrigger)
-                .AddTransitions(States.pointermissile, pointermissileTrigger)
-                .AddTransitions(States.crosswave, crosswaveTrigger)
-                .AddTransitions(States.warpShot, warpShotTrigger)
-                .AddTransitions(States.grappleSlash, grappleSlashTrigger)
-                .AddTransitions(States.flashBeamSword, flashBeamSwordTrigger);
-            // 待機
-            var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
-            _stateMachine.AddState(States.idle, idle);
-            // 死亡
-            var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-            died.OnAnimationCompleted.AddListener(() =>
-            {
-                UnitManager.instance.RemoveUnit(this);
-                Destroy(gameObject);
-            });
-            _stateMachine.AddState(States.dead, died);
-            // 攻撃待機
-            var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
-            attackIdle.LazyEvent.AddListener(Attackjudgement);
-            _stateMachine.AddState(States.attackidle, attackIdle);
-            // ワープ待機
-            var warpidle = new Idle_LazyChange(Triggers.Warpcooldown.ToString(), 5, true);
-            _stateMachine.AddState(States.warpidle, warpidle);
-            // ワープ
-
-            // ポインターミサイル
-            var pointermissile = new Idle().SetAnimeTrigger("pointermissile").SetCancelableProgress(0);
-            _stateMachine.AddState(States.pointermissile, pointermissile);
-            // 
-            var crosswave = new Idle().SetAnimeTrigger("crosswave").SetCancelableProgress(0);
-            _stateMachine.AddState(States.crosswave, crosswave);
-            // 
-            var warpShot = new Idle().SetAnimeTrigger("warpShot").SetCancelableProgress(0);
-            _stateMachine.AddState(States.warpShot, warpShot);
-            // 
-            var grappleSlash = new Idle().SetAnimeTrigger("grappleSlash").SetCancelableProgress(0);
-            _stateMachine.AddState(States.grappleSlash, grappleSlash);
-            // 
-            var flashBeamSword = new Idle().SetAnimeTrigger("flashBeamSword").SetCancelableProgress(0);
-            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
-        }
         protected override void Start()
         {
             base.Start();
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
+        }
+
+        private void SearchPlayer()
+        {
+            var list = UnitManager.instance.GetUnitList();
+            if (IsMatchingState(States.warpidle) && _searchAssistance.Execute("ShortDistance", list, out var units))
             {
-                playerTransform = playerObj.transform;
-            }
-            else
-            {
-                Debug.LogWarning("Playerタグの付いたオブジェクトが見つかりませんでした。");
+                _player = units.GetUnitNearest(transform.position);
+                _stateMachine.ChangeState(Triggers.Event1);
+                Debug.Log($"{_player.name}");
             }
         }
-        private void Attackjudgement()
+
+        protected async override void AfterFixedUpdate()
         {
-            if (playerTransform == null) return;
-            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+            SearchPlayer();
+
+            if (IsMatchingState(States.beforewarp))
+            {
+
+            }
+
+            if (IsMatchingState(States.warp))
+            {
+                WarpUpdate();
+            }
+        }
+
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            Debug.Log("TakeDamage");
+        }
+
+        // ワープの前隙のディレイ⇒無敵時間のコルーチン開始⇒Warpに遷移
+        private async void WarpIdleExit()
+        {
+            Debug.Log($"CurrentWarpCount : {_CurrentWarpCount}");
+            if (_CurrentWarpCount >= _WarpCount)
+            {
+                _stateMachine.ChangeState(Triggers.Warpcomplete);
+            }
+
+            TurnAround();
+            await UniTask.Delay(TimeSpan.FromSeconds(_WarpBecomeInvincibleTime));
+            Invincible(_WarpInvincibleTime);
+            await UniTask.Delay(TimeSpan.FromSeconds(_WarpStartTime));
+            warp.SetPos(SetGroundWarpPointRandom());
+            _CurrentWarpCount++;
+            _stateMachine.ChangeState(Triggers.WarpStart);
+        }
+
+        private void WarpEnter()
+        {
+            TurnAround();
+        }
+        // ワープ後無敵時間解除でワープ待機に戻る
+        private void WarpUpdate()
+        {
+            if (IsInvincible == false)
+            {
+                _stateMachine.ChangeState(Triggers.Warpend);
+            }
+        }
+
+        // 地上のワープ先を決定
+        private Vector2 SetGroundWarpPointRandom()
+        {
+            Transform cameraPos = Camera.main.transform;
+            float warpPosX = UnityEngine.Random.Range(cameraPos.localPosition.x - _WarpMovingRange, cameraPos.localPosition.x + _WarpMovingRange);
+            Vector2 warpPoint = new Vector2(warpPosX, Transform.position.y);
+            return warpPoint;
+        }
+
+        // 無敵時間開始コルーチン
+        private async void Invincible(float invincibleTime)
+        {
+            Debug.Log("Invincible Start");
+            IsInvincible = true;
+            await UniTask.Delay(TimeSpan.FromSeconds(invincibleTime));
+            Debug.Log("Invincible End");
+            IsInvincible = false;
+        }
+
+        private void TurnAround()
+        {
+            // 見た目の向き変更など既存処理
+            if (_player != null)
+            {
+                Direction = (_player.Transform.position - transform.position).normalized;
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
+            }
+        }
+
+        private void AttackSelect()
+        {
+            if (_player == null) return;
+            float distanceToPlayer = Vector3.Distance(transform.position, _player.transform.position);
+
+            if (FixedAttackSelect != 0)
+            {
+                switch (FixedAttackSelect)
+                {
+                    case 1:
+                        Attack1();
+                        break;
+                    case 2:
+                        Attack2();
+                        break;
+                    case 3:
+                        Attack3();
+                        break;
+                    case 4:
+                        Attack4();
+                        break;
+                }
+                return;
+            }
 
             if (distanceToPlayer <= closeRangeDistance)
             {
-                int attackIndex1 = Random.Range(0, 2); // 0〜1 の間でランダム
+                int attackIndex1 = UnityEngine.Random.Range(0, 2); // 0〜1 の間でランダム
 
                 switch (attackIndex1)
                 {
                     case 0:
-                        Attack4();
+                        Attack2();
                         break;
                     case 1:
-                        Attack5();
+                        Attack4();
                         break;
                 }
             }
-            int attackIndex = Random.Range(0, 4); // 0〜3 の間でランダム
+            int attackIndex = UnityEngine.Random.Range(0, 4); // 0〜3 の間でランダム
 
             switch (attackIndex)
             {
@@ -195,7 +218,7 @@ namespace BlackRose.Core.Models.Units
                     Attack3();
                     break;
                 case 3:
-                    Attack5();
+                    Attack4();
                     break;
             }
         }
@@ -218,13 +241,15 @@ namespace BlackRose.Core.Models.Units
         }
         void Attack4()
         {
-            Debug.Log("グラップルスラッシュ");
+            Debug.Log("フラッシュビームソード");
             _stateMachine.ChangeState(Triggers.Attack4);
         }
-        void Attack5()
+
+
+
+        private bool IsMatchingState(States state)
         {
-            Debug.Log("フラッシュビームソード");
-            _stateMachine.ChangeState(Triggers.Attack5);
+            return _stateMachine.CurrentState.key == _stateNames[state];
         }
     }
 }

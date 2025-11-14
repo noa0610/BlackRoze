@@ -14,7 +14,7 @@ namespace BlackRose.Core.Models.Units
 
         [Header("回数設定")]
         [SerializeField] private int _maxSuccession = 3; // 最大連射回数
-        [SerializeField] private float[] _chargeShoot = new float[2] { 1.8f, 3.4f }; // チャージ攻撃用の時間配列
+        [SerializeField] private float[] _chargeShoot = new float[2] { 0.7f, 1.8f }; // チャージ攻撃用の時間配列
         private int _successionCount = 0; // 連射回数
 
 

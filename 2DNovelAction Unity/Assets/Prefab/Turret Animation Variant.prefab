@@ -219,6 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 0}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -238,9 +239,13 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 0
+  _animator: {fileID: 0}
   _muzzle: {fileID: 0}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 3414824451926019565}
   _enableVisuableInvincible: 0
+  _currentState: 
   _bulletData: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
   _shootInterval: 3.5
   _shootFireCount: 5
@@ -310,7 +315,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4972669818094376953}
-  m_BodyType: 0
+  m_BodyType: 2
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0

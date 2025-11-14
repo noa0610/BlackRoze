@@ -9,5 +9,10 @@ namespace BlackRose.Core.Models.Units.Helpers
         {
             _target.emitting = false;
         }
+
+        public void Landed()
+        {
+            _target.emitting = false;
+        }
     }
 }

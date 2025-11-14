@@ -26,7 +26,6 @@ namespace BlackRose.Core.Models.Units
 
         [Header("Objects")]
         [SerializeField] protected GameObject _muzzle;
-        [SerializeField] protected Animator _animator;
         #endregion
 
         #region Dirs

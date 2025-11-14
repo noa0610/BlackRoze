@@ -52,7 +52,7 @@ namespace HighElixir.StateMachine
                 if (Mode == QueueMode.UntilSuccesses && result) break;
                 if (Mode == QueueMode.UntilFailures && !result) break;
             }
-            _stateMachine.Logger?.Info($"[{_stateMachine.ToString()}] Execute:{success + failed}, Success:{success}, Fail:{failed}");
+            _stateMachine.Log(RequiredLoggerLevel.Info, $"[{_stateMachine.ToString()}] Execute:{success + failed}, Success:{success}, Fail:{failed}");
         }
 
         public void Dispose() => _queue.Clear();

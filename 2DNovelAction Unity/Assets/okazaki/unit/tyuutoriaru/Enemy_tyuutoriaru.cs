@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
@@ -184,6 +184,7 @@ namespace BlackRose.Core.Models.Units
 
         protected override void AfterFixedUpdate()
         {
+            base.AfterFixedUpdate();
             SearchPlayer();
 
             // HPが半分以下になったら一度だけトリガー発火

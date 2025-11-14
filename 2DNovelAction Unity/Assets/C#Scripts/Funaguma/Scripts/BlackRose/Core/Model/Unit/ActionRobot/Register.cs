@@ -99,7 +99,7 @@ namespace BlackRose.Core.Models.Units
             StateMachineOption<UnitBase, Triggers, StateKey> option = new(this);
             option.Logger = new UnityLogger();
 #if UNITY_EDITOR
-            option.LogLevel = RequiredLoggerLevel.ALL;
+            option.LogLevel = RequiredLoggerLevel.ERROR;
             _fms = new(option);
             _fms.OnTransition.Subscribe(info => _currentState_fms = info.ToState.ToString()).AddTo(this);
             //_fms.OnTransition.Subscribe(info =>
@@ -227,8 +227,11 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterState(StateKey.jump, _jump, "InAir", "Cancelable");
 
             // stun
-            _fms.RegisterState(StateKey.stun, _stun, "Tokened");
-
+            hook = _fms.RegisterState(StateKey.stun, _stun, "Tokened");
+            hook.OnEnter.Subscribe(res =>
+            {
+                _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(1.2f), Triggers.finishedStun, Take()).AsUniTask().Forget();
+            });
             // dead
             _fms.RegisterState(StateKey.dead, new Idle<UnitBase>());
 

@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using HighElixir;
 using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
 using HighElixir.Unity.UI;
@@ -54,6 +55,21 @@ namespace BlackRose.Core.Models.Units
         {
             GetComponent<UnityEngine.InputSystem.PlayerInput>().currentActionMap.Enable();
             Debug.Log("Input actions enabled for play.");
+        }
+
+        private IntervalCounter _intervalCounter = new(15);
+        protected override void OnGrounded()
+        {
+            base.OnGrounded();
+            if (_fms.Current.id == StateKey.landing)
+            {
+                if (_intervalCounter.Check)
+                {
+                    _fms.Send(Triggers.landed);
+                }
+            }
+            else
+                _intervalCounter.Reset();
         }
         // === Private ===
 

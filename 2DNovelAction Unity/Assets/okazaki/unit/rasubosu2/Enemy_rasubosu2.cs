@@ -90,6 +90,18 @@ namespace BlackRose.Core.Models.Units
         private Vector2 warpshootDirection;
         private string animeTrigger;
 
+
+
+        [Header("一閃ビームソード")]
+        [SerializeField] private float _FlashBeamSwordDistance = 2f;            // ソード攻撃に派生する距離
+        [SerializeField] private GameObject _FlashBeamSwordPoint;               // ソード攻撃中心位置
+        [SerializeField] private BulletData _FlashBeamSwordBulletDate;
+
+        [Tooltip("無敵解除 → ショット攻撃発動")]
+        [SerializeField] private float _FlashBeamSwordStartTime = 0.5f;
+        [Tooltip("ショット攻撃発動 → ワープまで")]
+        [SerializeField] private float _FlashBeamSwordEndTime = 0.6f;
+
         private Rigidbody2D _rb2d;
         private float gravity;
 

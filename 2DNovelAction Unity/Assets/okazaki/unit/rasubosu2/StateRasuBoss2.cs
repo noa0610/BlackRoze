@@ -33,7 +33,10 @@ namespace BlackRose.Core.Models.Units
             warpShot_warp,          // ショット直前ワープ
             warpShot,               // ワープショット
             warpShot_chain,         // ワープショット継続ワープ直前
+            flashBeamSword_before,  // フラッシュビームソード開始
+            flashBeamSword_dash,    // ダッシュ
             flashBeamSword,         // フラッシュビームソード
+            flashBeamSword_end      // フラッシュビームソード終了
         }
         private enum Triggers
         {
@@ -52,6 +55,7 @@ namespace BlackRose.Core.Models.Units
             Attack3,            // 攻撃３
             Attack4,            // 攻撃４
             Attack3chain,       // 攻撃３継続
+            Attack4Dash,        // 攻撃４ダッシュ
             Attack1end,         // 攻撃１した
             Attack2end,         // 攻撃２した
             Attack3end,         // 攻撃３した
@@ -157,10 +161,25 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === FlashBeamSword Triggers ===
+            var flashBeamSwordStartTrigger = new[]                     /** フラッシュビームソード開始ステートのトリガー **/                 
+            {
+                (Triggers.Attack4end, States.attackidle, ""),          // ダッシュでダッシュへ
+                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+            };
+            var flashBeamSworddashTrigger = new[]                          /** ダッシュステートのトリガー **/                 
+            {
+                (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
+                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+            };
             var flashBeamSwordTrigger = new[]                          /** フラッシュビームソードステートのトリガー **/                 
             {
                 (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
-                (Triggers.Died, States.dead, ""),                      // 死亡で待機
+                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+            };
+            var flashBeamSwordendTrigger = new[]                       /** フラッシュビームソード終了ステートのトリガー **/                 
+            {
+                (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
+                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             #endregion
 
@@ -275,7 +294,19 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === FlashBeamSword States ===
+            /* フラッシュビームソード開始 */
+            flashBeamSword = new ShootForward();
+            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
+
+            /* フラッシュビームソードダッシュ */
+            flashBeamSword = new ShootForward();
+            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
+
             /* フラッシュビームソード */
+            flashBeamSword = new ShootForward();
+            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
+
+            /* フラッシュビームソード終了 */
             flashBeamSword = new ShootForward();
             _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
             #endregion

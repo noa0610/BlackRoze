@@ -18,10 +18,12 @@ namespace BlackRose.Core.Models.Units
             armpunchanimaidle,
 
             armpunchidle,
+            armpunchendile, 
             diffusebeamgun,
             firewall,
             firewallanimaidle,
             firewallshot,
+            firewallshotidle,
         }
         public enum Triggers
         {
@@ -33,11 +35,12 @@ namespace BlackRose.Core.Models.Units
             Armpunch,
             Attack1loop,
             Attack1loopend,
+            Attack1idle,
             Attack2,
             Attack3,
             Firewall,
             Firewallshot,
-            Attack4,
+            Attack3idle,
             Attack1end,
             Attack2end,
             Attack3end,
@@ -60,9 +63,9 @@ namespace BlackRose.Core.Models.Units
             {
                 (Triggers.Playerdead, States.idle,""),
                 (Triggers.Died, States.dead,""),
-                (Triggers.Attack1, States.firewallanimaidle,"FireRight"),
-                (Triggers.Attack2, States.firewallanimaidle,""),
-                (Triggers.Attack3, States.firewallanimaidle,"FireRight")
+                (Triggers.Attack1, States.armpunchanimaidle,"FireRight"),
+                (Triggers.Attack2, States.armpunchanimaidle,"FireRight"),
+                (Triggers.Attack3, States.armpunchanimaidle,"FireRight")
             };
             var armpunchanimaidleTrigger = new[]
             {
@@ -72,12 +75,17 @@ namespace BlackRose.Core.Models.Units
             var armpunchTrigger = new[]
             {
                 (Triggers.Attack1loop, States.armpunchidle,""),
-                (Triggers.Attack1end, States.attackidle,"ArmReturn"),
+                (Triggers.Attack1idle, States.armpunchendile,""),
                 (Triggers.Died, States.dead,"")
             };
             var armpunchidleTrigger = new[]
             {
                 (Triggers.Attack1loopend, States.armpunch,""),
+                (Triggers.Died, States.dead,"")
+            };
+            var armpunchendileTrigger = new[]
+            {
+                (Triggers.Attack1end, States.attackidle,"ArmReturn"),
                 (Triggers.Died, States.dead,"")
             };
             var diffusebeamgunTrigger = new[]
@@ -97,6 +105,11 @@ namespace BlackRose.Core.Models.Units
             };
             var firewallshotTrigger = new[]
             {
+                (Triggers.Attack3idle, States.firewallshotidle,""),
+                (Triggers.Died, States.dead,"")
+            };
+            var firewallshotidle1Trigger = new[]
+            {
                 (Triggers.Attack3end, States.attackidle,"ArmReturn"),
                 (Triggers.Died, States.dead,"")
             };
@@ -106,10 +119,12 @@ namespace BlackRose.Core.Models.Units
                 .AddTransitions(States.armpunch, armpunchTrigger)
                 .AddTransitions(States.armpunchanimaidle, armpunchanimaidleTrigger)
                 .AddTransitions(States.armpunchidle, armpunchidleTrigger)
+                .AddTransitions(States.armpunchendile, armpunchendileTrigger)
                 .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
                 .AddTransitions(States.firewall, firewallTrigger)
                 .AddTransitions(States.firewallanimaidle, firewallanimaidleTrigger) 
-                .AddTransitions(States.firewallshot, firewallshotTrigger);
+                .AddTransitions(States.firewallshot, firewallshotTrigger)
+                .AddTransitions(States.firewallshotidle, firewallshotidle1Trigger);
             // ステート登録
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡
@@ -132,7 +147,7 @@ namespace BlackRose.Core.Models.Units
                     // 最終状態なら攻撃終了へ
                     punchcount = 0;
                     Debug.Log(punchcount);
-                    _stateMachine.LazyChange(Triggers.Attack1end);
+                    _stateMachine.LazyChange(Triggers.Attack1idle);
                 }
                 else
                 {
@@ -150,14 +165,17 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.LazyChange(Triggers.Attack1loopend);
             };
             _stateMachine.AddState(States.armpunchidle, armpunchidle);
+            // アームパンチ終了待機
+            var armpunchendile = new Idle_LazyChange(Triggers.Attack1end.ToString(), 5, true);
+            _stateMachine.AddState(States.armpunchendile, armpunchendile);
             // 拡散ビーム砲
-            var diffusebeamgun = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
-            .SetDirection(Vector2.down);
+            var diffusebeamgun = new ShootForward(_armpunchBulletData, _armpunchTargetLayer)
+            .SetDirection(Vector2.left);
             diffusebeamgun.SetGameObject(_diffusebeamgunPoint != null ? _diffusebeamgunPoint : gameObject);
             diffusebeamgun.onShootComplete.AddListener(() =>
             {
-                _stateMachine.ChangeState(Triggers.Attack2end);
-            });
+                _stateMachine.LazyChange(Triggers.Attack2end);
+            }); 
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
             // ファイアウォールアニメ待機
             var firewallanimaidle = new Idle_LazyChange(Triggers.Firewall.ToString(), 5, true);
@@ -176,9 +194,15 @@ namespace BlackRose.Core.Models.Units
             firewallshot.SetGameObject(_biribiriPoint != null ? _biribiriPoint : gameObject);
             firewallshot.onShootComplete.AddListener(() =>
             {
-                _stateMachine.LazyChange(Triggers.Attack3end);
+                _stateMachine.LazyChange(Triggers.Attack3idle);
             });
             _stateMachine.AddState(States.firewallshot, firewallshot);
+            var firewallshotidle = new Idle_LazyEvent(5f);
+            firewallshotidle.OnCompleted += () =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack3end);
+            };
+            _stateMachine.AddState(States.firewallshotidle, firewallshotidle);
         }
     }
 }

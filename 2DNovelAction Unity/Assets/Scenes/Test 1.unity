@@ -1291,6 +1291,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   _armpunchPoint: {fileID: 450023745}
+  _firewallBulletData: {fileID: 0}
+  _firewallTargetLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _firewallPoint: {fileID: 0}
+  _biribiriPoint: {fileID: 0}
   prefab: {fileID: 5371289192956355294, guid: b0d32671f03d43349b6d713c46b5dbe7, type: 3}
   point: {fileID: 2989346360766456398}
   speed: 3
@@ -2491,6 +2497,37 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 53.67704, y: 1}
   m_EdgeRadius: 0
+--- !u!1 &763673374
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 763673375}
+  m_Layer: 0
+  m_Name: biribiri
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &763673375
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763673374}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 66.93, y: -4.35862, z: 0.007482942}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &769960278
 GameObject:
   m_ObjectHideFlags: 0
@@ -3355,10 +3392,16 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   _armpunchPoint: {fileID: 450023745}
+  _firewallBulletData: {fileID: 11400000, guid: a5a8562a4e27aab459dcf253619ecb4b, type: 2}
+  _firewallTargetLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  _firewallPoint: {fileID: 322589787220143884}
+  _biribiriPoint: {fileID: 763673374}
   prefab: {fileID: 5371289192956355294, guid: b0d32671f03d43349b6d713c46b5dbe7, type: 3}
   point: {fileID: 2989346360766456398}
   speed: 3
-  lifetime: 10
+  lifetime: 5
 --- !u!114 &1293347083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5272,6 +5315,7 @@ SceneRoots:
   - {fileID: 1942615498}
   - {fileID: 502416612}
   - {fileID: 2989346360766456398}
+  - {fileID: 763673375}
   - {fileID: 77449238}
   - {fileID: 247344950}
   - {fileID: 1144450500}

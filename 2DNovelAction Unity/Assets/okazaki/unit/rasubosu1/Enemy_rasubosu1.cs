@@ -28,6 +28,10 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private GameObject _firewallPoint;// 必要ならInspectorでセット
         [SerializeField] private GameObject _biribiriPoint;// 必要ならInspectorでセット
         private int punchcount = 0;
+            [SerializeField]public GameObject prefab;    // インスペクタで割り当てるプレハブ
+    [SerializeField]public Transform point;      // インスペクタで割り当てる発射位置（point）
+    [SerializeField]public float speed = 5f;     // 移動速度（右->左なので Vector3.left を使う）
+    [SerializeField]public float lifetime = 10f; // 自動破棄までの時間（秒）
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
         {
@@ -87,10 +91,6 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("ファイアウォール");
             _stateMachine.ChangeState(Triggers.Attack3);
         }
-        public GameObject prefab;    // インスペクタで割り当てるプレハブ
-    public Transform point;      // インスペクタで割り当てる発射位置（point）
-    public float speed = 5f;     // 移動速度（右->左なので Vector3.left を使う）
-    public float lifetime = 10f; // 自動破棄までの時間（秒）
 
         void Udetobasi()
         {

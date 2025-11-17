@@ -14,9 +14,11 @@ namespace BlackRose.Core.Models.Units
         private ShootCross crosswave;
         private ShootForward warpShot;
         private ShootForward flashBeamSword;
+        private Idle dead;
         public enum States
         {
             none,
+            entry,                  // 登場
             idle,                   // 待機
             dead,                   // 死亡
             warpidle,               // ワープ待機
@@ -60,6 +62,7 @@ namespace BlackRose.Core.Models.Units
             Attack2end,         // 攻撃２した
             Attack3end,         // 攻撃３した
             Attack4end,         // 攻撃４した
+            EntryEnd,           // 登場終了
             Event1,             // イベント1が終わった
             Playerdead,         // プレイヤーが死亡
             Died,               // 死亡した（HPが０になった）
@@ -68,31 +71,35 @@ namespace BlackRose.Core.Models.Units
         {
             // トランスミッショングループを作成
             #region === Basic Triggers ===
+            var entryTrigger = new[]                                   /** 登場ステートのトリガー **/
+            {
+                (Triggers.EntryEnd, States.warpidle ,"EntryEnd"),      // イベント1発生でワープ待機へ
+            };
             var idleTrigger = new[]                                    /** 待機ステートのトリガー **/
             {
                 (Triggers.Event1, States.warpidle ,"toIdle"),          // イベント1発生でワープ待機へ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var warpidleTrigger = new[]                                /** ワープ待機ステートのトリガー **/
             {
                 (Triggers.Warpcooldown, States.beforewarp, "WarpStart"),// ワープクールダウンでワープ直前へ
                 (Triggers.Warpcomplete, States.attackidle, ""),        // ワープ完了で攻撃待機へ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var beforewarpTrigger = new[]                              /** ワープ直前ステートのトリガー **/
             {
                 (Triggers.Warp, States.warp, "toWarp"),                // ワープ開始でワープへ
-                (Triggers.Died, States.dead, "")                       // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead")                 // 死亡で死へ
             };
             var warpTrigger = new[]                                    /** ワープステートのトリガー **/
             {
                 (Triggers.Warpend, States.warpidle, "toIdle"),         // ワープ移動終了でワープ待機へ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
-             var attackidleTrigger = new[]                              /** 攻撃待機ステートのトリガー **/
+            var attackidleTrigger = new[]                              /** 攻撃待機ステートのトリガー **/
             {
                 (Triggers.Playerdead, States.idle, ""),                // プレイヤーが死亡で待機へ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
                 (Triggers.Attack1start, States.pointermissile_before, "MissileStart"), // ポインターミサイル直前へ 
                 (Triggers.Attack2start, States.crosswave_beforewarp, "WaveStart"),     // クロスウェーブ開始ワープ直前へ
                 (Triggers.Attack3start, States.warpShot_beforewarp, "ShotStart"),      // ワープショット開始ワープ直前へ
@@ -104,12 +111,12 @@ namespace BlackRose.Core.Models.Units
             var beforepointermissileTrigger = new[]                    /** ポインターミサイル直前ステートのトリガー **/
             {
                 (Triggers.Attack1, States.pointermissile, "toMissile"),// ポインターミサイルへ       
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var pointermissileTrigger = new[]                          /** ポインターミサイルステートのトリガー **/
             {
                 (Triggers.Attack1end, States.warpidle, "toIdle"),      // ポインターミサイル終了で攻撃待機へ       
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             #endregion
 
@@ -117,22 +124,22 @@ namespace BlackRose.Core.Models.Units
             var crosswavebeforewarpTrigger = new[]                     /** クロスウェーブ開始ワープ直前ステートのトリガー **/     
             {
                 (Triggers.Warp, States.crosswave_warp, "WaveMiddle"),  // ワープでクロスウェーブ直前のワープへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var crosswavewarpTrigger = new[]                           /** クロスウェーブ直前ステートのトリガー **/     
             {
                 (Triggers.Attack2, States.crosswave, "toWave"),        // 攻撃でクロスウェーブへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var crosswaveTrigger = new[]                               /** クロスウェーブステートのトリガー **/     
             {
                 (Triggers.Attack2end, States.crosswave_end, "WaveEnd"),// クロスウェーブ終了で終了ワープへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var crosswaveendTrigger = new[]                            /** クロスウェーブ終了ワープ直前ステートのトリガー **/     
             {
                 (Triggers.Warp, States.warp, "toWarp"),                // ワープでワープへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             #endregion
 
@@ -140,23 +147,23 @@ namespace BlackRose.Core.Models.Units
             var warpShotbeforewarpTrigger = new[]                      /** ワープショット開始ワープステートのトリガー **/
             {
                 (Triggers.Warp, States.warpShot_warp, ""),             // ワープでショット直前ワープへ（トリガーの選択は固有処理で）
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var warpShotwarpTrigger = new[]                            /** ショット直前ワープステートのトリガー **/
             {
                 (Triggers.Attack3, States.warpShot, "toShot"),         // 攻撃でショットへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var warpShotTrigger = new[]                                /** ショットステートのトリガー **/
             {
                 (Triggers.Attack3end, States.warpShot_chain, "ShotMiddle"), // ショット終了で継続ワープへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var warpShotchainTrigger = new[]                           /** ワープショット継続ワープ直前ステートのトリガー **/
             {
                 (Triggers.Attack3chain, States.warpShot_warp, ""),     // ワープショット継続でショット直前ワープへ（トリガーの選択は固有処理で）
                 (Triggers.Warp, States.warp, "ShotEnd"),               // ワープでワープへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             #endregion
 
@@ -164,27 +171,28 @@ namespace BlackRose.Core.Models.Units
             var flashBeamSwordStartTrigger = new[]                     /** フラッシュビームソード開始ステートのトリガー **/                 
             {
                 (Triggers.Attack4dash, States.flashBeamSword_dash, "SwordDash"),// ダッシュでダッシュへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var flashBeamSworddashTrigger = new[]                      /** ダッシュステートのトリガー **/                 
             {
                 (Triggers.Attack4, States.flashBeamSword, "toSword"),  // 攻撃でフラッシュビームソードへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var flashBeamSwordTrigger = new[]                          /** フラッシュビームソードステートのトリガー **/                 
             {
                 (Triggers.Attack4end, States.flashBeamSword_end, "SwordEnd"),  // フラッシュビームソード終了で終了ステートへ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             var flashBeamSwordendTrigger = new[]                       /** フラッシュビームソード終了ステートのトリガー **/                 
             {
                 (Triggers.Attack4end, States.warpidle, "toIdle"),      // フラッシュビームソード終了で攻撃待機へ
-                (Triggers.Died, States.dead, ""),                      // 死亡で死へ
+                (Triggers.Died, States.dead, "toDead"),                // 死亡で死へ
             };
             #endregion
 
             // ステートマシンにStatesの移動先の追加
             _stateMachine
+                .AddTransitions(States.entry, entryTrigger)
                 .AddTransitions(States.idle, idleTrigger)
                 .AddTransitions(States.attackidle, attackidleTrigger)
                 .AddTransitions(States.warpidle, warpidleTrigger)
@@ -206,15 +214,20 @@ namespace BlackRose.Core.Models.Units
 
             #region === Basic States ===
 
+            /* 登場演出 */
+            var entry = new Idle_LazyChange(Triggers.EntryEnd.ToString(), _EntryEndwaitTime);
+            _stateMachine.AddState(States.entry, entry);
+            
+
             /* 待機 */
             _stateMachine.AddState(States.idle, new Idle());
 
             /* 死亡 */
-            var died = new Idle();
-            died.OnAnimationCompleted.AddListener(() =>
+            dead = new Idle();
+            dead.OnAnimationCompleted.AddListener(() =>
             {
                 UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
-                Destroy(gameObject);
+                Dead();
             });
             _stateMachine.AddState(States.dead, new Idle());
 

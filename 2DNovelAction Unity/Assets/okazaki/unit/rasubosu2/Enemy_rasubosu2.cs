@@ -22,6 +22,9 @@ namespace BlackRose.Core.Models.Units
         [Header("固有設定")]
         [SerializeField] private float closeRangeDistance = 5f;            // 近距離判定の距離
 
+        [Header("登場演出")]
+        [SerializeField] private float _EntryEndwaitTime = 4.5f;           // 登場アニメーション終了時間（手動必須になる）
+
         [Header("ワープ移動")]
         [SerializeField] private float _WarpMovingRange = 5f;              // ワープ移動する範囲(初期位置の前後距離)
         [SerializeField] private float _WarpIntervalTime = 2f;             // ワープ移動間隔時間
@@ -131,7 +134,9 @@ namespace BlackRose.Core.Models.Units
             _searchAssistance = GetComponent<SearchAssistanceMono>();
 
             // TODO 動作確認用のコード
-            _stateMachine.ChangeState(Triggers.Event1);
+            // _stateMachine.ChangeState(Triggers.Event1);
+
+            _stateMachine.Awake("entry", false);
             _prevStateKey = _stateMachine.CurrentState.key;
         }
 
@@ -604,6 +609,14 @@ namespace BlackRose.Core.Models.Units
         {
             Debug.Log("フラッシュビームソード開始");
             _stateMachine.ChangeState(Triggers.Attack4start);
+        }
+
+        private void Dead()
+        {
+            // アニメーション終了後にシーン遷移
+
+
+            Destroy(gameObject);
         }
 
 

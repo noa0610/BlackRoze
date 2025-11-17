@@ -149,7 +149,7 @@ namespace BlackRose.Core.Models.Units
                     info.RegisterTransition(Triggers.halfChargeShoot, StateKey.halfChargeShoot, "toShot");
                     info.RegisterTransition(Triggers.fullChargeShoot, StateKey.fullChargeShoot, "toShot");
                 }
-                info.RegisterTransition(Triggers.stuned, StateKey.stun, "foo");
+                info.RegisterTransition(Triggers.stuned, StateKey.stun, "toStun");
                 info.RegisterTransition(Triggers.landing, StateKey.landing, "foo");
             });
             #endregion
@@ -172,7 +172,7 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterAnyTransition(Triggers.landing, StateKey.landing, "toLand");
             _fms.RegisterTransition(StateKey.landing, Triggers.landed, StateKey.idle, "toIdle");
 
-            _fms.RegisterAnyTransition(Triggers.death, StateKey.dead, "");
+            _fms.RegisterAnyTransition(Triggers.death, StateKey.dead, "toDead");
             #endregion
 
             #region === ステートコンポーネント登録 ===

@@ -3,5 +3,6 @@ using UnityEngine;
 [System.Serializable]
 public class AudioData
 {
-    public int AudioVolume = 50;
+    public float BGMVolume = 100;
+    public float VoiceVolume = 100;
 }

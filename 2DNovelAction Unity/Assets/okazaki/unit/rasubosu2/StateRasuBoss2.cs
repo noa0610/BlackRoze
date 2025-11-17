@@ -55,7 +55,7 @@ namespace BlackRose.Core.Models.Units
             Attack3,            // 攻撃３
             Attack4,            // 攻撃４
             Attack3chain,       // 攻撃３継続
-            Attack4Dash,        // 攻撃４ダッシュ
+            Attack4dash,        // 攻撃４ダッシュ
             Attack1end,         // 攻撃１した
             Attack2end,         // 攻撃２した
             Attack3end,         // 攻撃３した
@@ -96,7 +96,7 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Attack1start, States.pointermissile_before, "MissileStart"), // ポインターミサイル直前へ 
                 (Triggers.Attack2start, States.crosswave_beforewarp, "WaveStart"),     // クロスウェーブ開始ワープ直前へ
                 (Triggers.Attack3start, States.warpShot_beforewarp, "ShotStart"),      // ワープショット開始ワープ直前へ
-                (Triggers.Attack4start, States.flashBeamSword, "SwoadStart"),         // フラッシュビームソード直前へ
+                (Triggers.Attack4start, States.flashBeamSword_before, "SwordStart"),   // フラッシュビームソード直前へ
             }; 
             #endregion
             
@@ -163,22 +163,22 @@ namespace BlackRose.Core.Models.Units
             #region === FlashBeamSword Triggers ===
             var flashBeamSwordStartTrigger = new[]                     /** フラッシュビームソード開始ステートのトリガー **/                 
             {
-                (Triggers.Attack4end, States.attackidle, ""),          // ダッシュでダッシュへ
+                (Triggers.Attack4dash, States.flashBeamSword_dash, "SwordDash"),// ダッシュでダッシュへ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
-            var flashBeamSworddashTrigger = new[]                          /** ダッシュステートのトリガー **/                 
+            var flashBeamSworddashTrigger = new[]                      /** ダッシュステートのトリガー **/                 
             {
-                (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
+                (Triggers.Attack4, States.flashBeamSword, "toSword"),  // 攻撃でフラッシュビームソードへ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             var flashBeamSwordTrigger = new[]                          /** フラッシュビームソードステートのトリガー **/                 
             {
-                (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
+                (Triggers.Attack4end, States.flashBeamSword_end, "SwordEnd"),  // フラッシュビームソード終了で終了ステートへ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             var flashBeamSwordendTrigger = new[]                       /** フラッシュビームソード終了ステートのトリガー **/                 
             {
-                (Triggers.Attack4end, States.attackidle, ""),          // フラッシュビームソード終了で攻撃待機へ
+                (Triggers.Attack4end, States.warpidle, "toIdle"),      // フラッシュビームソード終了で攻撃待機へ
                 (Triggers.Died, States.dead, ""),                      // 死亡で死へ
             };
             #endregion
@@ -199,7 +199,10 @@ namespace BlackRose.Core.Models.Units
                 .AddTransitions(States.warpShot_warp, warpShotwarpTrigger)
                 .AddTransitions(States.warpShot, warpShotTrigger)
                 .AddTransitions(States.warpShot_chain, warpShotchainTrigger)
-                .AddTransitions(States.flashBeamSword, flashBeamSwordTrigger);
+                .AddTransitions(States.flashBeamSword_before, flashBeamSwordStartTrigger)
+                .AddTransitions(States.flashBeamSword_dash, flashBeamSworddashTrigger)
+                .AddTransitions(States.flashBeamSword, flashBeamSwordTrigger)
+                .AddTransitions(States.flashBeamSword_end, flashBeamSwordendTrigger);
 
             #region === Basic States ===
 
@@ -295,20 +298,23 @@ namespace BlackRose.Core.Models.Units
 
             #region === FlashBeamSword States ===
             /* フラッシュビームソード開始 */
-            flashBeamSword = new ShootForward();
-            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
+            var flashBeamSwordbefore = new Idle_LazyChange(Triggers.Attack4dash.ToString(), _FlashBeamSwordStartDashTime);
+            flashBeamSwordbefore.OnCompleted += FlashBeamSwordBeforeStay;
+            _stateMachine.AddState(States.flashBeamSword_before, flashBeamSwordbefore);
 
             /* フラッシュビームソードダッシュ */
-            flashBeamSword = new ShootForward();
-            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
+            var flashBeamSworddash = new MoveOnGround().SetAccel(_dashaccel).SetFriction(_dashfriction);
+            _stateMachine.AddState(States.flashBeamSword_dash, flashBeamSworddash);
 
             /* フラッシュビームソード */
-            flashBeamSword = new ShootForward();
+            flashBeamSword = new ShootForward(_FlashBeamSwordBulletDate, AttackLayer);
+            flashBeamSword.SetGameObject(_FlashBeamSwordPoint);
+            flashBeamSword.onShootComplete.AddListener(FlashBeamSwordEnter);
             _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
 
             /* フラッシュビームソード終了 */
-            flashBeamSword = new ShootForward();
-            _stateMachine.AddState(States.flashBeamSword, flashBeamSword);
+            var flashBeamSwordend = new Idle_LazyChange(Triggers.Attack4end.ToString(), _FlashBeamSwordEndTime);
+            _stateMachine.AddState(States.flashBeamSword_end, flashBeamSwordend);
             #endregion
         }
     }

@@ -96,11 +96,23 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _FlashBeamSwordDistance = 2f;            // ソード攻撃に派生する距離
         [SerializeField] private GameObject _FlashBeamSwordPoint;               // ソード攻撃中心位置
         [SerializeField] private BulletData _FlashBeamSwordBulletDate;
+        [SerializeField] private float _dashaccel = 20f;
+        [SerializeField] private float _dashfriction = 1.0f;
+        [SerializeField] private GameObject WallChackPoint;
+        [SerializeField] private LayerMask _WallLayer;
 
-        [Tooltip("無敵解除 → ショット攻撃発動")]
-        [SerializeField] private float _FlashBeamSwordStartTime = 0.5f;
-        [Tooltip("ショット攻撃発動 → ワープまで")]
+        [Tooltip("一閃ビームソード開始 → ダッシュ")]
+        [SerializeField] private float _FlashBeamSwordStartDashTime = 0.5f;
+
+        [Tooltip("攻撃 → 攻撃終了移動停止まで")]
+        [SerializeField] private float _FlashBeamSwordDashStopTime = 0.8f;
+        [Tooltip("攻撃終了 → 一閃ビームソード終了まで")]
         [SerializeField] private float _FlashBeamSwordEndTime = 0.6f;
+        private float _DashDirection;
+        private Transform _DashStartPos;
+        private bool _wallChack;
+
+
 
         private Rigidbody2D _rb2d;
         private float gravity;
@@ -167,6 +179,20 @@ namespace BlackRose.Core.Models.Units
                 // 状態が変わったら prev を更新
                 _prevStateKey = curKey;
             }
+
+            if (IsMatchingState(States.flashBeamSword_dash))
+            {
+                WallChack();
+                FlashBeamSwordDashStay();
+            }
+            if (IsMatchingState(States.flashBeamSword))
+            {
+                WallChack();
+                if(_wallChack)
+                {
+                    _rb2d.velocity = Vector2.zero;
+                }
+            }
         }
 
         protected override void OnTakeDamage(IUnit from, float damage)
@@ -231,7 +257,7 @@ namespace BlackRose.Core.Models.Units
             }
             else if (IsMatchingState(States.warpShot_chain))
             {
-                
+
                 if (_currentWarpShotCount >= _WarpShotCount)
                 {
                     // ワープ後にワープ待機に戻る
@@ -394,7 +420,7 @@ namespace BlackRose.Core.Models.Units
             if (isValid[0] && isValid[1])
             {
                 Debug.Log("左右どっちか");
-                return UnityEngine.Random.value< 0.5 ? new Vector2(warpCandidates[0].x, warpPosY) : new Vector2(warpCandidates[1].x, warpPosY);
+                return UnityEngine.Random.value < 0.5 ? new Vector2(warpCandidates[0].x, warpPosY) : new Vector2(warpCandidates[1].x, warpPosY);
             }
 
             // いずれも不可な場合は画面中央へ移動
@@ -426,6 +452,50 @@ namespace BlackRose.Core.Models.Units
             _currentWarpShotCount++;
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpShotEndTime));
             _stateMachine.ChangeState(Triggers.Attack3end);
+        }
+
+        private void FlashBeamSwordBeforeStay()
+        {
+            TurnAround();
+            MoveDirection = Direction;
+            _DashDirection = Direction.x;
+        }
+
+        private void FlashBeamSwordDashStay()
+        {
+            float playerdictance = _player.Transform.position.x - transform.position.x;
+
+
+            // プレイヤーの近くまで接近したら
+            if (Mathf.Abs(playerdictance) <= _FlashBeamSwordDistance)
+            {
+                _rb2d.gravityScale = 0;
+                capcol2D.isTrigger = true;
+                _stateMachine.ChangeState(Triggers.Attack4);
+            }
+            else if (_wallChack)
+            {
+                _rb2d.velocity = Vector2.zero;
+                _stateMachine.ChangeState(Triggers.Attack4);
+            }
+        }
+
+        private async void FlashBeamSwordEnter()
+        {
+            _rb2d.velocity *= 0.5f;
+            await UniTask.Delay(TimeSpan.FromSeconds(_FlashBeamSwordDashStopTime));
+            _rb2d.gravityScale = gravity;
+            capcol2D.isTrigger = false;
+            _rb2d.velocity = Vector2.zero;
+            _stateMachine.ChangeState(Triggers.Attack4end);
+        }
+
+        private void WallChack()
+        {
+            Ray2D ray = new Ray2D(WallChackPoint.transform.position, MoveDirection);
+            RaycastHit2D rayhit = Physics2D.Raycast(ray.origin, ray.direction, 1f, _WallLayer);
+            _wallChack = rayhit.collider ? true : false;
+            Debug.DrawRay(WallChackPoint.transform.position, MoveDirection, Color.red);
         }
 
 

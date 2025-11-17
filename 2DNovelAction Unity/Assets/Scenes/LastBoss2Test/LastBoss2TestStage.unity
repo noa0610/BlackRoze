@@ -936,7 +936,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   _disableCheckTime: 0.2
-  FixedAttackSelect: 3
+  FixedAttackSelect: 4
   closeRangeDistance: 5
   _WarpMovingRange: 10
   _WarpIntervalTime: 0.5
@@ -972,9 +972,16 @@ MonoBehaviour:
   _WarpShotCount: 4
   _ShotForwardprobability: 0.6
   _FlashBeamSwordDistance: 2
-  _FlashBeamSwordPoint: {fileID: 0}
-  _FlashBeamSwordBulletDate: {fileID: 0}
-  _FlashBeamSwordStartTime: 0.5
+  _FlashBeamSwordPoint: {fileID: 1552917906}
+  _FlashBeamSwordBulletDate: {fileID: 11400000, guid: 47bfa2059ea752545beecd9a4bbedf74, type: 2}
+  _dashaccel: 200
+  _dashfriction: 6
+  WallChackPoint: {fileID: 455174761}
+  _WallLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  _FlashBeamSwordStartDashTime: 0.5
+  _FlashBeamSwordDashStopTime: 0.8
   _FlashBeamSwordEndTime: 0.6
 --- !u!114 &330286550
 MonoBehaviour:
@@ -1182,6 +1189,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &455174761
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 455174762}
+  m_Layer: 11
+  m_Name: WallChack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &455174762
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 455174761}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.46, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 330286554}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &483234316
 GameObject:
   m_ObjectHideFlags: 0
@@ -3297,6 +3335,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 161153202}
+    - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 455174762}
     - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2002414331}

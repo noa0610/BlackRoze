@@ -17,35 +17,34 @@ namespace BlackRose.Core.Models.Units
             split,
             dead,
             splitidle,
-            Dead,
 
             // Update is called once per frame
         }
         public enum Triggers
         {
-            Idle,
+            None,
+            FoundPlayer,
             Split,
             SplitEnd,
-            dead
+            Dead
         }
         protected override void RegisterStats()
         {
 
-            // トランスミッション
             var idleTrigger = new[]
             {
-                (Triggers.Split, States.split,""),
-                (Triggers.dead, States.dead,"")
+                (Triggers.FoundPlayer, States.split, ""),
+                (Triggers.Dead, States.dead, "")
             };
             var splitTrigger = new[]
             {
                 (Triggers.SplitEnd, States.splitidle,""),
-                (Triggers.dead, States.dead,"")
+                (Triggers.Dead, States.dead,"")
             };
             var splitidleTrigger = new[]
             {
                 (Triggers.Split, States.split,""),
-                (Triggers.dead, States.dead,"")
+                (Triggers.Dead, States.dead,"")
             };
 
             _stateMachine
@@ -55,7 +54,7 @@ namespace BlackRose.Core.Models.Units
 
             // ステート登録
             // 待機 
-            var idle = new Idle_LazyChange(Triggers.Split.ToString(), 5, true);
+            var idle = new Idle_LazyChange(Triggers.FoundPlayer.ToString(), 2, true);
             _stateMachine.AddState(States.idle, idle);
             // 分裂
             _multiShoot.onShootComplete.AddListener(() =>

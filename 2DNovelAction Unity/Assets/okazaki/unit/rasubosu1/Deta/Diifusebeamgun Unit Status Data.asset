@@ -9,13 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f34f122ce1e27f4baa65174604d674d, type: 3}
-  m_Name: Diifusebeamgun Bullet Data
+  m_Script: {fileID: 11500000, guid: 5e7d09974cce0b747bd549481c967662, type: 3}
+  m_Name: Diifusebeamgun Unit Status Data
   m_EditorClassIdentifier: 
-  bulletName: 
-  prefab: {fileID: 9193194256909760912, guid: afa01482ebef4fc4bb4aa0a6b2ed11d3, type: 3}
-  originalstatus:
-    hp: 100000000
-    time: 2
-    damage: 5
-    speed: 2
+  id: 0
+  unitName: 
+  description: 
+  maxHp: 0
+  speed: 0
+  speedInAir: 0
+  dashSpeed: 0
+  power: 0
+  jumpPower: 0
+  damageTakeScale: 1
+  tags: 0

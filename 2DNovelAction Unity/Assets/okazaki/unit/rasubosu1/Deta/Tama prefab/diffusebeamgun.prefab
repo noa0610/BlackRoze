@@ -192,21 +192,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _profiles:
-  - profileName: 
+  - profileName: yellow
     comps:
-    - id: 
+    - id: 0
       Comp:
-        rid: -2
+        rid: 3754870817123467266
       Priority: 0
-    - id: 
+    - id: 1
       Comp:
-        rid: -2
+        rid: 3754870817123467268
       Priority: 0
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    - rid: 3754870817123467266
+      type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _center: {fileID: 7693465862350862306}
+        _range: 10
+    - rid: 3754870817123467268
+      type: {class: FilterByTag, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
+      data:
+        _tag: 1
 --- !u!114 &8893493636233623916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -255,7 +262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21cdd4d80fb8fe745bb84393cb12cc3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _status: {fileID: 0}
+  _status: {fileID: 11400000, guid: e18ffcffc4f8a344ca2ec65ea477fcb0, type: 2}
   _attackLayer:
     serializedVersion: 2
     m_Bits: 0
@@ -274,10 +281,10 @@ MonoBehaviour:
     _targetLayer:
       serializedVersion: 2
       m_Bits: 1024
-    _data: {fileID: 11400000, guid: b687c05afe6a60545aeaf1f249d67549, type: 2}
-    _createPos: 0.35
+    _data: {fileID: 11400000, guid: e6dde1ed514db4d44955e48099c68da4, type: 2}
+    _createPos: 0.33
     _direction: {x: 1, y: 0}
-    _muzzle: {fileID: 0}
+    _muzzle: {fileID: 6346964262566149090}
     _onShootComplete:
       m_PersistentCalls:
         m_Calls: []

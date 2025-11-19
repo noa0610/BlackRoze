@@ -45,6 +45,11 @@ namespace BlackRose.Core.Models.States
             }
             return base.AllowChange(nextState, parent);
         }
+        public void SetDelay(float delay)
+        {
+            _delay = delay;
+        }
+
         private async UniTask Explode(UnitBase parent)
         {
             _isExploding = true;

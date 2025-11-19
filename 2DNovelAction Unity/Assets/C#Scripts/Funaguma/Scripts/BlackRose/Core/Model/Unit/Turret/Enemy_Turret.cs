@@ -69,10 +69,11 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            HPUI.instance.Get(this); // HPUIに登録  
+            // HPUI.instance.Get(this); // HPUIに登録  
         }
         protected override void AfterFixedUpdate()
         {
+            Debug.Log($"{IsInvincible}");
             // クールタイムのカウントダウン
             var dt = Time.fixedDeltaTime;
             _trishootIntervalCount = Mathf.Max(0f, _trishootIntervalCount - dt);
@@ -100,7 +101,9 @@ namespace BlackRose.Core.Models.Units
 
         protected override void OnDeath()
         {
-            GetComponent<BreakHelper>().InvokeBreak().Forget();
+            base.OnDeath();
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
         }
         private bool IsMatchState(States state)
         {
@@ -112,8 +115,8 @@ namespace BlackRose.Core.Models.Units
         }
         private void OnDestroy()
         {
-            if (HPUI.instance != null)
-                HPUI.instance.Release(this); // HPUIから削除
+            // if (HPUI.instance != null)
+            //     HPUI.instance.Release(this); // HPUIから削除
         }
     }
 }

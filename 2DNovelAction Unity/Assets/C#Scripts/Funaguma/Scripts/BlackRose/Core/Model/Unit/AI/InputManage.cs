@@ -34,7 +34,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (!value.isPressed)
             {
-                _fms.LazySend(AITriggers.cancelMove);
+                _fms.LazySend(AITriggers.cancelDash);
                 return;
             }
             if (!IsGrounded) return;
@@ -92,14 +92,12 @@ namespace BlackRose.Core.Models.Units
             }
             CurrentMode.OnGrounded();
         }
+
         protected override void OnAirToGound()
         {
-            if (!_fms.HasTagOnChild("OnGround"))
-            {
-                Debug.Log(_fms.Current.info.ToString());
-                CurrentMode.OnAirToGround();
-                _fms.LazySend(AITriggers.landing, true);
-            }
+            TrailRenderer.emitting = false;
+            CurrentMode.OnAirToGround();
+            _fms.Send(AITriggers.landing);
         }
         protected override void OnFall()
         {

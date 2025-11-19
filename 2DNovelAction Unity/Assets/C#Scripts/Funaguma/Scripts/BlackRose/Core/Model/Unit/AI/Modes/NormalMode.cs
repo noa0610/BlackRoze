@@ -59,9 +59,9 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Skill, _warpState, "Skill");
 
             // Skill
-            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "");
+            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "toIdle");
             // event
-            _stateMachine.OnTransition.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ToState != SubState.ShootInterval).Subscribe(x => Timer.Stop(_intervalTicket));
+            //_stateMachine.OnTransition.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ToState != SubState.ShootInterval).Subscribe(x => Timer.Stop(_intervalTicket));
 
             _stateMachine.OnCompletion.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ID == SubState.Skill).Subscribe(_ =>
             {

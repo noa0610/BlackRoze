@@ -28,7 +28,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Full, _full, "Shoot");
             var hook = _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "");
             hook.OnEnter.Subscribe(_ => {
-                _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackTarget);
+                _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackLayer);
                 _stateMachine.Send(AITriggers.shootCompleted);
             });
 

@@ -22,6 +22,11 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LightMode _lightMode;
         [SerializeField] private HeavyMode _heavyMode;
 
+        protected override void OnDeath()
+        {
+            _fms.Send(AITriggers.dead);
+        }
+
         // === UnityLifeCycle ===
         protected override void BeforeAwake()
         {
@@ -34,13 +39,17 @@ namespace BlackRose.Core.Models.Units
         {
             base.OnUpdate();
             _fms.Update(Time.deltaTime);
-            if (Mathf.Abs(MoveDirection.x) < 0.01f && Rigidbody2D != null)
+            if (Mathf.Abs(MoveDirection.x) < 0.01f)
             {
                 var v = Rigidbody2D.velocity;
                 v.x = Mathf.MoveTowards(v.x, 0f, _horizontalDecel * Time.deltaTime);
                 Rigidbody2D.velocity = v;
                 if (Mathf.Abs(Rigidbody2D.velocity.x) < 0.01f)
                     _fms.Send(AITriggers.cancelMove);
+            }
+            else if (IsGrounded)
+            {
+                _fms.Send(AITriggers.moveInput);
             }
         }
     }

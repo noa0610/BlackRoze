@@ -22,6 +22,20 @@ namespace BlackRose.Core.Models.Objects
             }
         }
 
+        // ステータスをリフレッシュする
+        public static void Respwan(UnitBase Player, RespawnPoint customRespawnPoint = null)
+        {
+            if (customRespawnPoint == null)
+            {
+                Player.transform.position = _currentRespawnPoint.transform.position;
+            }
+            else
+            {
+                Player.transform.position = customRespawnPoint.transform.position;
+            }
+            Player.Refresh();
+        }
+
 
         public static void InitialSpawn()
         {

@@ -45,7 +45,7 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-
+            _armpunchPoint = GameObject.Find("ArmpunchPoint");
         }
 
         protected override void AfterFixedUpdate()

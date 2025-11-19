@@ -224,13 +224,12 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.idle, new Idle());
 
             /* 死亡 */
-            dead = new Idle();
+            dead = new Idle_LazyEvent(_DeadEndwaitTime);
             dead.OnAnimationCompleted.AddListener(() =>
             {
-                UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
                 Dead();
             });
-            _stateMachine.AddState(States.dead, new Idle());
+            _stateMachine.AddState(States.dead, dead);
 
             /* 攻撃待機 */
             var attackIdle = new Idle_LazyEvent(0.5f);

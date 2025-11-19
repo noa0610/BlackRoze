@@ -12,11 +12,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private LayerMask _attackTarget;
         [SerializeField] private ReflectMono _reflectMono;
 
-        // GetComponent
-        private DynamicAfterImageEffect2DPlayer _dPlayer;
         private AutoFlipHelper _flippingUnit;
 
-        public DynamicAfterImageEffect2DPlayer DynamicAfterImageEffect2D { get { return _dPlayer; } }
         public LayerMask AttackTarget => _attackTarget;
         public GameObject PreWarp => _preWarp;
         public ReflectMono ReflectMono => _reflectMono;

@@ -226,6 +226,7 @@ namespace BlackRose.Core.Models.Units
             shockwave.onShootComplete.AddListener(() =>
             {
                 _stateMachine.LazyChange(Triggers.Shockwaveend);
+                IsInvincible = false;
             });
             _stateMachine.AddState(States.shockwave, shockwave);
 

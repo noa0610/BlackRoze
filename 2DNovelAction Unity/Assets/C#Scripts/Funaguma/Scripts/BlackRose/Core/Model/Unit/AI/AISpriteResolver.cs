@@ -9,8 +9,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private SpriteLibraryAsset _normal;  
         [SerializeField] private SpriteLibraryAsset _heavy;  
         [SerializeField] private SpriteLibraryAsset _light;
+        [SerializeField]private SpriteLibrary _library;
 
-        private SpriteLibrary _library;
         public void Change_N()
         {
             _library.spriteLibraryAsset = _normal;
@@ -22,11 +22,6 @@ namespace BlackRose.Core.Models.Units
         public void Change_H()
         {
             _library.spriteLibraryAsset = _heavy;
-        }
-
-        private void Awake()
-        {
-            _library = GetComponent<SpriteLibrary>();
         }
     }
 }

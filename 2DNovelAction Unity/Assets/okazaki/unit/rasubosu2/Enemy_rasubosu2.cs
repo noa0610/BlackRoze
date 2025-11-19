@@ -15,9 +15,12 @@ namespace BlackRose.Core.Models.Units
     [RequireComponent(typeof(SearchAssistanceMono))]
     public partial class Enemy_rasubosu2 : GroundedUnit
     {
-        [Header("攻撃固定")]
+        [Header("デバッグ")]
         [Tooltip("攻撃選択の固定化(１，ポインタミサイル ２，クロスウェーブ ３，連続ワープショット ４，一閃ビームソード)")]
         [SerializeField] private int FixedAttackSelect = 0;                // 攻撃選択の固定化
+
+        [Tooltip("登場演出の省略")]
+        [SerializeField] private bool cutEntry = false;  
 
         [Header("固有設定")]
         [SerializeField] private float closeRangeDistance = 5f;            // 近距離判定の距離
@@ -71,6 +74,7 @@ namespace BlackRose.Core.Models.Units
 
         [Tooltip("クロスウェーブ攻撃終了 → ワープで戻る")]
         [SerializeField] private float _CrossWaveEndTime = 1.2f;
+        private Transform _startTransform;
 
 
 
@@ -135,8 +139,16 @@ namespace BlackRose.Core.Models.Units
 
             // TODO 動作確認用のコード
             // _stateMachine.ChangeState(Triggers.Event1);
-
-            _stateMachine.Awake("entry", false);
+            
+            if(cutEntry)
+            {
+                _stateMachine.Awake("warpidle", false);
+                _animator.SetTrigger("toIdle");
+            } 
+            else
+            {
+                _stateMachine.Awake("entry", false);
+            }
             _prevStateKey = _stateMachine.CurrentState.key;
         }
 
@@ -146,6 +158,7 @@ namespace BlackRose.Core.Models.Units
             _rb2d = GetComponent<Rigidbody2D>();
             capcol2D = GetComponent<CapsuleCollider2D>();
             gravity = _rb2d.gravityScale;
+            _startTransform = transform;
         }
 
         private void SearchPlayer()
@@ -157,6 +170,11 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.Event1);
                 Debug.Log($"{_player.name}");
             }
+        }
+
+        protected override void OnGrounded()
+        {
+            Debug.Log($"IsGrounded : {IsGrounded}");
         }
 
         protected async override void AfterFixedUpdate()
@@ -193,7 +211,7 @@ namespace BlackRose.Core.Models.Units
             if (IsMatchingState(States.flashBeamSword))
             {
                 WallChack();
-                if(_wallChack)
+                if (_wallChack)
                 {
                     _rb2d.velocity = Vector2.zero;
                 }
@@ -243,6 +261,7 @@ namespace BlackRose.Core.Models.Units
             }
             else if (IsMatchingState(States.crosswave_end))
             {
+                Debug.Log("end");
                 // 地上を目指して位置をセット
                 crosswavewarp.SetPos(SetGroundWarpPointRandom());
                 _stateMachine.ChangeState(Triggers.Warp);
@@ -287,16 +306,17 @@ namespace BlackRose.Core.Models.Units
             await UniTask.Delay(TimeSpan.FromSeconds(_WarpInvincibleRemovedTime));
             // 無敵時間解除
             IsInvincible = false;
-            _rb2d.gravityScale = gravity;
-            capcol2D.isTrigger = false;
 
             if (IsMatchingState(States.warp))
             {
+                _rb2d.gravityScale = gravity;
+                capcol2D.isTrigger = false;
                 await UniTask.Delay(TimeSpan.FromSeconds(_WarpEndTime));
                 _stateMachine.ChangeState(Triggers.Warpend);
             }
             else if (IsMatchingState(States.crosswave_warp))
             {
+                capcol2D.isTrigger = false;
                 await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveStartTime));
                 // 上下左右か斜め方向か
                 Vector2 shootDirection = (UnityEngine.Random.value < 0.5) ? Vector2.down : new Vector2(1, 1).normalized;
@@ -306,6 +326,8 @@ namespace BlackRose.Core.Models.Units
             }
             else if (IsMatchingState(States.warpShot_warp))
             {
+                _rb2d.gravityScale = gravity;
+                capcol2D.isTrigger = false;
                 warpshootDirection = (forwardShot == true) ? Direction.normalized : new Vector2(Direction.x, 1).normalized;
                 // 発射方向をセット
                 warpShot.SetDirection(warpshootDirection);
@@ -330,12 +352,21 @@ namespace BlackRose.Core.Models.Units
             }
             else
             {
-                Ray2D ray = new Ray2D(transform.position, -transform.up); // Rayを生成、-transform.upは進行方向
-                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 1f);//Raycastを生成
-                warpPosY = hit.collider.transform.position.y;
+                Ray2D ray = new Ray2D(_startTransform.localPosition, -transform.up); // Rayを生成、-transform.upは進行方向
+                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 10f); //Raycastを生成
+                
+                if (hit.collider)
+                {
+                    warpPosY = hit.collider.transform.position.y;
+                }
+                else
+                {
+                    warpPosY = _startTransform.position.y;
+                }
             }
 
             Vector2 warpPoint = new Vector2(warpPosX, warpPosY);
+            // Debug.Log($"{warpPoint}");
             return warpPoint;
         }
 

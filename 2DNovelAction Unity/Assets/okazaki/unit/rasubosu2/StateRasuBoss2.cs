@@ -203,6 +203,7 @@ namespace BlackRose.Core.Models.Units
                 .AddTransitions(States.crosswave, crosswaveTrigger)
                 .AddTransitions(States.crosswave_beforewarp, crosswavebeforewarpTrigger)
                 .AddTransitions(States.crosswave_warp, crosswavewarpTrigger)
+                .AddTransitions(States.crosswave_end, crosswaveendTrigger)
                 .AddTransitions(States.warpShot_beforewarp, warpShotbeforewarpTrigger)
                 .AddTransitions(States.warpShot_warp, warpShotwarpTrigger)
                 .AddTransitions(States.warpShot, warpShotTrigger)

@@ -111,7 +111,8 @@ namespace BlackRose.Core.Models.Units
                 Timer.Start(_chargeTicket);
                 if (_successionCount >= _maxSuccession)
                 {
-                    Timer.Start(_shootBlockTicket); // 連射ブロックタイムを開始
+                    if (!Timer.IsRunning(_shootBlockTicket))
+                        Timer.Start(_shootBlockTicket); // 連射ブロックタイムを開始
                     _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
                 }
                 else

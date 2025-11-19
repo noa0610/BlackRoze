@@ -80,10 +80,10 @@ namespace BlackRose.Core.Models.Units
 
             // 砲塔の向き更新
             Direction = _looking.Direction;
+            ShootDir = _looking.Direction;
             // ステートの判断
             if (_shootIntervalCount <= 0f && IsMatchState(States.inVigilance) && _looking.IsLookingTarget(35f))
             {
-                _shoot.SetDirection(Direction);
                 _stateMachine.ChangeState(Triggers.ShootReady);
             }
             else if (_trishootIntervalCount <= 0f && IsMatchState(States.shootInterval))

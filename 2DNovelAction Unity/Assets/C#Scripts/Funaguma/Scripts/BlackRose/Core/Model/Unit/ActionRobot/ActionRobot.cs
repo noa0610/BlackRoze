@@ -150,7 +150,7 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.moveInput);
         }
         private void OnAttack(InputValue value)
-        {_anim.SetTrigger("toShot");
+         {
             if (value.isPressed)
             {
                 _normal.SetDirection(_shootDirection); // 攻撃方向を設定
@@ -179,7 +179,7 @@ namespace BlackRose.Core.Models.Units
                     _successionCount = 0;
                     Timer.Start(_shootTicket); // 連射ブロックタイムを開始
                     _stateMachine.LazyChange(Triggers.watingTimeHasElapsed);
-                    _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
+                    // _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
                 }
             }
             else

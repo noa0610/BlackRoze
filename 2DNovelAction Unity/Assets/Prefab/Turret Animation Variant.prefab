@@ -313,6 +313,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 0}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -332,15 +333,17 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 1024
+  _animator: {fileID: 0}
   _muzzle: {fileID: 9111894047045325246}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 3414824451926019565}
+  _enableVisuableInvincible: 0
   _currentState: 
-  _currentMode: 
-  _currentDirection: {x: 0, y: 0}
   _bulletData: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
   _shootInterval: 3.5
   _shootFireCount: 3
-  _trishootInterval: 0.3
+  _trishootInterval: 0.1
   _turret: {fileID: 3790217020687009465}
   _targetLayer:
     serializedVersion: 2

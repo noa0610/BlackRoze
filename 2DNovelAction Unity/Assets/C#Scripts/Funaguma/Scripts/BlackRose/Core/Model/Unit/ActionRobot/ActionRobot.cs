@@ -113,7 +113,7 @@ namespace BlackRose.Core.Models.Units
                 {
                     if (!Timer.IsRunning(_shootBlockTicket))
                         Timer.Start(_shootBlockTicket); // 連射ブロックタイムを開始
-                    _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
+                    // _thrower.Create(gameObject, "もう疲れたよ...", Color.red);
                 }
                 else
                 {

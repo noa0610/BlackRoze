@@ -56,6 +56,14 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            _stateMachine.ChangeState(Triggers.Died);
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
+        }
+
         private bool IsMatchingState(States state)
         {
             return _stateMachine.CurrentState.key == _stateNames[state];

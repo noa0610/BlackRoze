@@ -145,6 +145,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2851414113958225493}
   m_SourcePrefab: {fileID: 100100000, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
+--- !u!95 &3878298904124064721 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5477093558844187586, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
+  m_PrefabInstance: {fileID: 8777788200315183123}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &7298730748722147604 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2061165588363546887, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
@@ -302,17 +307,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cec658b469b4a41bedcb1506fa72c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _status: {fileID: 11400000, guid: afdc0050e6388be48a215f359a4486f9, type: 2}
-  _attackLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  _muzzle: {fileID: 0}
   player: {fileID: 5566679719008075393}
+  _status: {fileID: 11400000, guid: afdc0050e6388be48a215f359a4486f9, type: 2}
+  _animator: {fileID: 3878298904124064721}
   _currentState: 
-  _currentMode: 
   _currentDirection: {x: 0, y: 0}
   _suicideBombing:
-    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
@@ -322,6 +322,16 @@ MonoBehaviour:
     _damage: -5
     _delay: 0.4
     _collider: {fileID: 6285255894146946779}
+  _freeMove:
+    animeTriggerName: 
+    waitForAnimeEnd: 0
+    cancelableProgress: 0
+    _rigidbody2D: {fileID: 2851414113958225493}
+    _isStopInExit: 1
+    _accel: 1
+    _decel: 5
+    _deadZone: 0.051
+  _RB2: {fileID: 2851414113958225493}
 --- !u!61 &5092649469929487127
 BoxCollider2D:
   m_ObjectHideFlags: 0

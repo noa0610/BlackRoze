@@ -340,14 +340,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0280b5fb6b018d478bae14e4134e58f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _status: {fileID: 11400000, guid: f0ba26b995ecfff4492a637efe9b1fc8, type: 2}
-  _attackLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  _muzzle: {fileID: 6922461563341103271}
   player: {fileID: 4394767696210527799}
+  _status: {fileID: 11400000, guid: f0ba26b995ecfff4492a637efe9b1fc8, type: 2}
+  _animator: {fileID: 4889332069086991840}
   _currentState: 
-  _currentMode: 
   _currentDirection: {x: 0, y: 0}
   _groundCheck: {fileID: 0}
   _groundCheckRadius: 0.1
@@ -356,6 +352,7 @@ MonoBehaviour:
     m_Bits: 512
   _disableCheckTime: 0.2
   _anim: {fileID: 4889332069086991840}
+  _muzzle: {fileID: 6922461563341103271}
   _bulletData: {fileID: 11400000, guid: be329650ceb71e34f8870e87207a066f, type: 2}
   _rb2: {fileID: 3747567230072702665}
   maxShootCount: 3
@@ -363,7 +360,6 @@ MonoBehaviour:
   encountDuration: 2
   shootReadyDuration: 0.5
   attack:
-    _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0.7
@@ -371,12 +367,13 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
     _data: {fileID: 0}
+    onShootComplete:
+      m_PersistentCalls:
+        m_Calls: []
+    _allowShootCancel: 0.4
     _createPos: 0.35
     _direction: {x: 1, y: 0}
     _muzzle: {fileID: 0}
-    _onShootComplete:
-      m_PersistentCalls:
-        m_Calls: []
   maxHP: 10
   groundCheck: {fileID: 6602075468401256632}
   wallCheck: {fileID: 915475168959790574}

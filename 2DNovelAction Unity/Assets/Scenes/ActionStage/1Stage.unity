@@ -2911,10 +2911,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1112810899}
     - target: {fileID: 1202309194711625589, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
-      propertyPath: selectedBlocks.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1202309194711625589, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
       propertyPath: selectedCommands.Array.size
       value: 0
       objectReference: {fileID: 0}
@@ -73461,7 +73457,6 @@ MonoBehaviour:
   _maxSuccession: 3
   _shootBlockTime: 0.6
   _invincibleTime: 0.6
-  _anim: {fileID: 0}
   _forceEnableJump: 0
   _jump:
     _parentName: 
@@ -73472,6 +73467,7 @@ MonoBehaviour:
     _cutMultiplier: 0.5
     _accel: 60
     _airFriction: -30
+  _muzzle: {fileID: 0}
 --- !u!4 &2023320230
 Transform:
   m_ObjectHideFlags: 0

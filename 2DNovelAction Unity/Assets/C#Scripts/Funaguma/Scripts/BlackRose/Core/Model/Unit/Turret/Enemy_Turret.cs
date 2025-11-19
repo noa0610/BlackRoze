@@ -6,6 +6,7 @@ using System;
 using UnityEngine;
 using BlackRose.Core.Models.Units.Helpers;
 using Cysharp.Threading.Tasks;
+using BlackRose.Core.Models.Units.State;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -73,13 +74,14 @@ namespace BlackRose.Core.Models.Units
         }
         protected override void AfterFixedUpdate()
         {
-            Debug.Log($"{IsInvincible}");
+            // Debug.Log($"{IsInvincible}");
             // クールタイムのカウントダウン
             var dt = Time.fixedDeltaTime;
             _trishootIntervalCount = Mathf.Max(0f, _trishootIntervalCount - dt);
 
             // 砲塔の向き更新
             Direction = _looking.Direction;
+            ShootDir = _looking.Direction;
             // ステートの判断
             if (_shootIntervalCount <= 0f && IsMatchState(States.inVigilance) && _looking.IsLookingTarget(35f))
             {

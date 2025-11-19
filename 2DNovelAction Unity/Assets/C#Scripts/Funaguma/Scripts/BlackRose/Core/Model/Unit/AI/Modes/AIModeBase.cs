@@ -61,7 +61,7 @@ namespace BlackRose.Core.Models.Units
             var op = new StateMachineOption<AIController, AITriggers, SubState>(_parent);
             op.Logger = _parent.logger;
             op.QueueMode = HighElixir.StateMachine.QueueMode.DoEverything;
-            op.LogLevel = RequiredLoggerLevel.ERRORS;
+            op.LogLevel = RequiredLoggerLevel.ERROR;
             op.EnableOverriding = true;
 
             _stateMachine = new(op);
@@ -91,19 +91,19 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Jump, _jump, "OnAir", "Cancelable");
             _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable");
             var hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable");
+            
+            // NOTE : Trail演出の追加？
             hook.OnEnter.Subscribe(x =>
             {
-                _parent.DynamicAfterImageEffect2D.SetActive(true);
             });
             hook.OnExit.Subscribe(x =>
             {
                 if (x is StateMachine<AIController, AITriggers, SubState>.StateInfo info && info.ID == SubState.Jump)
                 {
-                    _parent.OnAirToGround.Subscribe(_ => _parent.DynamicAfterImageEffect2D.SetActive(false));
+                    
                 }
                 else
                 {
-                    _parent.DynamicAfterImageEffect2D.SetActive(false);
                 }
             });
             _stateMachine.RegisterState(SubState.ShootInterval, new Idle<AIController>(), "Cancelable");

@@ -12,13 +12,14 @@ using UnityEditor;
 
 namespace BlackRose.Core.Models.Units
 {
-    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Animator), typeof(Rigidbody2D)), Serializable]
+    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Rigidbody2D)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IPausable, IUnit
     {
         #region === Inspector References ===
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
         [SerializeField] protected LayerMask _attackLayer;
+        [SerializeField] protected Animator _animator;
 
         [Header("StateMachine")]
         [SerializeField] public static bool _isPlaying = true;
@@ -27,12 +28,17 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected GameObject _muzzle;
         #endregion
 
+        #region Dirs
+        [SerializeField] private Vector2 _moveDir = Vector2.zero;
+        [SerializeField] private Vector2 _shootDir = Vector2.right;
+
+        #endregion
+
         #region === Components & Managers ===
         protected IStateMachine _stateMachine;
         private StatusManager _statusManager;
         private StatusEffectManager _effectManager;
         private SpriteEffectPlayer _spriteEffectPlayer;
-        protected Animator _animator;
         private Rigidbody2D _body2D;
         public SpriteEffectPlayer player; // 外部アクセス用
         #endregion
@@ -45,8 +51,8 @@ namespace BlackRose.Core.Models.Units
             get => _reactiveDirection.Value;
             set => _reactiveDirection.Value = value;
         }
-        public Vector2 MoveDirection { get; set; }
-        public Vector2 ShootDir { get; set; } = Vector2.right;
+        public Vector2 MoveDirection { get => _moveDir; set => _moveDir = value; }
+        public Vector2 ShootDir { get => _shootDir; set => _shootDir = value; }
         #endregion
 
         #region === Properties ===
@@ -67,16 +73,15 @@ namespace BlackRose.Core.Models.Units
         }
         public LayerMask AttackLayer => _attackLayer;
         public bool IsInvincible { get; set; }
+        public bool IsArrivals { get; set; } = true;
         #endregion
 
 #if UNITY_EDITOR
         #region === Debug ===
         [Header("Debug")]
+        [SerializeField] private bool _enableVisuableInvincible;
         [SerializeField] private string _currentState;
-        [SerializeField] private string _currentMode;
-        [SerializeField] private Vector2 _currentDirection;
 
-        public string CurrentState => _currentState;
         public virtual bool ShoudBeLogging => false;
         #endregion
 #endif
@@ -88,8 +93,6 @@ namespace BlackRose.Core.Models.Units
         protected virtual void BeforeAwake() { }
         protected virtual void AfterAwake() { }
         protected virtual void BeforeRegisterStats() { }
-        protected virtual void BeforeStart() { }
-        protected virtual void AfterStart() { }
 
         protected void Awake()
         {
@@ -97,7 +100,8 @@ namespace BlackRose.Core.Models.Units
             BeforeAwake();
 
             _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
-            _animator = GetComponent<Animator>();
+            if (_animator == null)
+                _animator = GetComponent<Animator>();
             _body2D = GetComponent<Rigidbody2D>();
 
             UnitManager.instance.AddUnit(this);
@@ -119,11 +123,6 @@ namespace BlackRose.Core.Models.Units
 
         protected virtual void Start()
         {
-            BeforeStart();
-#if UNITY_EDITOR
-            ReactiveDirection.Subscribe(v => _currentDirection = v).AddTo(this);
-#endif
-            AfterStart();
         }
         #endregion
 
@@ -147,15 +146,13 @@ namespace BlackRose.Core.Models.Units
             _effectManager.Update();
 
             AfterUpdate();
-
-#if UNITY_EDITOR
-            _currentState = _stateMachine.CurrentState.key;
-            _currentMode = _stateMachine.CurrentLayer;
-#endif
         }
 
         protected virtual void FixedUpdate()
         {
+#if UNITY_EDITOR
+            _currentState = _stateMachine.CurrentState.key;
+#endif
             BeforeFixedUpdate();
             if (!_isPlaying) return;
             AfterFixedUpdate();
@@ -165,6 +162,7 @@ namespace BlackRose.Core.Models.Units
         #region === Status & Damage ===
         public void TakeDamage(IUnit from, float damage)
         {
+            if (!_isPlaying || !IsArrivals) return;
             if (!BeforeTakeDamage(from, ref damage)) return;
 
             if (_statusManager.TakeDamage(damage))
@@ -179,6 +177,7 @@ namespace BlackRose.Core.Models.Units
         protected virtual void OnDeath()
         {
             Debug.Log($"{_status.name}が死亡した");
+            IsArrivals = false;
         }
         #endregion
 
@@ -191,8 +190,11 @@ namespace BlackRose.Core.Models.Units
         #region === Gizmos ===
         private void OnDrawGizmosSelected()
         {
-            var pos = transform.position + new Vector3(0, 1, 0);
-            Handles.Label(pos, _currentState);
+            if (_enableVisuableInvincible && IsInvincible)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawCube(transform.position, new Vector3(2, 2, 0.1f));
+            }
         }
         #endregion
 #endif

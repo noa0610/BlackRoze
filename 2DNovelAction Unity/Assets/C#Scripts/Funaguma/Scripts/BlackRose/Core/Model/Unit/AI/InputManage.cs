@@ -1,4 +1,5 @@
-﻿using HighElixir.StateMachine.Extention;
+﻿using HighElixir;
+using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
 using System;
 using UniRx;
@@ -7,6 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace BlackRose.Core.Models.Units
 {
+    // 入力分野を統括
     public partial class AIController
     {
         private ReactiveCommand _onCanceledJump = new();
@@ -46,10 +48,6 @@ namespace BlackRose.Core.Models.Units
             CurrentMode.OnInputMove(d);
             Direction = new Vector2((d.x == 0 || ShouldBeBlockFlip ? Direction.x : d.x), d.y);
             ShootDir = new Vector2((d.x == 0 || ShouldBeBlockFlip ? ShootDir.x : d.x), d.y);
-            if (d.x == 0)
-                _fms.LazySend(AITriggers.cancelMove);
-            else
-                _fms.LazySend(AITriggers.moveInput);
         }
 
         private void OnAttack(InputValue value)
@@ -82,9 +80,16 @@ namespace BlackRose.Core.Models.Units
             CurrentMode.ModeChange_V();
         }
         // === GroundedUnit の抽象 ===
+
+        private IntervalCounter _intervalCounter = new(10);
         protected override void OnGrounded()
         {
             Timer.Start(_coyoteTicket);
+
+            if (_intervalCounter.Check && MoveDirection.x != 0)
+            {
+                _fms.Send(AITriggers.moveInput);
+            }
             CurrentMode.OnGrounded();
         }
         protected override void OnAirToGound()

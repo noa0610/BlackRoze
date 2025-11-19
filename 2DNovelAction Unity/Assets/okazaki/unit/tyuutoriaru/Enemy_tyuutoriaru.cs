@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
@@ -8,6 +8,7 @@ using HighElixir;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
 using System;
+using BlackRose.Core.Models.Systems;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
@@ -182,11 +183,12 @@ namespace BlackRose.Core.Models.Units
         }
         private bool _halfHpTriggered = false;
 
-        protected override void AfterFixedUpdate()
-        {
-            SearchPlayer();
+        protected override bool BeforeTakeDamage(IUnit from, ref float damage)
+            => !IsInvincible;
 
-            // HPが半分以下になったら一度だけトリガー発火
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            base.OnTakeDamage(from, damage);
             if (!_halfHpTriggered)
             {
                 var hpStatus = statusManager.GetStatus(Status.HP);
@@ -202,9 +204,22 @@ namespace BlackRose.Core.Models.Units
                         _halfHpTriggered = true;
                         Debug.Log("HPが半分以下になりました");
                         _stateMachine.ChangeState(Triggers.HalfHP);
+                        IsInvincible = true;
                     }
                 }
             }
+        }
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            _stateMachine.ChangeState(Triggers.Died);
+            GetComponent<FlowchartFirer>().Fire();
+        }
+
+        protected override void AfterFixedUpdate()
+        {
+            base.AfterFixedUpdate();
+            SearchPlayer();
 
             // beamswordattackステート中のみ判定
             if (IsMatchingState(States.beamswordattackmove) && _player != null && _YPositions != null)

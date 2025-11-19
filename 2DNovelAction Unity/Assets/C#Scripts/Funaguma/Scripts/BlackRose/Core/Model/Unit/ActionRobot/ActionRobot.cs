@@ -58,19 +58,7 @@ namespace BlackRose.Core.Models.Units
         }
 
         private IntervalCounter _intervalCounter = new(15);
-        protected override void OnGrounded()
-        {
-            base.OnGrounded();
-            if (_fms.Current.id == StateKey.landing)
-            {
-                if (_intervalCounter.Check)
-                {
-                    _fms.Send(Triggers.landed);
-                }
-            }
-            else
-                _intervalCounter.Reset();
-        }
+
         // === Private ===
 
         // === InputAction ===
@@ -109,6 +97,8 @@ namespace BlackRose.Core.Models.Units
             MoveDirection = dir.normalized;
             if (dir.x != 0)
             {
+                if (_fms.Current.id == StateKey.move)
+                    _animator.SetTrigger("toWalk");
                 ShootDir = dir; // 横入力がある場合は攻撃方向を更新
             }
         }
@@ -160,6 +150,10 @@ namespace BlackRose.Core.Models.Units
         {
             this.UpdateAsObservable().Where(_ => _isPlaying).Subscribe(_ =>
                 {
+                    if (_fms.Current.id == StateKey.move && _animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                    {
+                        _animator.SetTrigger("toWalk");
+                    }
                     if (Mathf.Abs(MoveDirection.x) < 0.05f)
                     {
                         var v = Rigidbody2D.velocity;
@@ -171,7 +165,7 @@ namespace BlackRose.Core.Models.Units
                     else
                     {
                         //Debug.Log("BBBBB");
-                        _fms.LazySend(Triggers.moveInput, true);
+                        _fms.Send(Triggers.moveInput);
                     }
                 }).AddTo(this);
             CurrentGroundState.Where(x => x == GroundState.Falling).Subscribe(_ =>
@@ -190,7 +184,7 @@ namespace BlackRose.Core.Models.Units
                 // 遅延でIdleに移行
                 var token = Take();
                 _fms.Send(Triggers.landing);
-                var unused = _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(0.15f), Triggers.landed, token);
+                //_fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(0.05f), Triggers.landed).AsUniTask().Forget();
             }).AddTo(this);
         }
     }

@@ -6,6 +6,7 @@ using HighElixir.Unity.Loggings;
 using System;
 using System.Threading;
 using UniRx;
+using UniRx.Triggers;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
@@ -83,6 +84,7 @@ namespace BlackRose.Core.Models.Units
         //
         [SerializeField] private Stun<UnitBase> _stun;
 
+        [SerializeField] private ObservableStateMachineTrigger _landing;
         #endregion
 
         #region 非同期、時間管理系
@@ -102,10 +104,13 @@ namespace BlackRose.Core.Models.Units
             option.LogLevel = RequiredLoggerLevel.ERROR;
             _fms = new(option);
             _fms.OnTransition.Subscribe(info => _currentState_fms = info.ToState.ToString()).AddTo(this);
-            //_fms.OnTransition.Subscribe(info =>
-            //{
-            //    Debug.Log(info.ToString());
-            //}).AddTo(this);
+            var last = 0;
+            _fms.OnTransition.Subscribe(info =>
+            {
+                var t = Time.frameCount;
+                Debug.Log($"[{last}->{t}]{info.ToString()}");
+                last = t;
+            }).AddTo(this);
 #else
             option.LogLevel = RequiredLoggerLevel.Fatal;
             _fms = new(option);
@@ -179,12 +184,11 @@ namespace BlackRose.Core.Models.Units
             // idle
             _fms.RegisterState(StateKey.idle, new Idle<UnitBase>(), "Cancelable");
 
-            var hook = _fms.RegisterState(StateKey.landing, new Idle<UnitBase>(), "Tokened");
-            //hook.OnEnter.Subscribe(_ =>
-            //{
-            //    var token = Take();
-            //    var unused = _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(0.2f), Triggers.landed, token);
-            //});
+            var hook = _fms.RegisterState(StateKey.landing, new Idle<UnitBase>(), "Cancelable", "Tokened");
+            hook.OnEnter.Subscribe(_ =>
+            {
+                _fms.LazySend(Triggers.landed);
+            });
 
             hook = _fms.RegisterState(StateKey.shootInterval, new Idle<UnitBase>(), "Cancelable", "Tokened");
             hook.OnEnter.Subscribe(info =>

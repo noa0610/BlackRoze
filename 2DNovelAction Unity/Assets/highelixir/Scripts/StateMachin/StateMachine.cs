@@ -215,7 +215,7 @@ namespace HighElixir.StateMachine
         }
 
         /// <summary>
-        /// イベントを遅延送信キューに追加する。
+        /// イベントを1フレーム遅延送信キューに追加する。
         /// 既に同一イベントが存在する場合、skipIfExist=trueでスキップ可能。
         /// </summary>
         public bool LazySend(TEvt evt, bool skipIfExist = false)
@@ -288,8 +288,7 @@ namespace HighElixir.StateMachine
             if (Awaked)
                 OnError(new InvalidOperationException("[StateMachine]ステートマシンは起動済みです"));
 
-            if (!_states.TryGetValue(fromState, out var state))
-                state = CreateInfo(fromState);
+            var state = GetOrCreate(fromState);
 
             state.RegisterTransition(evt, toState);
             Log(RequiredLoggerLevel.Info, $"Registered : {fromState} = \"{evt}\" => {toState}");

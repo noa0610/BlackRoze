@@ -19,6 +19,7 @@ namespace HighElixir.StateMachine
     public class DefaultEventQueue<TCont, TEvt, TState> : IEventQueue<TCont, TEvt, TState>
     {
         private readonly Queue<TEvt> _queue = new();
+        private readonly Queue<TEvt> _next = new();
         private readonly StateMachine<TCont, TEvt, TState> _stateMachine;
         public QueueMode Mode { get; set; }
 
@@ -32,7 +33,7 @@ namespace HighElixir.StateMachine
         {
             if (!skipIfExisting || !_queue.Contains(item))
             {
-                _queue.Enqueue(item);
+                _next.Enqueue(item);
                 return true;
             }
             return false;
@@ -40,19 +41,25 @@ namespace HighElixir.StateMachine
 
         public void Process()
         {
-            if (_queue.Count <= 0) return;
-            int success = 0;
-            int failed = 0;
-            while (_queue.Count > 0)
+            if (_queue.Count > 0)
             {
-                var evt = _queue.Dequeue();
-                bool result = _stateMachine.Send(evt);
-                if (result) success++;
-                else failed++;
-                if (Mode == QueueMode.UntilSuccesses && result) break;
-                if (Mode == QueueMode.UntilFailures && !result) break;
+                int success = 0;
+                int failed = 0;
+                while (_queue.Count > 0)
+                {
+                    var evt = _queue.Dequeue();
+                    bool result = _stateMachine.Send(evt);
+                    if (result) success++;
+                    else failed++;
+                    if (Mode == QueueMode.UntilSuccesses && result) break;
+                    if (Mode == QueueMode.UntilFailures && !result) break;
+                }
+                _stateMachine.Log(RequiredLoggerLevel.Info, $"[{_stateMachine.ToString()}] Execute:{success + failed}, Success:{success}, Fail:{failed}");
             }
-            _stateMachine.Log(RequiredLoggerLevel.Info, $"[{_stateMachine.ToString()}] Execute:{success + failed}, Success:{success}, Fail:{failed}");
+            while(_next.Count > 0) 
+            {
+                _queue.Enqueue(_next.Dequeue());
+            }
         }
 
         public void Dispose() => _queue.Clear();

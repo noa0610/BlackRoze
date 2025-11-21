@@ -4,9 +4,6 @@ using BlackRose.Core.Models.Helper;
 using BlackRose.Datas.Definitions;
 using System;
 using UnityEngine;
-using BlackRose.Core.Models.Units.Helpers;
-using Cysharp.Threading.Tasks;
-using BlackRose.Core.Models.Units.State;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -70,18 +67,16 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            // HPUI.instance.Get(this); // HPUIに登録  
+            HPUI.instance.Get(this); // HPUIに登録  
         }
         protected override void AfterFixedUpdate()
         {
-            // Debug.Log($"{IsInvincible}");
             // クールタイムのカウントダウン
             var dt = Time.fixedDeltaTime;
             _trishootIntervalCount = Mathf.Max(0f, _trishootIntervalCount - dt);
 
             // 砲塔の向き更新
             Direction = _looking.Direction;
-            ShootDir = _looking.Direction;
             // ステートの判断
             if (_shootIntervalCount <= 0f && IsMatchState(States.inVigilance) && _looking.IsLookingTarget(35f))
             {
@@ -101,12 +96,6 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        protected override void OnDeath()
-        {
-            base.OnDeath();
-            UnitManager.instance.RemoveUnit(this);
-            Destroy(gameObject);
-        }
         private bool IsMatchState(States state)
         {
             return _stateMachine.CurrentState.key == _states[state];
@@ -117,8 +106,8 @@ namespace BlackRose.Core.Models.Units
         }
         private void OnDestroy()
         {
-            // if (HPUI.instance != null)
-            //     HPUI.instance.Release(this); // HPUIから削除
+            if (HPUI.instance != null)
+                HPUI.instance.Release(this); // HPUIから削除
         }
     }
 }

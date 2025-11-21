@@ -7,7 +7,7 @@ namespace BlackRose.Core.Models.States
     [Serializable]
     public class Jump : HolizontalMovingStates
     {
-        protected bool _hasLeapt = false;
+        [SerializeField] protected bool _hasLeapt = false;
         [SerializeField] protected int _enableJumped = -1;
         [SerializeField] protected float _cutMultiplier = 0.5f;  // 上昇中にカットする倍率
         [SerializeField] protected float _accel = 20f;           // 横方向の加速（m/s^2 想定）
@@ -87,6 +87,11 @@ namespace BlackRose.Core.Models.States
         public void SetEnableJumped(int count)
         {
             _enableJumped = count;
+        }
+
+        public override void OnDeserialize()
+        {
+            HadLeapt = false;
         }
     }
 }

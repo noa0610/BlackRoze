@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
 
 namespace BlackRose
 {
+    [RequireComponent(typeof(SpriteRenderer))]
     public class SpriteEffectPlayer : MonoBehaviour
     {
         private List<SpriteEffectDataHolder> _spriteEffects = new();
-        [SerializeField] private GameObject _tagetRenderer;
+        private SpriteRenderer _spriteRenderer;
 
         public void AddEffect(SpriteEffectHolders.SpriteEffects spriteEffects, float duration, float speed = 1f)
         {
@@ -25,7 +27,10 @@ namespace BlackRose
         }
 
         // === Unity Lifecycle ===
-
+        private void Awake()
+        {
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+        }
         private void Update()
         {
             var dT = Time.deltaTime;
@@ -38,7 +43,7 @@ namespace BlackRose
                 item.value.time = t;
                 if (item.value.remainingDuration <= 0)
                     item.value.mustRemove = true;
-                item.Invoke(_tagetRenderer);
+                item.Invoke(_spriteRenderer);
             }
             _spriteEffects.RemoveAll(item => item.value.mustRemove);
         }
@@ -56,10 +61,10 @@ namespace BlackRose
 
     public class SpriteEffectDataHolder
     {
-        public Action<GameObject, SpriteEffectHolders.Value> action;
+        public Action<SpriteRenderer, SpriteEffectHolders.Value> action;
         public SpriteEffectHolders.Value value;
 
-        public void Invoke(GameObject go) => action?.Invoke(go, value);
+        public void Invoke(SpriteRenderer renderer) => action?.Invoke(renderer, value);
     }
 #if UNITY_EDITOR
     [CustomEditor(typeof(SpriteEffectPlayer))]

@@ -6,14 +6,19 @@ using BlackRose.Core.Models.States;
 using System.Collections.Generic;
 using HighElixir;
 using System;
-using BlackRose.Core.UI;
 
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
     public class Enemy_Shooter : GroundedUnit
     {
-        private static readonly Dictionary<States, string> _states = EnumWrapper.GetValueNameMap<States>();
+        [Header("攻撃関連")]
+        [SerializeField] private Animator _anim;
+        [SerializeField] private GameObject _muzzle;
+        [SerializeField] private BulletData _bulletData;
+        [SerializeField] private Rigidbody2D _rb2;
+
+        private static readonly Dictionary<States, string> _states = EnumWrapper.GetDict<States>();
 
         public enum States
         {
@@ -40,125 +45,81 @@ namespace BlackRose.Core.Models.Units
             Damage,
         }
 
-        
-        [SerializeField] private Animator _anim;
-        [SerializeField] private Rigidbody2D _rb2;
 
-        [Header("移動")]
-        [SerializeField] private float _Accel = 4f;      // 加速度
-        [SerializeField] private float _Friction = 0.3f; // 摩擦度
-
-
-        [Header("ショット")]
-        [SerializeField] private BulletData _bulletData;       
-        [SerializeField] private float shootInterval = 0.5f;
-        [SerializeField] private int maxShootCount = 3;
-        [SerializeField] private float shootReadyDuration = 0.15f;
         private SearchAssistanceMono _searchAssistance;
-        private ShootForward attack;
-        private float shootTimer = 0f;
+        [SerializeField] private int maxShootCount = 3;
         private int shootCount = 0;
-        private float shootReadyTimer = 0f;
 
+        [SerializeField] private float shootInterval = 0.5f;
+        private float shootTimer = 0f;
 
-        [Header("接敵")]
-        [SerializeField] private float encountDuration = 0.15f;
         private float encountTimer = 0f;
+        [SerializeField] private float encountDuration = 0.15f;
 
+        private float shootReadyTimer = 0f;
+        [SerializeField] private float shootReadyDuration = 0.15f;
+        [SerializeField] private ShootForward attack;
 
-
-        [Header("環境判定")]
-        [SerializeField] private Transform groundCheck;            // 足元の前方を確認する位置
-        [SerializeField] private float graundCheckDistance = 0.2f; // 地面判定距離
-        [SerializeField] private Transform wallCheck;              // 壁を確認する位置
-        [SerializeField] private float wallCheckHeight = 0.6f;     // 壁判定高度
-        [SerializeField] private LayerMask groundLayer;            // 地面レイヤー
-
-        private int moveDirection = 1; // 左向きスタート
-
-
+        protected override void BeforeAwake()
+        {
+            _searchAssistance = GetComponent<SearchAssistanceMono>();
+        }
         private bool canAttack = false;
         private float firstAttackDelay = 1.0f; // 最初の攻撃までの待機秒数
         private float firstAttackTimer = 0f;
 
 
-        protected override void OnGrounded()
-        {
-            if (IsMatchingState(States.move))
-            {
-                CheckEnvironment(); // ← 壁 or 崖を判定してFlip
-            }
-        }
+        protected override void OnGrounded() { }
         protected override void OnUnGrounded() { }
 
         protected override void RegisterStats()
         {
             _stateMachine
-                .AddTransitions(States.idle, new[]
+                .AddTransmissions(States.idle, new[]
                 {
                     (Triggers.MissingPlayer, States.move),
                     (Triggers.FoundPlayer, States.Encount),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransitions(States.move, new[]
+                .AddTransmissions(States.move, new[]
                 {
                     (Triggers.FoundPlayer, States.Encount),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransitions(States.Encount, new[]
+                .AddTransmissions(States.Encount, new[]
                 {
                     (Triggers.AttackRange, States.shootReady),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransitions(States.shootReady, new[]
+                .AddTransmissions(States.shootReady, new[]
                 {
                     (Triggers.shoot,States.shoot),
                     (Triggers.Damage, States.knockBack)
                 })
-                .AddTransitions(States.shoot, new[]
-                {
-                    (Triggers.AttackEnd, States.idle),   // ← 3発撃ち終わったらIdleに戻る
-                    (Triggers.Damage, States.knockBack)
-                })
-                .AddTransitions(States.knockBack, new[]
+                .AddTransmissions(States.shoot, new[]
+{
+    (Triggers.AttackEnd, States.idle),   // ← 3発撃ち終わったらIdleに戻る
+    (Triggers.Damage, States.knockBack)
+})
+
+                .AddTransmissions(States.knockBack, new[]
                 {
                     (Triggers.None, States.idle),
                     (Triggers.Died, States.dead)
                 });
 
-            var idle = new Idle().SetAnimeTrigger("idle");
-            _stateMachine.AddState(States.idle, idle);
+            _stateMachine.AddState(States.idle, new Idle());
+            _stateMachine.AddState(States.move, new MoveOnGround(true));
+            _stateMachine.AddState(States.Encount, new Idle());
+            _stateMachine.AddState(States.shootReady, new Idle()); // アニメーション専用
 
-            var move = new MoveOnGround().SetAnimeTrigger("WalkState");
-            move.SetAccel(_Accel).SetFriction(_Friction);
-            _stateMachine.AddState(States.move, move);
+            attack.SetBullet(_bulletData);
+            attack.SetMuzzle(_muzzle);
 
-            var encount = new Idle().SetAnimeTrigger("Contact");
-            _stateMachine.AddState(States.Encount, encount);
-
-            var shootready = new Idle();
-            _stateMachine.AddState(States.shootReady, shootready); // アニメーション専用
-
-            attack = new ShootForward(_bulletData, AttackLayer);
-            attack.SetGameObject(_muzzle);
             _stateMachine.AddState(States.shoot, attack);
-
-            var knockBack = new Stun(_rb2, 0.6f, false).SetAnimeTrigger("Damage");
-            knockBack.KnockbackForce = 1f;
-            _stateMachine.AddState(States.knockBack, knockBack);
-
-            var dead = new Idle();
-            _stateMachine.AddState(States.dead, dead);
+            _stateMachine.AddState(States.knockBack, new Stun(0.6f, false));
+            _stateMachine.AddState(States.dead, new Idle());
         }
-        
-
-        protected override void BeforeAwake()
-        {
-            _searchAssistance = GetComponent<SearchAssistanceMono>();
-            MoveDirection = new Vector2(moveDirection, 0);
-        }
-
-
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
@@ -216,23 +177,28 @@ namespace BlackRose.Core.Models.Units
 
                     _stateMachine.ChangeState(Triggers.FoundPlayer);
                 }
+
+
+
                 else
-                {
                     _stateMachine.ChangeState(Triggers.MissingPlayer);
-                }
             }
+
+            Debug.Log(found);
         }
-        
+        // Enemy_Shooter.cs に追記
         public void OnAttackEnd()
         {
+            Debug.Log("🎬 Attack Animation End → Idleへ遷移");
+
             // アニメーションが終わったタイミングでのみ Idle へ戻す
             _stateMachine.ChangeState(Triggers.AttackEnd);
         }
-
         // ノックバックアニメーション終了時に呼ばれる
         public void OnKnockBackEnd()
         {
-            if (statusManager.ReadValue(Status.HP) <= 0)
+            Debug.Log("🌀 KnockBack Animation End → Idleへ遷移");
+            if (currentHP <= 0)
             {
                 // HPが0以下 → Deadステートへ
                 _stateMachine.ChangeState(Triggers.Died);
@@ -241,9 +207,10 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.None); // KnockBack → Idle に戻る
         }
 
+
+
         protected override void FixedUpdate()
         {
-            base.FixedUpdate();
             // 最初の攻撃待機
             if (!canAttack)
             {
@@ -254,10 +221,17 @@ namespace BlackRose.Core.Models.Units
                 }
                 return; // 攻撃サイクルに入らない
             }
-
             SearchPlayer();
+            if (IsMatchingState(States.move))
+
+                if (IsMatchingState(States.move))
+                {
+                    CheckEnvironment(); // ← 壁 or 崖を判定してFlip
+                }
 
             // 既存の処理（攻撃や死亡処理）
+
+
             if (IsMatchingState(States.Encount))
             {
                 encountTimer += Time.fixedDeltaTime;
@@ -293,9 +267,9 @@ namespace BlackRose.Core.Models.Units
             }
 
 
-            if (IsMatchingState(States.shoot) && shootCount <= maxShootCount - 1)//ここで一回
+            if (IsMatchingState(States.shoot) && shootCount <= maxShootCount-1)//ここで一回
             {
-
+                
                 shootTimer += Time.fixedDeltaTime;
                 if (shootTimer >= shootInterval)//ここで3回打っている
                 {
@@ -307,61 +281,66 @@ namespace BlackRose.Core.Models.Units
                     ;
 
                     shootCount++;
-                    Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount - 1})");
+                    Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount-1})");
 
-                    if (shootCount >= maxShootCount - 1)
+                    if (shootCount >= maxShootCount-1)
                     {
                         shootCount = 0;
                         _stateMachine.ChangeState(Triggers.AttackEnd);
                         _anim?.SetTrigger("AttackEnd");
                         return; // ここで即座に処理終了
                     }
+
                 }
             }
-
             if (IsMatchingState(States.dead))
             {
-                UnitManager.instance.RemoveUnit(this);
                 Destroy(gameObject);
             }
 
         }
+        [SerializeField] private int maxHP = 10;   // ScriptableObjectから読み込むなら差し替え
+        private int currentHP = 10;
 
         /// <summary>
         /// 外部から呼び出されるダメージ処理
         /// </summary>
-        protected override void OnTakeDamage(IUnit from, float damage)
+        public void TakeDamage(int damage)
         {
             if (IsMatchingState(States.dead)) return; // すでに死亡していたら無視
                                                       // HPが残っている → KnockBackステートへ
             _stateMachine.ChangeState(Triggers.Damage);
             _anim?.SetTrigger("Damage"); // 被弾アニメがあるなら
+            currentHP -= damage;
+            Debug.Log($"💥 Enemy HP: {currentHP}/{maxHP}");
 
         }
+        [Header("環境判定")]
+        [SerializeField] private Transform groundCheck;   // 足元の前方を確認する位置
+        [SerializeField] private Transform wallCheck;     // 壁を確認する位置
+        [SerializeField] private float checkDistance = 0.2f; // 判定距離
+        [SerializeField] private LayerMask groundLayer;   // 地面レイヤー
+
+        private int moveDirection = 1; // 右向きスタート
+
+
         private void CheckEnvironment()
         {
             // 前方の壁をRayでチェック
-            RaycastHit2D wallHit = Physics2D.Raycast(wallCheck.position, Vector2.up, wallCheckHeight, groundLayer);
+            RaycastHit2D wallHit = Physics2D.Raycast(wallCheck.position, Vector2.right * moveDirection, checkDistance, groundLayer);
 
             // 足元の前方をRayでチェック（崖判定）
-            RaycastHit2D groundHit = Physics2D.Raycast(groundCheck.position, Vector2.down, graundCheckDistance, groundLayer);
+            RaycastHit2D groundHit = Physics2D.Raycast(groundCheck.position, Vector2.down, checkDistance, groundLayer);
 
             // 壁に当たった or 足元が無い → 反転
-            if (wallHit.collider != null)
+            if (wallHit.collider != null || groundHit.collider == null)
             {
-                Debug.Log("wallhit Flip");
-                Flip();
-            }
-
-            if (groundHit.collider == null)
-            {
-                Debug.Log("groundlost Flip");
                 Flip();
             }
 
             // デバッグ表示
-            Debug.DrawRay(wallCheck.position, Vector2.up * wallCheckHeight, Color.red);
-            Debug.DrawRay(groundCheck.position, Vector2.down * graundCheckDistance, Color.blue);
+            Debug.DrawRay(wallCheck.position, Vector2.right * moveDirection * checkDistance, Color.red);
+            Debug.DrawRay(groundCheck.position, Vector2.down * checkDistance, Color.blue);
         }
 
         private void Flip()
@@ -369,13 +348,24 @@ namespace BlackRose.Core.Models.Units
             moveDirection *= -1; // 方向を反転
             transform.Rotate(0, 180, 0); // 見た目を反転
             Direction = new Vector2(moveDirection, 0); // ← これでMoveOnGroundの移動方向も変わる
-            MoveDirection = Direction;
         }
+        
+
+
+
 
 
         private bool IsMatchingState(States state)
         {
             return _stateMachine.CurrentState.key == _states[state];
         }
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (other.CompareTag("Playerbullet"))
+            {
+                TakeDamage(2);
+            }
+        }
+
     }
 }

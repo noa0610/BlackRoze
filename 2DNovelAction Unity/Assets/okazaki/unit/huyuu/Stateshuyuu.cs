@@ -5,7 +5,7 @@ namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_huyuu
     {
-        [SerializeField] private float ExplosionDelay = 0f;
+
         public enum States
         {
             none,
@@ -44,9 +44,9 @@ namespace BlackRose.Core.Models.Units
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransitions(States.idle, idleTrigger)
-                .AddTransitions(States.move, moveTrigger)
-                .AddTransitions(States.explosion, explosionTrigger);
+                .AddTransmissions(States.idle, idleTrigger)
+                .AddTransmissions(States.move, moveTrigger)
+                .AddTransmissions(States.explosion, explosionTrigger);
             // 死んだときに何もしないならDeadの設定はいらない
 
             // 待機
@@ -60,7 +60,6 @@ namespace BlackRose.Core.Models.Units
 
             //爆発
             // 爆発イベント（OnExplode）で死亡トリガーを発火
-            _suicideBombing.SetDelay(ExplosionDelay);
             _suicideBombing.OnCompleted += () =>
             {
                 Debug.Log("Enemy_huyuu: 爆発アニメーションが完了しました。");
@@ -70,8 +69,7 @@ namespace BlackRose.Core.Models.Units
             // ステートマシンに登録
             _stateMachine.AddState(States.explosion, _suicideBombing);
             // 死亡
-            var died = new Idle();
-            died.OnAnimationCompleted.AddListener(() =>
+            var died = new Idle().SetWaitTick<Idle>(25, () =>
             {
                 Debug.Log("Enemy_huyuu: 死亡アニメーションが完了しました。");
                 UnitManager.instance.RemoveUnit(this);

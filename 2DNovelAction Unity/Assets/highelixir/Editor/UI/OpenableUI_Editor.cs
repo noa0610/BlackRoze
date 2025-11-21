@@ -1,4 +1,4 @@
-﻿using HighElixir.Unity.UI;
+﻿using HighElixir.UI;
 using UnityEditor;
 using UnityEngine;
 [CustomEditor(typeof(OpenableUI))]

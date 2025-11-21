@@ -1,4 +1,4 @@
-﻿using HighElixir.Hedgeable;
+﻿using HighElixir;
 using System;
 using System.Text;
 
@@ -7,7 +7,7 @@ namespace BlackRose.Core.Models
     public class StatusInfo
     {
         private float _defaultAmount;
-        private Hedgeable<float> _currentAmount;
+        private HedgeableFloat _currentAmount;
 
         private bool _enableDynamicParams; // _temporaryChanged,_temporaryRatioを使用して値を計算するかどうか
         private float _temporaryChanged;
@@ -68,14 +68,14 @@ namespace BlackRose.Core.Models
 
         public StatusInfo(float defaultAmount, bool isDynamic = true)
         {
-            _currentAmount = new(defaultAmount, float.MinValue, float.MaxValue);
+            _currentAmount = new(defaultAmount);
             _defaultAmount = defaultAmount;
             _enableDynamicParams = isDynamic;
             _dirty = _enableDynamicParams;
-            _currentAmount.Subscribe(x =>
+            _currentAmount.Subscribe((before, after) =>
             {
                 if (_enableDynamicParams) _dirty = true;
-                _onAmountChanged?.Invoke(x.OldValue, x.NewValue);
+                _onAmountChanged?.Invoke(before, after);
             });
             Recalculate();
         }

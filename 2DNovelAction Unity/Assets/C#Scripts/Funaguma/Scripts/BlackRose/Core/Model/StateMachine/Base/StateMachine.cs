@@ -1,6 +1,5 @@
 ﻿using BlackRose.Core.Models.States.Animators;
 using BlackRose.Core.Models.Units;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,11 +11,10 @@ namespace BlackRose.Core.Models.States
         private readonly IAnimationDriver _anim;
 
         private readonly Dictionary<string, StateInfo> _stateMap = new();
-        private readonly Dictionary<(string state, string trigger), (string state, string animetrigger)> _transitionGroup = new();
+        private readonly Dictionary<(string state, string trigger), (string state, string animetrigger)> _transmissionGroup = new();
 
-        private readonly Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> _layerTransitionGroup = new();
+        private readonly Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> _layerTransmissionGroup = new();
 
-        private readonly Dictionary<(string layer, string trigger), (string toState, string animeTrigger)> _anyTransitionGroup = new();
 
         private StateInfo _currentState;
         private readonly Queue<string> _requests = new();
@@ -25,10 +23,9 @@ namespace BlackRose.Core.Models.States
         public string CurrentLayer { get; private set; } = "Default";
         public Dictionary<string, StateInfo> StateMap => _stateMap;
         public StateInfo CurrentState => _currentState;
-        public Dictionary<(string state, string trigger), (string state, string animetrigger)> TransitionGroup => _transitionGroup;
-        public Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransitionGroup => _layerTransitionGroup;
-        public Dictionary<(string layer, string trigger), (string toState, string animeTrigger)> AnyTransitionGroup => _anyTransitionGroup;
-        public bool UseDefaultLayerIfMissingTransition { get; set; } = true;
+        public Dictionary<(string state, string trigger), (string state, string animetrigger)> TransmissionGroup => _transmissionGroup;
+        public Dictionary<(string layer, string state, string trigger), (string state, string animetrigger)> LayerTransmissionGroup => _layerTransmissionGroup;
+        public bool UseDefaultLayerIfMissingTransmission { get; set; } = true;
 
         public StateMachine(UnitBase parent) : this(parent, new NullAnimationDriver()) { }
 
@@ -56,29 +53,14 @@ namespace BlackRose.Core.Models.States
         // ===============================
         public void AddTransition(string fromState, string trigger, string toState, string animationTrigger = "")
         {
-            _transitionGroup[(fromState, trigger)] = (toState, animationTrigger);
+            _transmissionGroup[(fromState, trigger)] = (toState, animationTrigger);
         }
 
         public void AddTransitionForLayer(string mode, string fromState, string trigger, string toState, string animationTrigger = "")
         {
-            _layerTransitionGroup[(mode, fromState, trigger)] = (toState, animationTrigger);
+            _layerTransmissionGroup[(mode, fromState, trigger)] = (toState, animationTrigger);
         }
 
-        public void AddAnyTransition(string trigger, string toState, string mode = LayerChar.COMMON, string animationTrigger = "")
-        {
-            _anyTransitionGroup[(mode, trigger)] = (toState, animationTrigger);
-        }
-
-        public void AddAnyTransition<TMode, TState, TTrig>(TTrig trig, TState state, TMode mode = default, string animationTrigger = "")
-            where TMode : Enum
-            where TState : Enum
-            where TTrig : Enum
-        {
-            if (mode.Equals(default))
-                AddAnyTransition(trig.ToString(), state.ToString(), animationTrigger: animationTrigger);
-            else
-                AddAnyTransition(trig.ToString(), state.ToString(), mode.ToString(), animationTrigger);
-        }
         public void AddTransition<TState, TTrig>(TState fromState, TTrig trigger, string toState, string animationTrigger = "")
             where TState : System.Enum where TTrig : System.Enum
             => AddTransition(fromState.ToString(), trigger.ToString(), toState, animationTrigger); // ★fix: animationTriggerを渡す
@@ -92,33 +74,20 @@ namespace BlackRose.Core.Models.States
         // ===============================
         public bool ChangeState(string trigger)
         {
-            // CurrentLayer
-            if (_layerTransitionGroup.TryGetValue((CurrentLayer, _currentState.key, trigger), out var trs))
+            if (_layerTransmissionGroup.TryGetValue((CurrentLayer, _currentState.key, trigger), out var transByLayer))
             {
-                // 遷移の成功失敗にかかわらず続けない
-                return Change(trs);
+                return Change(transByLayer);
             }
 
-            if (_anyTransitionGroup.TryGetValue((CurrentLayer, trigger), out trs))
-
-            { // 遷移の成功失敗にかかわらず続けない
-                return Change(trs);
-            }
-            // Common
-            if (_layerTransitionGroup.TryGetValue((LayerChar.COMMON, _currentState.key, trigger), out trs))
+            if (_layerTransmissionGroup.TryGetValue((Layer.COMMON.ToString(), _currentState.key, trigger), out var trs))
             {
                 if (Change(trs)) return true;
             }
-            if (_anyTransitionGroup.TryGetValue((LayerChar.COMMON, trigger), out trs))
-            {
-                if (Change(trs)) return true;
-            }
-            if (!UseDefaultLayerIfMissingTransition) return false;
+            if (!UseDefaultLayerIfMissingTransmission) return false;
 
-            // Default
-            if (_transitionGroup.TryGetValue((_currentState.key, trigger), out trs))
+            if (_transmissionGroup.TryGetValue((_currentState.key, trigger), out var trans))
             {
-                return Change(trs);
+                return Change(trans);
             }
             return false;
         }
@@ -168,12 +137,10 @@ namespace BlackRose.Core.Models.States
             _currentState.state.Stay(_parent, deltaTime);
         }
 
-        public void Awake(string startStateKey = "idle", bool log = false)
+        public void Awake(string startStateKey = "idle")
         {
             if (_stateMap.ContainsKey(startStateKey))
-            {
                 SetStateDirect(startStateKey);
-            }
             else
             {
                 startStateKey = char.ToUpper(startStateKey[0]) + startStateKey.Substring(1);
@@ -181,21 +148,6 @@ namespace BlackRose.Core.Models.States
                     SetStateDirect(startStateKey);
                 else
                     throw new System.ArgumentException($"Unknown start state: {startStateKey}");
-            }
-            if (!log) return;
-            // ログ
-            Debug.Log($"[StateMachine] Start State: {_currentState.key}");
-            foreach (var t in _transitionGroup)
-            {
-                Debug.Log($"[StateMachine] Transition added: {t.Key.state} --({t.Key.trigger})-> {t.Value.state}");
-            }
-            foreach (var t in _layerTransitionGroup)
-            {
-                Debug.Log($"[StateMachine] Layer Transition added: [Layer:{t.Key.layer}] {t.Key.state} --({t.Key.trigger})-> {t.Value.state}");
-            }
-            foreach (var t in _anyTransitionGroup)
-            {
-                Debug.Log($"[StateMachine] Any Transition added: [Layer:{t.Key.layer}] --({t.Key.trigger})-> {t.Value.toState}");
             }
         }
 

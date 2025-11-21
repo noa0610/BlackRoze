@@ -1,8 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UniRx;
 using UniRx.Triggers;
-using Cysharp.Threading.Tasks;
-using System;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -25,21 +24,11 @@ namespace BlackRose.Core.Models.Units
         protected override void Hitted_Target(Collider2D collision)
         {
             var e = Instantiate(_explosion, transform.position, Quaternion.identity);
-            Play(e).Forget();
+            StartCoroutine(Play(e));
         }
-        public override void NotifyDestoy()
+        private IEnumerator Play(ParticleSystem particle)
         {
-            var e = Instantiate(_explosion, transform.position, Quaternion.identity);
-            Play(e).Forget();
-            base.NotifyDestoy();
-        }
-        private async UniTask Play(ParticleSystem particle)
-        {
-            if (!particle.TryGetComponent<CircleCollider2D>(out var col))
-            {
-                if (particle.gameObject.activeInHierarchy)
-                    col = particle.gameObject.AddComponent<CircleCollider2D>();
-            }
+            var col = particle.GetComponent<CircleCollider2D>();
             col.radius = _radius;
             col.enabled = false;
             col.gameObject.OnCollisionEnter2DAsObservable().Subscribe(Collision =>
@@ -56,14 +45,19 @@ namespace BlackRose.Core.Models.Units
                         unit.StatusManager.TakeDamage(_damage == -5 ? _status.damage : _damage);
                 }
             }).AddTo(col).AddTo(this);
-            await UniTask.Delay(TimeSpan.FromSeconds(_delay));
+            yield return new WaitForSeconds(_delay);
             col.enabled = true;// 有効化
+            var t = _time;
             particle.Play();
             _sfx?.Play();
-            await UniTask.WhenAll(UniTask.Delay(TimeSpan.FromSeconds(_time)), UniTask.WaitWhile(() => particle.IsAlive()));
-
+            while (t > 0 && particle.IsAlive())
+            {
+                yield return new WaitForFixedUpdate();
+                t -= Time.fixedDeltaTime;
+            }
             if (particle != null) particle.Stop();
-            if (col != null) col.enabled = false;
+            _sfx?.Stop();
+            col.enabled = false;
             Destroy(particle.gameObject);
         }
     }

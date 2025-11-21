@@ -15,10 +15,9 @@ namespace BlackRose.Core.Models.States
         public Rigidbody2D Rigidbody2D {  get; private set; }
 
         // ノックバックは親の向きを基準に力を加えます
-        public Stun(Rigidbody2D rigidbody2D, float delay, bool isBlock)
+        public Stun(float delay, bool isBlock)
             : base(delay, isBlock)
         {
-            Rigidbody2D = rigidbody2D; // Store the Rigidbody2D reference for knockback
         }
         public override void Enter(IState previousIState, UnitBase parent)
         {

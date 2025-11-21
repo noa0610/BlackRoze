@@ -1,5 +1,4 @@
 ﻿using BlackRose.Core.Models;
-using BlackRose.Core.Models.Systems;
 using BlackRose.Core.Models.Units;
 using TMPro;
 using UnityEngine;
@@ -7,15 +6,12 @@ using UnityEngine;
 namespace BlackRose.Core.UI
 {
     [DefaultExecutionOrder(1)]
-    public class HitPointsUI : MonoBehaviour, IPlayerFollower
+    public class HitPointsUI : MonoBehaviour
     {
         public UnitBase unit;
         private TMP_Text _text;
 
-        public void SetTarget(UnitBase target)
-        {
-            unit = target;
-        }
+
         private void Awake()
         {
             _text = GetComponent<TMP_Text>();
@@ -24,7 +20,8 @@ namespace BlackRose.Core.UI
         private void FixedUpdate()
         {
             if (!_text) Debug.LogError("textがnull");
-            if (unit == null || unit.StatusManager == null) return;
+            if (!unit) return;
+            if (unit.StatusManager == null) return;
             var c = unit.StatusManager.ReadValue(Status.HP);
             var m = unit.StatusManager.ReadValue(Status.MaxHP);
             var t = $"<color=red>{c}</color> / <color=blue>{m}</color>";

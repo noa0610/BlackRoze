@@ -7,7 +7,7 @@ using UnityEngine.Events;
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class SuicideBombing : StateWithAnime, ICompleteEmitter
+    public class SuicideBombing : StateComp, ICompleteEmitter
     {
         [Header("爆発")]
         [Tooltip("爆風のノックバック")]
@@ -26,9 +26,6 @@ namespace BlackRose.Core.Models.States
 
         public event Action OnCompleted;
 
-        [Obsolete]
-        public UnityEvent OnExplode { get; set; } = new UnityEvent();
-
         public override void Enter(IState previousIState, UnitBase parent)
         {
             base.Enter(previousIState, parent);
@@ -45,11 +42,6 @@ namespace BlackRose.Core.Models.States
             }
             return base.AllowChange(nextState, parent);
         }
-        public void SetDelay(float delay)
-        {
-            _delay = delay;
-        }
-
         private async UniTask Explode(UnitBase parent)
         {
             _isExploding = true;
@@ -82,7 +74,6 @@ namespace BlackRose.Core.Models.States
             _collider.enabled = false; // コライダーを無効化
             _isExploding = false;
 
-            OnExplode?.Invoke(); // 爆発イベントを呼び出す
             OnCompleted.Invoke();
         }
     }

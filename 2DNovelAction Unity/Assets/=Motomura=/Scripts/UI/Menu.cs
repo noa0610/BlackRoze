@@ -39,8 +39,8 @@ public class Menu : MonoBehaviour
     [SerializeField] private GameObject _Setting_MenuObject;//設定メニュー本体
     [SerializeField] private GameObject _Log_MenuObject;//ログメニュー本体
     [SerializeField] private float _AnimationTime = 0.5f; //子メニューの表示にかかる時間
-    private Vector3 _StartPos = new Vector3(0, 1080, 0);
-    private Vector3 _EndPos = new Vector3(0, 0, 0);
+    //スキップも追加予定
+
 
 
     void Start()//初期化
@@ -49,10 +49,10 @@ public class Menu : MonoBehaviour
         {
             obj.Button.DOAnchorPos(obj.Start_Position, 0f);
         }
-        _Setting_MenuObject.SetActive(false);
+        //_Setting_MenuObject.SetActive(false);
         try
         {
-            _Log_MenuObject.transform.DOLocalMove(_StartPos, 0f);
+            _Log_MenuObject.SetActive(false);
         }
         catch 
         {
@@ -136,7 +136,8 @@ public class Menu : MonoBehaviour
                 break;
             case "Log":
             _IsKey = false; //メニューを開くキーを無効化
-            _Log_MenuObject.transform.DOLocalMove(_EndPos, 0f);
+                _Log_MenuObject.SetActive(true);
+                _Log_MenuObject.transform.DOScale(new Vector3(1f, 1f, 1f), _AnimationTime);
                 break;
         }
     }
@@ -151,7 +152,8 @@ public class Menu : MonoBehaviour
                 break;
             case "Log":
                 _IsKey = true; //メニューを開くキーを無効化
-                _Log_MenuObject.transform.DOLocalMove(_StartPos, 0f);
+                _Log_MenuObject.SetActive(false);
+                _Log_MenuObject.transform.localScale = new Vector3(1f, 0f, 1f);
                 break;
         }
     }

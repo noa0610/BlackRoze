@@ -1,10 +1,10 @@
-﻿using BlackRose.Core.Models.Systems;
-using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models.Units;
 using UnityEngine;
 
 namespace BlackRose.Core.UI
 {
-    public class FollowUnit : MonoBehaviour, IPlayerFollower
+    [RequireComponent(typeof(Camera))]
+    public class FollowUnit : MonoBehaviour
     {
         [Header("References")]
         [SerializeField, Tooltip("追従するユニットを指定")] private UnitBase _target;
@@ -14,7 +14,7 @@ namespace BlackRose.Core.UI
         [SerializeField, Tooltip("追従スピード (大きいほど速い)")] private float _smoothSpeed = 5f;
         [SerializeField, Tooltip("カメラの Z 座標")] private float _cameraZ = -10f;
 
-        [SerializeField] private Transform _camT;
+        private Transform _camT;
 
         private void Reset()
         {
@@ -51,11 +51,6 @@ namespace BlackRose.Core.UI
             Vector3 smoothedPos = Vector3.Lerp(currentPos, desiredPos, _smoothSpeed * Time.deltaTime);
 
             _camT.position = smoothedPos;
-        }
-
-        public void SetTarget(UnitBase target)
-        {
-            _target = target;
         }
     }
 }

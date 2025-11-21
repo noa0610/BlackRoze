@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 namespace BlackRose
 {
@@ -7,14 +6,9 @@ namespace BlackRose
     {
         public enum SpriteEffects
         {
+            None = 0,
             Blinking = 1,
         }
-        private static Dictionary<SpriteEffects, Action<GameObject, Value>> _dict = new()
-        {
-            {SpriteEffects.Blinking, Blinking }
-        };
-
-
 
         public struct Value // 以下の値はAction内で書き換えられることはない
         {
@@ -27,26 +21,27 @@ namespace BlackRose
         }
         // 任意の値を渡すとActionが返される。
         // SpriteRenderer => ターゲット
-        public static Action<GameObject, Value> GetEffect(SpriteEffects effect)
+        public static Action<SpriteRenderer, Value> GetEffect(SpriteEffects effect)
         {
-            return _dict[effect];
+            return effect switch
+            {
+                SpriteEffects.Blinking => Blinking,
+                _ => null,
+            };
         }
 
-        private static void Blinking(GameObject root, Value data)
+        private static void Blinking(SpriteRenderer sprite, Value data)
         {
             var t = data.time;
-            var sprites = root.GetComponentsInChildren<SpriteRenderer>();
-            foreach (var sprite in sprites)
-            {
-                Color c = sprite.color;
-                float a;
-                if (!data.mustRemove)
-                    a = Mathf.Clamp01(Mathf.Sin(t * (2 * Mathf.PI / Mathf.Max(data.remainingDuration / data.duration, 0.5f)) * data.speed));
-                else
-                    a = 1f;
+            Color c = sprite.color;
+            float a;
+            if (!data.mustRemove)
+                a = Mathf.Clamp01(Mathf.Sin(t * (2 * Mathf.PI / Mathf.Max(data.remainingDuration / data.duration, 0.5f)) * data.speed));
+            else
+                a = 1f;
                 c.a = a;
-                sprite.color = c;
-            }
+            sprite.color = c;
+
         }
     }
 }

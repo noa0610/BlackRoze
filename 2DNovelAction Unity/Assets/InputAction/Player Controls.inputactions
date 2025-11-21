@@ -29,7 +29,7 @@
                     "id": "ae36ccef-66f6-44f6-8cf7-673d123d3425",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press(behavior=2)",
+                    "interactions": "",
                     "initialStateCheck": false
                 },
                 {
@@ -38,25 +38,16 @@
                     "id": "de26ce54-db20-4af1-805b-98fd8e5db8a6",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press(behavior=2)",
+                    "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Mode Change1",
-                    "type": "Button",
+                    "name": "Mode Change",
+                    "type": "Value",
                     "id": "d7f2d73c-7671-475b-9c57-60d500f78e93",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
-                    "interactions": "Press(behavior=1)",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "Mode Change2",
-                    "type": "Button",
-                    "id": "77cbf135-57cc-4951-bdb9-c6038e7b5c88",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "Press(behavior=1)",
+                    "interactions": "",
                     "initialStateCheck": true
                 },
                 {
@@ -66,15 +57,6 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Dash",
-                    "type": "Button",
-                    "id": "76021e32-3ab0-4cca-adf5-92ddcbdc8624",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "Press(behavior=2)",
                     "initialStateCheck": false
                 }
             ],
@@ -173,7 +155,7 @@
                     "path": "<Keyboard>/k",
                     "interactions": "",
                     "processors": "",
-                    "groups": "KeyBoard&Mouse",
+                    "groups": "",
                     "action": "Skill",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -207,7 +189,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mode Change1",
+                    "action": "Mode Change",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -218,7 +200,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mode Change1",
+                    "action": "Mode Change",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -307,39 +289,6 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "231644bf-717d-48ca-ad84-d323213c5157",
-                    "path": "<Keyboard>/v",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Mode Change2",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "fff14fe8-9a84-44e2-a175-6392f907034d",
-                    "path": "<Gamepad>/buttonSouth",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Mode Change2",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9809a167-1614-4272-bf0c-c63b520c7ef4",
-                    "path": "<Keyboard>/leftShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

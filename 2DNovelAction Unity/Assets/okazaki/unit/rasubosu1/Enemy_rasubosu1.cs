@@ -1,38 +1,123 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
 using UnityEngine;
 using HighElixir;
 using System.Collections.Generic;
 using BlackRose.Datas.Definitions;
-using BlackRose.Core.Models.Objects;
-using System.Collections;
-
-
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-
-    public partial class Enemy_rasubosu1 : UnitBase
+    public class Enemy_rasubosu1 : UnitBase
     {
+        [SerializeField] private Rigidbody2D _rb;
+        [SerializeField] private GameObject bulletPrefab;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
-        [SerializeField] private BulletData _diffusebeamgunBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _diffusebeamgunTargetLayer;
-        [SerializeField] private GameObject _diffusebeamgunPoint;// 必要ならInspectorでセット
-        [SerializeField] private BulletData _armpunchBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _armpunchTargetLayer;
-        [SerializeField] private GameObject _armpunchPoint;// 必要ならInspectorでセット
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
         [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _firewallTargetLayer;
-        [SerializeField] private GameObject _firewallPoint;// 必要ならInspectorでセット
-        [SerializeField] private GameObject _biribiriPoint;// 必要ならInspectorでセット
-        private int punchcount = 0;
-            [SerializeField]public GameObject prefab;    // インスペクタで割り当てるプレハブ
-    [SerializeField]public Transform point;      // インスペクタで割り当てる発射位置（point）
-    [SerializeField]public float speed = 5f;     // 移動速度（右->左なので Vector3.left を使う）
-    [SerializeField]public float lifetime = 10f; // 自動破棄までの時間（秒）
+        [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
+        [SerializeField] private Transform _firewallPoints; // 必要ならInspectorでセット
+        
+        public enum States
+        {
+            none,
+            idle,// 待機
+            dead,// 死亡
+            attackidle, // 攻撃待機
+            armpunch, // アームパンチ
+            diffusebeamgun, // 拡散ビーム砲
+            firewall, // ファイアウォール
+        }
+        private enum Triggers
+        {
+            None,
+            FoundPlayer,   // プレイヤーを発見した
+            Attackcooldown, // 攻撃クールダウンした
+            Attack1, // 攻撃１
+            Attack2, // 攻撃２
+            Attack3, // 攻撃３
+            Attack4, // 攻撃４
+            Attack1end, // 攻撃１した
+            Attack2end, // 攻撃２した
+            Attack3end, // 攻撃３した
+            shockwaveend, // ショックウェーブした
+            Event1, // イベント1が終わった
+            Playerdead, // プレイヤーが死亡
+            Died,          // 死亡した（HPが０になった）
+        }
+        protected override void RegisterStats()
+        {
+            // トランスミッショングループを作成
+            var idleTrigger = new[]                                // 待機ステートのトリガー
+            {
+                (Triggers.FoundPlayer, States.attackidle),              // イベント1が終わったで攻撃待機へ
+                (Triggers.Died, States.dead),                      // 死亡で死へ
+            };
+            var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー
+            {
+                (Triggers.Playerdead, States.idle),                // プレイヤーが死亡で待機へ
+                (Triggers.Died, States.dead),                      // 死亡で死へ
+                (Triggers.Attack1, States.armpunch),               // アームパンチでアームパンチへ
+                (Triggers.Attack2, States.diffusebeamgun),         // 拡散ビーム砲で拡散ビーム砲へ
+                (Triggers.Attack3, States.firewall),               // ファイアウォールでファイアウォールへ
+            };
+            var armpunchTrigger = new[]                            // アームパンチステートのトリガー        
+            {
+                (Triggers.Attack1end, States.attackidle),          // アームパンチ終了で攻撃待機へ         
+                (Triggers.Died, States.dead),                      // 死亡で死へ
+            };
+            var diffusebeamgunTrigger = new[]                      //拡散ビーム砲ステートのトリガー          
+            {
+                (Triggers.Attack2end, States.attackidle),          // 拡散ビーム砲終了で攻撃待機へ
+                (Triggers.Died, States.dead),                      // 死亡で死へ
+            };
+            var firewallTrigger = new[]                            // ファイアウォールステートのトリガー
+            {
+                (Triggers.Attack3end, States.attackidle),          // ファイアウォール終了で攻撃待機へ
+                (Triggers.Died, States.dead),                      // 死亡で死へ
+            };
+            // ステートマシンにStatesの移動先の追加
+            _stateMachine
+                .AddTransmissions(States.idle, idleTrigger)
+                .AddTransmissions(States.attackidle, attackidleTrigger)
+                .AddTransmissions(States.armpunch, armpunchTrigger)
+                .AddTransmissions(States.diffusebeamgun, diffusebeamgunTrigger)
+                .AddTransmissions(States.firewall, firewallTrigger);
+            // 待機
+            var idle = new Idle();
+            _stateMachine.AddState(States.idle, idle);
+            // 死亡
+            var died = new Idle()
+                .SetWaitTick<Idle>(25, () =>
+            {
+                UnitManager.instance.RemoveUnit(this);
+                Destroy(gameObject);
+            });
+            _stateMachine.AddState(States.dead, died);
+            // 攻撃待機
+            var attackidle = new Idle_LazyEvent(3f);
+            attackidle.OnCompleted += Attackjudgement;
+            _stateMachine.AddState(States.attackidle, attackidle);
+            // アームパンチ
+            var armpunch = new Idle();
+            _stateMachine.AddState(States.armpunch, armpunch);
+            // 拡散ビーム砲
+            var diffusebeamgun = new Idle();
+            _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
+            // ファイアウォール
+            var firewall = new ShootForward(_firewallBulletData, _firewallTargetLayer)
+            .SetDirection(Vector2.right)
+            .SetMuzzle(_firewallPoints? _firewallPoints.gameObject : gameObject);
+            // 弾発射完了時にショックウェーブ終了トリガーを発火
+            firewall.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack3end);
+            });
+            _stateMachine.AddState(States.firewall, firewall);
+        }
         private SearchAssistanceMono _searchAssistance;
+
+
         private void SearchPlayer()
         {
             var list = UnitManager.instance.GetUnitList();
@@ -42,17 +127,26 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.FoundPlayer);
             }
         }
+
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            _armpunchPoint = GameObject.Find("ArmpunchPoint");
         }
 
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
-            // beamswordattackステート中のみ判定
-
+            // 見た目の向き変更など既存処理
+            if (_player != null)
+            {
+                Direction = (_player.Transform.position - transform.position).normalized;
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
+            }
         }
         private bool IsMatchingState(States state)
         {
@@ -60,8 +154,9 @@ namespace BlackRose.Core.Models.Units
         }
         public void Attackjudgement()
         {
-            int choice = Random.Range(0, 3);
-            switch (choice)
+            int attackIndex = Random.Range(0, 3); // 0〜3 の間でランダム
+
+            switch (attackIndex)
             {
                 case 0:
                     Attack1();
@@ -78,13 +173,13 @@ namespace BlackRose.Core.Models.Units
         void Attack1()
         {
             Debug.Log("アームパンチ");
-            _stateMachine.ChangeState(Triggers.Attack1);
+            _stateMachine.ChangeState(Triggers.Attack3);
         }
 
         void Attack2()
         {
             Debug.Log("拡散ビーム砲");
-            _stateMachine.ChangeState(Triggers.Attack2);
+            _stateMachine.ChangeState(Triggers.Attack3);
         }
         void Attack3()
         {
@@ -92,35 +187,6 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.Attack3);
         }
 
-        void Udetobasi()
-        {
-            if (prefab == null || point == null)
-            {
-                Debug.LogWarning("prefab または point が設定されていません。");
-                return;
-            }
-
-            // point 位置にプレハブ生成
-            GameObject obj = Instantiate(prefab, point.position, point.rotation);
-
-            // Rigidbody2D を取得
-            Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                // 右→左に進む（X軸マイナス方向）
-                rb.velocity = Vector2.left * speed;
-            }
-            else
-            {
-                Debug.LogWarning("生成したプレハブに Rigidbody2D がありません。");
-            }
-            
-
-            // 一定時間後に自動削除
-            Destroy(obj, lifetime);
-        }
-    
     }
-
-
+    
 }

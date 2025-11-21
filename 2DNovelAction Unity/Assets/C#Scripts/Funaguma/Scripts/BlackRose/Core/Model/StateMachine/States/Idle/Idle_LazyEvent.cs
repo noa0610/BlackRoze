@@ -1,5 +1,4 @@
 ﻿using BlackRose.Core.Models.Units;
-using HighElixir.Timers;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,29 +11,17 @@ namespace BlackRose.Core.Models.States
     public class Idle_LazyEvent : Idle, ICompleteEmitter
     {
         protected float _eventTime;
-        private TimerTicket _ticket;
         protected bool _isBlock = false;
-
-        [Obsolete]
-        protected UnityEvent _lazyEvent = new();
 
         protected bool _blocked;
 
-        protected TimerTicket Ticket => _ticket;
         public event Action OnCompleted;
-
-        [Obsolete]
-        public UnityEvent LazyEvent
-        {
-            get => _lazyEvent;
-            set => _lazyEvent = value;
-        }
 
         public float RemainTime
         {
             get
             {
-                if (Timer.TryGetCurrentTime(_ticket, out var t))
+                if (Timer.TryGetRemaining(nameof(_eventTime), out var t))
                 {
                     return t;
                 }
@@ -49,7 +36,7 @@ namespace BlackRose.Core.Models.States
         {
             _eventTime = eventTime;
             _isBlock = isBlock;
-            _ticket = Timer.CountDownRegister(_eventTime, nameof(_eventTime));
+            Timer.CountDownRegister(nameof(_eventTime), _eventTime);
         }
 
         public Idle_LazyEvent() : base()
@@ -60,17 +47,16 @@ namespace BlackRose.Core.Models.States
         {
             base.Enter(previousIState, parent);
             _blocked = _isBlock;
-            Timer.Start(_ticket);
+            Timer.Start(nameof(_eventTime));
         }
 
         public override void Stay(UnitBase parent, float deltaTime)
         {
             base.Stay(parent, deltaTime);
-            if (Timer.IsFinished(_ticket))
+            if (Timer.IsFinished(nameof(_eventTime)))
             {
                 Debug.Log("Invoked Lazy Event");
                 _blocked = false;
-                _lazyEvent?.Invoke();
                 OnCompleted?.Invoke();
             }
         }

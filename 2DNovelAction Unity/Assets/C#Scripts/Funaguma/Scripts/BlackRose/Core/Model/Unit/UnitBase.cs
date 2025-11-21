@@ -1,202 +1,169 @@
-﻿using System;
-using UniRx;
-using UnityEngine;
-using HighElixir.Timers;
-using BlackRose.Core.Models.EffectManagers;
+﻿using BlackRose.Core.Models.EffectManagers;
 using BlackRose.Core.Models.States;
 using BlackRose.Core.Models.States.Animators;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using HighElixir.Timers;
+using System;
+using UniRx;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
-    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Rigidbody2D)), Serializable]
+    [RequireComponent(typeof(SpriteEffectPlayer), typeof(Animator)), Serializable]
     public abstract class UnitBase : MonoBehaviour, IPausable, IUnit
     {
-        #region === Inspector References ===
+        // === Reference ===
+        public SpriteEffectPlayer player;
+        public StatusManager statusManager;
+        public StatusEffectManager effectManager;
         [Header("Datas")]
         [SerializeField] protected UnitStatusData _status;
-        [SerializeField] protected LayerMask _attackLayer;
-        [SerializeField] protected Animator _animator;
-
+        protected Animator _animator;
         [Header("StateMachine")]
         [SerializeField] public static bool _isPlaying = true;
-
-        [Header("Objects")]
-        [SerializeField] protected GameObject _muzzle;
-        #endregion
-
-        #region Dirs
-        [SerializeField] private Vector2 _moveDir = Vector2.zero;
-        [SerializeField] private Vector2 _shootDir = Vector2.right;
-
-        #endregion
-
-        #region === Components & Managers ===
-        protected IStateMachine _stateMachine;
-        private StatusManager _statusManager;
-        private StatusEffectManager _effectManager;
-        private SpriteEffectPlayer _spriteEffectPlayer;
-        private Rigidbody2D _body2D;
-        public SpriteEffectPlayer player; // 外部アクセス用
-        #endregion
-
-        #region === Reactive & Direction ===
+        protected IStateMachine _stateMachine; // ステートマシン本体
         private ReactiveProperty<Vector2> _reactiveDirection = new(new(1, 0));
-        public IObservable<Vector2> ReactiveDirection => _reactiveDirection;
-        public Vector2 Direction
-        {
-            get => _reactiveDirection.Value;
-            set => _reactiveDirection.Value = value;
-        }
-        public Vector2 MoveDirection { get => _moveDir; set => _moveDir = value; }
-        public Vector2 ShootDir { get => _shootDir; set => _shootDir = value; }
-        #endregion
-
-        #region === Properties ===
-        public Rigidbody2D Rigidbody2D => _body2D;
-        public GameObject Muzzle => _muzzle;
+        private SpriteEffectPlayer _spriteEffectPlayer;
+#if UNITY_EDITOR
+        // エディタからの監視用
+        [Header("Debug")]
+        [SerializeField] private string _currentState;
+        [SerializeField] private string _currentMode;
+        [SerializeField] private Vector2 _currentDirection;
+#endif
         public UnitStatusData UnitStatusData => _status;
-        public StatusManager statusManager => _statusManager; // 既存API互換
-        public IStateMachine StateMachine => _stateMachine;
+        public IStateMachine StateMachine => _stateMachine; // 外部からステートマシン取得
         public Transform Transform => transform;
         public Timer Timer { get; private set; }
-        public StatusManager StatusManager => _statusManager;
-        public StatusEffectManager StatusEffectManager => _effectManager;
+        public StatusManager StatusManager => statusManager;
+        public StatusEffectManager StatusEffectManager => effectManager;
         public SpriteEffectPlayer SpriteEffectPlayer => _spriteEffectPlayer;
+        public IObservable<Vector2> ReactiveDirection => _reactiveDirection;
+
+        // 向き（1か-1の値をとる。外部から設定される）
+        public Vector2 Direction
+        {
+            get
+            {
+                return _reactiveDirection.Value;
+            }
+            set
+            {
+                _reactiveDirection.Value = value;
+            }
+        }
+
+        // 移動方向（外部から設定される）
+        public Vector2 MoveDirection { get; set; }
         public Animator Animator
         {
-            get => _animator;
-            set => _animator = value;
+            get
+            {
+                return _animator;
+            }
+            set
+            {
+                _animator = value;
+            }
         }
-        public LayerMask AttackLayer => _attackLayer;
         public bool IsInvincible { get; set; }
-        public bool IsArrivals { get; set; } = true;
-        #endregion
 
-#if UNITY_EDITOR
-        #region === Debug ===
-        [Header("Debug")]
-        [SerializeField] private bool _enableVisuableInvincible;
-        [SerializeField] private string _currentState;
-
-        public virtual bool ShoudBeLogging => false;
-        #endregion
-#endif
-
-        #region === Initialization ===
+        // 初期状態のステート
         protected virtual string StartState => "idle";
         protected abstract void RegisterStats();
+
+        // ===== ステータス操作 =====
+
+        public void TakeDamage(IUnit from, float damage)
+        {
+            if (!BeforeTakeDamage(from, ref damage)) return;
+            if (statusManager.TakeDamage(damage))
+                OnDeath();
+            OnTakeDamage(from, damage);
+        }
+
+        protected virtual bool BeforeTakeDamage(IUnit from, ref float damage)
+        {
+            return true;
+        }
+        protected virtual void OnTakeDamage(IUnit from, float damage)
+        {
+        }
+
+        protected virtual void OnDeath()
+        {
+            Debug.Log($"{_status.name}が死亡した");
+        }
+
+        public virtual void Pause()
+        {
+        }
+
+        public virtual void Play()
+        {
+        }
+
+        protected void Awake()
+        {
+            Timer = new Timer(this.GetType());
+            BeforeAwake();
+            _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
+            _animator = GetComponent<Animator>();
+            UnitManager.instance.AddUnit(this);
+            _stateMachine = new StateMachine(this, new AnimatorAnimationDriver(_animator));
+            statusManager = new StatusManager();
+            effectManager = new(this);
+
+            // ステートとステータス登録
+            BeforeRegisterStats();
+            statusManager.Initialize(_status);
+            RegisterStats();
+
+            // ステートマシン起動
+            _stateMachine.Awake(StartState);
+            AfterAwake();
+        }
 
         protected virtual void BeforeAwake() { }
         protected virtual void AfterAwake() { }
         protected virtual void BeforeRegisterStats() { }
 
-        protected void Awake()
-        {
-            Timer = new Timer(gameObject.name);
-            BeforeAwake();
-
-            _spriteEffectPlayer = GetComponent<SpriteEffectPlayer>();
-            if (_animator == null)
-                _animator = GetComponent<Animator>();
-            _body2D = GetComponent<Rigidbody2D>();
-
-            UnitManager.instance.AddUnit(this);
-            _stateMachine = new StateMachine(this, new AnimatorAnimationDriver(_animator));
-            _statusManager = new StatusManager();
-            _effectManager = new(this);
-
-            BeforeRegisterStats();
-            _statusManager.Initialize(_status);
-            RegisterStats();
-
-#if UNITY_EDITOR
-            _stateMachine.Awake(StartState, ShoudBeLogging);
-#else
-            _stateMachine.Awake(StartState, false);
-#endif
-            AfterAwake();
-        }
-
         protected virtual void Start()
         {
+#if UNITY_EDITOR
+            ReactiveDirection.Subscribe(v => _currentDirection = v).AddTo(this);
+#endif
         }
-        #endregion
-
-        #region === Update Cycle ===
-        protected virtual void BeforeUpdate() { }
-        protected virtual void OnUpdate() { }
-        protected virtual void AfterUpdate() { }
-        protected virtual void BeforeFixedUpdate() { }
-        protected virtual void AfterFixedUpdate() { }
-
+        // UnitBaseではUnityコンポーネントではないクラスのアップデート呼び出しを行っている
         protected void Update()
         {
             BeforeUpdate();
             if (!_isPlaying) return;
-
             OnUpdate();
-
-            var dt = Time.deltaTime;
-            _stateMachine.UpdateMachine(dt);
-            Timer.Update(dt);
-            _effectManager.Update();
-
+            _stateMachine.UpdateMachine(Time.deltaTime);
+            effectManager.Update();
             AfterUpdate();
+# if UNITY_EDITOR
+            _currentState = _stateMachine.CurrentState.key;
+            _currentMode = _stateMachine.CurrentLayer;
+#endif
         }
+        // _isPlayingの判定の前に呼ばれる（常に呼ばれる）
+        protected virtual void BeforeUpdate() { }
+        // ステートマシンのアップデートの前に呼ばれる（_isPlayingがtrueのときのみ呼ばれる）
+        protected virtual void OnUpdate() { }
 
+        // ステートマシンのアップデートの後に呼ばれる（_isPlayingがtrueのときのみ呼ばれる）
+        protected virtual void AfterUpdate() { }
         protected virtual void FixedUpdate()
         {
-#if UNITY_EDITOR
-            _currentState = _stateMachine.CurrentState.key;
-#endif
             BeforeFixedUpdate();
             if (!_isPlaying) return;
             AfterFixedUpdate();
         }
-        #endregion
+        // _isPlayingの判定の前に呼ばれる（常に呼ばれる）
+        protected virtual void BeforeFixedUpdate() { }
 
-        #region === Status & Damage ===
-        public void TakeDamage(IUnit from, float damage)
-        {
-            if (!_isPlaying || !IsArrivals) return;
-            if (!BeforeTakeDamage(from, ref damage)) return;
-
-            if (_statusManager.TakeDamage(damage))
-                OnDeath();
-
-            OnTakeDamage(from, damage);
-        }
-
-        protected virtual bool BeforeTakeDamage(IUnit from, ref float damage) => true;
-        protected virtual void OnTakeDamage(IUnit from, float damage) { }
-
-        protected virtual void OnDeath()
-        {
-            Debug.Log($"{_status.name}が死亡した");
-            IsArrivals = false;
-        }
-        #endregion
-
-        #region === Pause & Play ===
-        public virtual void Pause() { }
-        public virtual void Play() { }
-        #endregion
-
-#if UNITY_EDITOR
-        #region === Gizmos ===
-        private void OnDrawGizmosSelected()
-        {
-            if (_enableVisuableInvincible && IsInvincible)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawCube(transform.position, new Vector3(2, 2, 0.1f));
-            }
-        }
-        #endregion
-#endif
+        // _isPlayingがtrueのときのみ呼ばれる
+        protected virtual void AfterFixedUpdate() { }
     }
 }

@@ -2,7 +2,6 @@
 using AIE2D;
 using System;
 using BlackRose.Core.Models.Units;
-using UniRx;
 
 namespace BlackRose.Core.Models.States
 {
@@ -14,6 +13,9 @@ namespace BlackRose.Core.Models.States
 
         [SerializeField] private float _accel = 60f;   // 加速度
         [SerializeField] private float _maxSpeedScale = 1f; // ステータスに掛ける上限倍率
+
+        // Exit→着地までの購読を保持しておく（破棄時に保険で解除）
+        private Action _onLandingHandler;
 
         [Obsolete]
         public DashOnGround(Rigidbody2D rigidbody2D, GroundedUnit parent)
@@ -67,16 +69,28 @@ namespace BlackRose.Core.Models.States
 
         public override void Exit(IState nextIState, UnitBase parent)
         {
+            // 既存の購読が残っていたら解除（保険）
+            if (_onLandingHandler != null && parent is GroundedUnit g0)
+            {
+                g0.OnAirToGround -= _onLandingHandler;
+                _onLandingHandler = null;
+            }
+
             if (nextIState is Jump && parent is GroundedUnit grounded)
             {
                 _onDashJump = true;
 
-                grounded.OnAirToGround.Take(1).Subscribe(_ =>
+                _onLandingHandler = () =>
                 {
                     _onDashJump = false;
                     if (_afterImagePlayer != null)
                         _afterImagePlayer.SetActive(false);
-                });
+
+                    grounded.OnAirToGround -= _onLandingHandler;
+                    _onLandingHandler = null;
+                };
+
+                grounded.OnAirToGround += _onLandingHandler;
             }
             else
             {

@@ -1,68 +1,73 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using UnityEngine.Audio;
+using System.Collections.Generic;
 
-//＝＝＝＝Audioを管理し保存する機構＝＝＝＝
+//＝＝＝＝Master・BGM・SEを管理し保存する機構＝＝＝＝
 
 public class AudioManager : MonoBehaviour
 {
-    [SerializeField, Header("BGM")] private AudioMixer BGMMixer;
-    [SerializeField] private TextMeshProUGUI _BGMVolumeText;
-    [SerializeField] private Slider _BGMSlider;
+    public SaveLoadManager saveLoadManager;//セーブデータを管理するクラス
 
-    [SerializeField,Header("Voice")] private AudioMixer VoiceMixer;
-    [SerializeField] private TextMeshProUGUI _VoiceVolumeText;
-    [SerializeField] private Slider _VoiceSlider;
+    [Header("Audio一覧（AudioSourceをアタッチ）")]
+    public List<AudioSource> BGMAudioSources = new List<AudioSource>();//BGMのAudioSourceを格納するリスト
+    public List<AudioSource> SEAudioSources = new List<AudioSource>();//SEのAudioSourceを格納するリスト
+
+    [Header("各音量スライダー")]
+    [SerializeField] private Slider _MasterSlider;//マスターボリューム
+    [SerializeField] private Slider _BGMSlider;//BGMボリューム
+    [SerializeField] private Slider _SESlider;//SEボリューム
+
+    private Data volumeData;//TempData
+
 
     void Start()
     {
-        try
+        volumeData = saveLoadManager.Load();//以前のデータを読み込む
+
+        _MasterSlider.value = volumeData.Master_Volume;
+        _BGMSlider.value = volumeData.BGM_Volume;//各データをスライダーに反映（Master・BGM・SE）
+        _SESlider.value = volumeData.SE_Volume;
+
+        ApplyVolume();//一括適用
+
+        _MasterSlider.onValueChanged.AddListener(SetMasterVolume);
+        _BGMSlider.onValueChanged.AddListener(SetBGMVolume);//変更時に呼び出すための登録（Master・BGM・SE）
+        _SESlider.onValueChanged.AddListener(SetSEVolume);
+    }
+
+    public void SetMasterVolume(float value)//Masterのスライダーが変更されたとき呼ばれる
+    {
+        volumeData.Master_Volume = value;//今の値をJsonに代入
+        ApplyVolume();
+        saveLoadManager.Save(volumeData);//Jsonに保存
+    }
+
+    public void SetBGMVolume(float value)//BGMのスライダーが変更されたとき呼ばれる
+    {
+        volumeData.BGM_Volume = value;//今の値をJsonに代入
+        ApplyVolume();
+        saveLoadManager.Save(volumeData);//Jsonに保存
+    }
+
+    public void SetSEVolume(float value)//SEのスライダーが変更されたとき呼ばれる
+    {
+        volumeData.SE_Volume = value;//今の値をJsonに代入
+        ApplyVolume();
+        saveLoadManager.Save(volumeData);//Jsonに保存
+    }
+
+    private void ApplyVolume()//各音量を一括適用
+    {
+        float master = volumeData.Master_Volume;
+
+        foreach (AudioSource bgm in BGMAudioSources)//BGMをMasterの値を掛け算して音量を調整
         {
-            _BGMSlider.onValueChanged.AddListener(SetBGMVolume);
-            _VoiceSlider.onValueChanged.AddListener(SetVoiceVolume);
-
-            _BGMVolumeText.text = SaveSystem.Instance.AudioData.BGMVolume.ToString();
-            _VoiceVolumeText.text = SaveSystem.Instance.AudioData.VoiceVolume.ToString();
-
-        _BGMSlider.value = SaveSystem.Instance.AudioData.BGMVolume;
-        _VoiceSlider.value = SaveSystem.Instance.AudioData.VoiceVolume;
+            bgm.volume = master * volumeData.BGM_Volume;
         }
-        catch
+
+        foreach (AudioSource se in SEAudioSources)//SEをMasterの値を掛け算して音量を調整
         {
-            Debug.LogWarning("[オーディオ]書き込みは機能しません。");
+            se.volume = master * volumeData.SE_Volume;
         }
-
-            BGMMixer.SetFloat("BGM", MapValue(SaveSystem.Instance.AudioData.BGMVolume));
-            VoiceMixer.SetFloat("Voice", MapValue(SaveSystem.Instance.AudioData.VoiceVolume));
-
-
-        }
-
-    public void SetBGMVolume(float value)
-    {
-        SaveSystem.Instance.AudioData.BGMVolume = Mathf.FloorToInt(value);
-        BGMMixer.SetFloat("BGM", MapValue(value));
-        _BGMVolumeText.text = SaveSystem.Instance.AudioData.BGMVolume.ToString();
-        Debug.Log($"値が変更されました<color=green>{SaveSystem.Instance.AudioData.BGMVolume}</color>");
-        SaveSystem.Instance.SaveGame();
     }
-
-    public void SetVoiceVolume(float value)
-    {
-        SaveSystem.Instance.AudioData.VoiceVolume = Mathf.FloorToInt(value);
-        VoiceMixer.SetFloat("Voice", MapValue(value));
-        _VoiceVolumeText.text = SaveSystem.Instance.AudioData.VoiceVolume.ToString();
-        Debug.Log($"値が変更されました<color=green>{SaveSystem.Instance.AudioData.VoiceVolume}</color>");
-        SaveSystem.Instance.SaveGame();
-    }
-
-    private float MapValue(float value)
-    {
-        // 0～100 → 0.0001～1.0 の対数スケールに変換してdB化
-        float linear = Mathf.Pow(value / 100f, 0.1f); // ← 2.0 は調整可能（小さいほど中音量が大きくなる）
-        float dB = Mathf.Lerp(-80f, 5f, linear);
-        return dB;
-    }
-
 }

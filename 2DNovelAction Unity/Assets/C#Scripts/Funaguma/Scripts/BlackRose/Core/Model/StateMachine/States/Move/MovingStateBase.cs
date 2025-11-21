@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {
-    public class MovingStateBase : StateWithAnime, IRigidbodyUser
+    public class MovingStateBase : StateComp, IRigidbodyUser
     {
         public Rigidbody2D Rigidbody2D { get; protected set; }
 

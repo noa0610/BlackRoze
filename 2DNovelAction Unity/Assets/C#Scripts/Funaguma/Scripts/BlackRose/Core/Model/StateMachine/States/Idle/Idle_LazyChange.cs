@@ -16,7 +16,7 @@ namespace BlackRose.Core.Models.States
     ///     _stateMachine.AddState(States.waitForAttack, lazy);
     /// }
     /// </code>
-    /// StateWithAnimeを継承しているため、アニメーションの遷移も可能
+    /// StateCompを継承しているため、アニメーションの遷移も可能
     /// <code>
     /// var lazy = new Idle_LazyChange(~~)
     ///                     .SetAnimeTrigger(アニメーターのトリガー名)

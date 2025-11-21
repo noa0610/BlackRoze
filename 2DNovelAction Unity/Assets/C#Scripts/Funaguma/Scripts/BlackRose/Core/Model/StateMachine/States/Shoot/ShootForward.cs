@@ -9,10 +9,34 @@ namespace BlackRose.Core.Models.States
     [Serializable]
     public class ShootForward : ShootStateBase
     {
+        [SerializeField] private float _createPos = 0.35f;
+        [SerializeField] private Vector2 _direction = Vector2.right;
+        [SerializeField] private GameObject _muzzle;
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
         public ShootForward() :base() { }
+        public override void Enter(IState preview, UnitBase parent)
+        {
+            base.Enter(preview, parent);
+            _ = Shoot(parent);
+        }
 
-        protected override async UniTask Shoot(UnitBase unit)
+        public override bool AllowChange(IState nextState, UnitBase parent)
+        {
+            if (base.AllowChange(nextState, parent)) return true;
+            return false;
+        }
+
+        public ShootForward SetDirection(Vector2 newDirection)
+        {
+            _direction = newDirection.normalized;
+            return this;
+        }
+        public ShootForward SetMuzzle(GameObject muzzle)
+        {
+            _muzzle = muzzle;
+            return this;
+        }
+        protected async override UniTask Shoot(UnitBase unit)
         {
             var b = _data.prefab;
             if (b == null)
@@ -23,9 +47,9 @@ namespace BlackRose.Core.Models.States
             Vector3 spawnPos = _muzzle.transform.position + new Vector3(unit.Direction.x * _createPos, 0, 0);
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
-            float angle = Mathf.Atan2(unit.Direction.y, unit.Direction.x) * Mathf.Rad2Deg;
-            instantiatedBullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-            InitBullet(instantiatedBullet, _direction);
+            // ステータスをセット（速度、方向、ダメージなど）
+            instantiatedBullet.SetBulletStatus(_data, _targetLayer);
+            instantiatedBullet.SetDirection(_direction);
             await base.Shoot(unit);
         }
     }

@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace HighElixir.Collections
+namespace HighElixir
 {
     /// <summary>
     /// リスト操作、要素の取得に関するヘルパークラス。
@@ -42,7 +43,7 @@ namespace HighElixir.Collections
         /// 特定の大きさを超過したアイテムをすべて返す.
         /// </summary>
         /// <param name="allowSize">許可されるリストの大きさ</param>
-        /// <param name="res">最大許容量を超過したアイテム</param>
+        /// <param name="res"><ass cref="allowSize">allowSize</cref>を超過したアイテム</param>
         /// <returns>超過していたかどうか</returns>
         public static bool TryGetOverItem<T>(this List<T> list, int allowSize, out List<T> res)
         {
@@ -55,7 +56,6 @@ namespace HighElixir.Collections
                 {
                     res.Add(list[index - i]);
                 }
-                res.Reverse();
                 return true;
             }
             return false;

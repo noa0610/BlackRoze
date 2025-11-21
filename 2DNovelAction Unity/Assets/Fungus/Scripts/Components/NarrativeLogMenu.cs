@@ -143,12 +143,9 @@ namespace Fungus
                 }
                 narLogViewtextAdapter.Text = prettyHistory;
 
-                if (narrativeLogView.enabled)
-                {
-                    Canvas.ForceUpdateCanvases();
-                    narrativeLogView.verticalNormalizedPosition = 0f;
-                    Canvas.ForceUpdateCanvases();
-                }
+                Canvas.ForceUpdateCanvases();
+                narrativeLogView.verticalNormalizedPosition = 0f;
+                Canvas.ForceUpdateCanvases();
             }
         }
 

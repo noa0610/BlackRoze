@@ -1,7 +1,5 @@
-﻿using HighElixir;
-using HighElixir.Pools;
-using HighElixir.Timers;
-using HighElixir.Unity.Pools;
+﻿using HighElixir.Timers;
+using HighElixir.Pool;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,11 +9,12 @@ namespace BlackRose.Core.Models.Objects
     {
         [SerializeField] private DamageFloor _damageFloorPref;
 
-        private ObjectPool<DamageFloor> _pool;
+        private Pool<DamageFloor> _pool;
 
         // ダメージフロアごとにTimeHolder用のキーを持たせる
-        private Dictionary<DamageFloor, TimerTicket> _floorTimerDict = new();
-        private Dictionary<TimerTicket, DamageFloor> _floorTimerLink = new();
+        private Dictionary<DamageFloor, string> _floorTimerDict = new ();
+        private Dictionary<string, DamageFloor> _floorTimerLink = new ();
+        private Timer _timer = new();
         private int _count = 0;
 
         /// <summary>
@@ -29,10 +28,9 @@ namespace BlackRose.Core.Models.Objects
             var go = _pool.Get();
             go.transform.position = pos;
             var key = "damageFloor" + _count++;
-            var ticket = GlobalTimer.Update.CountDownRegister(duration, key, () => { DestroyFloor(go); });
-            GlobalTimer.Update.Start(ticket);
-            _floorTimerDict.Add(go, ticket);
-            _floorTimerLink.Add(ticket, go);
+            _floorTimerDict.Add(go, key);
+            _floorTimerLink.Add(key, go);
+            _timer.CountDownRegister(key, duration, () => { DestroyFloor(go); });
             go.Generate(pos, maxLength);
             return go;
         }
@@ -43,14 +41,19 @@ namespace BlackRose.Core.Models.Objects
             {
                 _floorTimerDict.Remove(go);
                 _floorTimerLink.Remove(key);
-                GlobalTimer.Update.UnRegister(key);
-                _pool.Pool.Release(go); // プールに返す
+                _timer.Unregister(key);
+                _pool.Release(go); // プールに返す
             }
         }
 
+
+        public void Update()
+        {
+            _timer.Update(Time.deltaTime);
+        }
         private void Awake()
         {
-            _pool = new ObjectPool<DamageFloor>(_damageFloorPref, 10, transform);
+            _pool = new Pool<DamageFloor>(_damageFloorPref, 10, transform);
         }
     }
 }

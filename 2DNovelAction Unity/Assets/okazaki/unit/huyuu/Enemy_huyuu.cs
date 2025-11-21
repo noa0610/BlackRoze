@@ -13,8 +13,7 @@ namespace BlackRose.Core.Models.Units
     {
         [SerializeField] private SuicideBombing _suicideBombing;
         private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetDict<States>();
-        
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
 
         // 実装
         private SearchAssistanceMono _searchAssistance;
@@ -55,6 +54,14 @@ namespace BlackRose.Core.Models.Units
                     transform.localScale = scale;
                 }
             }
+        }
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            _stateMachine.ChangeState(Triggers.Died);
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
         }
 
         private bool IsMatchingState(States state)

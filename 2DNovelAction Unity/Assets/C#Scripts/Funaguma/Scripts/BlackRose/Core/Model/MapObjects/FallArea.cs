@@ -19,7 +19,7 @@ namespace BlackRose.Core.Models.Objects
                 // プレイヤーが落下エリアに入ったときの処理
                 Debug.Log($"{collision.gameObject.name} has fallen into the area: {gameObject.name}");
                 // ここでプレイヤーをリスポーンさせるなどの処理を追加できます
-                PlayerSpawnner.Spawn(collision.GetComponent<UnitBase>());
+                PlayerSpawnner.instance.Spawn(collision.GetComponent<UnitBase>());
             }
         }
     }

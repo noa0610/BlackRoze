@@ -5,10 +5,9 @@ namespace BlackRose.Core.Models.Units.Helpers
 {
     public sealed class RespawnBehaviour : MonoBehaviour
     {
-        [SerializeField] private UnitBase unitBase;
         public void Receive()
         {
-            PlayerSpawnner.Respwan(unitBase);
+            PlayerSpawnner.ShowRespawnMenu();
         }
     }
 }

@@ -161,9 +161,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canHitLayer:
     serializedVersion: 2
-    m_Bits: 513
+    m_Bits: 0
   _direction: {x: 0, y: 0}
-  _turnSpeed: 180
+  _turnSpeed: 205
+  _straightDuration: 0.5
+  _lockYDuringStraight: 1
 --- !u!70 &-325805166725986881
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

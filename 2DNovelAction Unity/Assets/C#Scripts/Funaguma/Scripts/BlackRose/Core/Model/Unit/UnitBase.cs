@@ -87,7 +87,7 @@ namespace BlackRose.Core.Models.Units
 #endif
 
         // Statusを初期値にセットする
-        public void Refresh()
+        public virtual void Refresh()
         {
             _statusManager.Initialize(_status);
         }

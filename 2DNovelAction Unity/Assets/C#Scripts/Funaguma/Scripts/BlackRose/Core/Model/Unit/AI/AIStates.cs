@@ -163,6 +163,7 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterAnyTransition(AITriggers.mC_n, AIStates.Normal);
             _fms.RegisterAnyTransition(AITriggers.dead, AIStates.Dead, "toDead");
 
+
             _normalMode.Register();
             _lightMode.Register();
             _heavyMode.Register();

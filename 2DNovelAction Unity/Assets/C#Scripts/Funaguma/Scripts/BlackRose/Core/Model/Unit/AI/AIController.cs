@@ -35,6 +35,12 @@ namespace BlackRose.Core.Models.Units
             ModeRegist();
         }
 
+        public override void Refresh()
+        {
+            base.Refresh();
+            Animator.SetTrigger("Reset");
+            ChangeMode(AIStates.Normal);
+        }
         protected override void OnUpdate()
         {
             base.OnUpdate();

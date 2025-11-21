@@ -61,7 +61,7 @@ namespace BlackRose.Core.Models.Units
             {
                 _parent.Animator.SetTrigger(_backwardWalk);
             }
-            else
+            else if (!_stateMachine.Current.info.HasTagOnChild("Dash"))
                 _parent.Animator.SetTrigger(_frontWalk);
         }
         public override void OnSkill(InputValue value)

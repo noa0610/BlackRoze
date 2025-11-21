@@ -27,17 +27,17 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
             _stateMachine.RegisterState(SubState.Full, _full, "Shoot");
             var hook = _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "");
-            hook.OnEnter.Subscribe(_ => {
+            hook.OnEnter.Subscribe(_ =>
+            {
                 _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackLayer);
-                _stateMachine.Send(AITriggers.shootCompleted);
+                _stateMachine.LazySend(AITriggers.shootCompleted);
             });
 
             _stateMachine.RegisterState(SubState.Skill, _locked, "");
 
             // Skill
-            _stateMachine.RegisterTransition(SubState.Skill, AITriggers.skillFinished, SubState.Other1, "");
-            _stateMachine.RegisterTransition(SubState.Other1, AITriggers.shootCompleted, SubState.Idle, "");
-
+            _stateMachine.RegisterTransition(SubState.Skill, AITriggers.skillFinished, SubState.Other1, "toMultiShot");
+            _stateMachine.RegisterTransition(SubState.Other1, AITriggers.shootCompleted, SubState.Idle, "toIdle");
         }
 
         public override void OnSkill(InputValue value)

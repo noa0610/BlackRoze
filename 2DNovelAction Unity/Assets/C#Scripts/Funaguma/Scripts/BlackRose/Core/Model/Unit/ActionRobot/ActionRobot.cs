@@ -9,6 +9,8 @@ using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Threading;
+using BlackRose.Core.Models.Systems;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -19,6 +21,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private TextThrower _thrower;
         [SerializeField] private float _horizontalDecel;
         [SerializeField] private TrailRenderer _trailRenderer;
+        [SerializeField] private float _DeadEventTime = 3f;
+        private bool isDeadEvent = false;
 
 #if UNITY_EDITOR
         [Header("Debug")]
@@ -45,6 +49,25 @@ namespace BlackRose.Core.Models.Units
         {
             _cancellableActionToken.Cancel();
             _fms.LazySend(Triggers.death);
+
+            Dead();
+        }
+        // このメソッドをボス登場前の会話の中で呼び出す
+        private void DeadEventActive()
+        {
+            isDeadEvent = true;
+        }
+
+        private async void Dead()
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEventTime));
+            if (isDeadEvent)
+            {
+                GetComponentInChildren<FlowchartFirer>().Fire();
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(0.1));
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
         }
         public override void Pause()
         {

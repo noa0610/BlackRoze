@@ -39,15 +39,21 @@ namespace BlackRose.Core.Models.Units
 
         // TODO 後でSerializeFieldを消す
         [SerializeField] private List<Vector3> _junpPositions;
-        private Vector3 _centerPositions;
+        [SerializeField] private Vector3 _centerPositions;
 
 
         [Header("接近ビームソード")]
         [SerializeField] private GameObject _beamswordmuzzle;
         [SerializeField] private BulletData _beamswordBulletData;
-        [SerializeField] private GameObject _YPositions;
+        [SerializeField] private float _Moveaccel = 20f;
+        [SerializeField] private float _Movefriction = 1.0f;
+        [SerializeField] private float _beamswordDistance = 5f;
+        [SerializeField] private GameObject WallChackPoint;
+        [SerializeField] private LayerMask _WallLayer;
 
-        [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
+        [Tooltip("プレイヤー感知 → セイバー攻撃まで")]
+        [SerializeField] private float _beamswordwaitTime = 0.1f;
+        private bool _wallChack;
 
 
         [Header("レーザーショット")]
@@ -72,6 +78,11 @@ namespace BlackRose.Core.Models.Units
         [Header("衝撃波")]
         [SerializeField] private GameObject _shockwaveshotmuzzle;
         [SerializeField] private BulletData _shockwaveBulletData;
+
+
+        [Header("死亡状態")]
+        [SerializeField] private bool _wontDie = false;
+        [SerializeField] private float _DeadEndwaitTime = 6.5f;
 
 
         private Rigidbody2D _RB2;
@@ -99,10 +110,12 @@ namespace BlackRose.Core.Models.Units
             {
                 _stateMachine.Awake("attackidle", false);
                 _animator.SetTrigger("toIdle");
+                IsInvincible = false;
             }
             else
             {
                 _stateMachine.Awake("entry", false);
+                IsInvincible = true;
             }
         }
         protected override void Start()
@@ -113,6 +126,10 @@ namespace BlackRose.Core.Models.Units
             _cancellation = new CancellationTokenSource();
         }
 
+        private void EntryEnd()
+        {
+            IsInvincible = false;
+        }
 
         private bool _halfHpTriggered = false;
 
@@ -144,10 +161,11 @@ namespace BlackRose.Core.Models.Units
         protected override void OnDeath()
         {
             base.OnDeath();
+            if (_wontDie) return;
             _stateMachine.ChangeState(Triggers.Died);
-            GetComponent<FlowchartFirer>().Fire();
         }
         #endregion
+
 
         private void SearchPlayer()
         {
@@ -163,18 +181,20 @@ namespace BlackRose.Core.Models.Units
         {
             SearchPlayer();
 
-            if (IsMatchingState(States.beamsword_move) && _player != null && _YPositions != null)
+            if (IsMatchingState(States.attackidle))
             {
-                // プレイヤーが_YPositionsのy座標を通過したら止める
-                float targetX = _YPositions.transform.position.x;
-                float playerX = _player.Transform.position.x;
+                TurnAround();
 
-                if (Mathf.Abs(playerX - targetX) < 0.5f)
+                if (_player == null)
                 {
-                    Debug.Log("プレイヤーがY座標を通過しました");
-                    // ビームソード攻撃
-                    _stateMachine.ChangeState(Triggers.moveend);
+                    _stateMachine.ChangeState(Triggers.Playerdead);
                 }
+            }
+
+            if (IsMatchingState(States.beamsword_move) && _player != null)
+            {
+                WallChack();
+                BeamSwordMoveStay();
             }
         }
 
@@ -193,6 +213,37 @@ namespace BlackRose.Core.Models.Units
                     transform.localScale = scale;
                 }
             }
+        }
+
+        private void WallChack()
+        {
+            if (WallChackPoint == null) return;
+            Ray2D ray = new Ray2D(WallChackPoint.transform.position, MoveDirection);
+            RaycastHit2D rayhit = Physics2D.Raycast(ray.origin, ray.direction, 1f, _WallLayer);
+            _wallChack = rayhit.collider ? true : false;
+            Debug.DrawRay(WallChackPoint.transform.position, MoveDirection, Color.red);
+        }
+
+        private async void Dead()
+        {
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel(); // UniTask停止
+
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel();  // UniTask停止
+            _cancellation.Dispose(); // リソース解放
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            GetComponent<FlowchartFirer>().Fire();
+
+            await UniTask.Delay(TimeSpan.FromSeconds(0.1));
+
+            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
+
+            Destroy(gameObject);
         }
 
 
@@ -232,7 +283,7 @@ namespace BlackRose.Core.Models.Units
                 if (hit.collider != null)
                 {
                     Debug.Log("Hit Wall");
-                    candidate = hit.point - hit.normal * _wallDistanse;
+                    candidate = hit.point - hit.normal * _wallDistanse * Vector2.left;
                 }
                 else
                 {
@@ -243,14 +294,21 @@ namespace BlackRose.Core.Models.Units
 
                 // Y軸は現在位置
                 candidate.y = transform.position.y;
+
+                // 左右位置をセット
                 _junpPositions[i] = (Vector3)candidate;
             }
+
+            // 中央位置をセット
+            _centerPositions = (_junpPositions[0] + _junpPositions[1]) / 2;
         }
 
+        // 中央から遠い位置をジャンプ位置として設定 (1 = 右, 0 = 左)
         private int JumpSelect()
         {
             // 中心とこのオブジェクトのx座標差を取得
             float distance = transform.position.x - _centerPositions.x;
+
             Debug.Log("距離差: " + distance);
             // 差がプラスなら1、マイナスなら0を返す
             return distance >= 0 ? 0 : 1;
@@ -258,7 +316,6 @@ namespace BlackRose.Core.Models.Units
         #endregion
 
         #region === Attack Select ===
-
         private void Attackselect()
         {
             if (FixedAttackSelect != 0)
@@ -304,7 +361,6 @@ namespace BlackRose.Core.Models.Units
         #endregion
 
         #region === LaserShot ===
-
         private void LaserShotStart()
         {
             _shotCount = 0;
@@ -313,7 +369,7 @@ namespace BlackRose.Core.Models.Units
 
         private void LaserShotBefore()
         {
-            
+
         }
 
         private async void LaserShotExit()
@@ -321,7 +377,7 @@ namespace BlackRose.Core.Models.Units
             _shotCount++;
             await UniTask.Delay(TimeSpan.FromSeconds(_LaserShotTime), cancellationToken: _cancellation.Token);
 
-            if(_shotCount >= _LaserShotCount)
+            if (_shotCount >= _LaserShotCount)
             {
                 _stateMachine.ChangeState(Triggers.Attack1end);
             }
@@ -348,11 +404,6 @@ namespace BlackRose.Core.Models.Units
                 _anim.SetTrigger("toShot_Medium");
                 return;
             }
-        }
-
-        private async UniTaskVoid WaitAndCallAttack1()
-        {
-           
         }
 
         private IEnumerator WaitForBeamswordAnimationThenFire()
@@ -393,6 +444,30 @@ namespace BlackRose.Core.Models.Units
             finally
             {
                 _waitingForAttack2 = false;
+            }
+        }
+        #endregion
+
+        #region === BeamSword ===
+        private void BeamSwordStart()
+        {
+            TurnAround();
+            MoveDirection = Direction;
+        }
+
+        private async void BeamSwordMoveStay()
+        {
+            float playerdictance = _player.Transform.position.x - transform.position.x;
+
+            // プレイヤーの近くまで接近したら
+            if (Mathf.Abs(playerdictance) <= _beamswordDistance)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_beamswordwaitTime), cancellationToken: _cancellation.Token);
+                _stateMachine.ChangeState(Triggers.Attack2);
+            }
+            else if (_wallChack)
+            {
+                _stateMachine.ChangeState(Triggers.Attack2);
             }
         }
         #endregion

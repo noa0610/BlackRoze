@@ -8,6 +8,7 @@ namespace BlackRose.Core.Models.Units
     {
         private PositionJump _positionJump;
         private ShootForward _lasershotState;
+        private Idle dead;
 
         private enum States
         {
@@ -39,7 +40,6 @@ namespace BlackRose.Core.Models.Units
             Attack2,               // 攻撃２
             Attack1loop,           // 攻撃１継続
             movestart,             // 移動開始
-            moveend,               // 移動した
             Attack1end,            // 攻撃１した
             Attack2end,            // 攻撃２した
             Shockwaveend,          // ショックウェーブした
@@ -66,7 +66,7 @@ namespace BlackRose.Core.Models.Units
             var idleTrigger = new[]
             {
                 (Triggers.FoundPlayer, States.attackidle, ""),
-                (Triggers.Died, States.dead, ""),
+                (Triggers.Died, States.dead, "toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")                // HPが半分以下でショックウェーブへ
             };
             // States.attackidle
@@ -74,7 +74,7 @@ namespace BlackRose.Core.Models.Units
             {
                 (Triggers.Attack1start, States.lasershot_Start,"toShot_Medium"),
                 (Triggers.Attack2start, States.beamsword_Start,"SwordStart"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.Playerdead, States.idle,""),
                 (Triggers.HalfHP, States.stun,"toStan")                // HPが半分以下でショックウェーブへ
             };
@@ -85,14 +85,14 @@ namespace BlackRose.Core.Models.Units
             var lasershotStartTrigger = new[]
             {
                 (Triggers.Attack1, States.lasershot_before,""),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.lasershot_before
             var lasershotbeforeTrigger = new[]
             {
                 (Triggers.Attack1, States.lasershot,"toShot"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.lasershot
@@ -100,14 +100,14 @@ namespace BlackRose.Core.Models.Units
             {
                 (Triggers.Attack1end, States.attackidle,"toIdle"),
                 (Triggers.Attack1loop, States.lasershot_idle,""),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.lasershot_Idle
             var lasershotidleTrigger = new[]
             {
                 (Triggers.Attack1, States.lasershot_before,""),            // 固有処理でトリガーをセット
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             #endregion
@@ -116,22 +116,22 @@ namespace BlackRose.Core.Models.Units
             // States.beamsword_Start
             var beamswordStartTrigger = new[]
             {
-                (Triggers.movestart, States.beamsword,"toSlash"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.movestart, States.beamsword_move,"toMove"),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.beamsword_Move
             var beamswordmoveTrigger = new[]
             {
-                (Triggers.moveend, States.beamsword,"toMove"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Attack2, States.beamsword,"toSlash"),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.beamsword
             var beamswordTrigger = new[]
             {
                 (Triggers.Attack2end, States.fixedpositionjump,"toJump"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             #endregion
@@ -141,7 +141,7 @@ namespace BlackRose.Core.Models.Units
             var fixedpositionjumpTrigger = new[]
             {
                 (Triggers.Landing, States.attackidle,"toIdle"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             #endregion
@@ -151,27 +151,27 @@ namespace BlackRose.Core.Models.Units
             var stunTrigger = new[]
             {
                 (Triggers.Event2, States.shockwaveidle,"toIdle"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
             };
             // States.shockwaveidle
             var shockwaveidleTrigger = new[]
             {
                 (Triggers.shockwaveidleend, States.shockwaveanimaidle,"toShockWave"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.shockwaveanimaidle
             var shockwaveanimaidleTrigger = new[]
             {
                 (Triggers.shockwaveanimaidleend, States.shockwave,""),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             // States.shockwave
             var shockwaveTrigger = new[]
             {
                 (Triggers.Shockwaveend, States.idle,"toIdle"),
-                (Triggers.Died, States.dead,""),
+                (Triggers.Died, States.dead,"toDead"),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
             #endregion
@@ -197,13 +197,19 @@ namespace BlackRose.Core.Models.Units
 
             /* 登場演出 */
             var entry = new Idle_LazyChange(Triggers.EntryEnd.ToString(), _EntryEndwaitTime);
+            entry.OnCompleted += EntryEnd;
             _stateMachine.AddState(States.entry, entry);
 
             /* 待機 */
             _stateMachine.AddState(States.idle, new Idle());
 
             /* 死亡 */
-            _stateMachine.AddState(States.dead, new Idle());
+            dead = new Idle_LazyEvent(_DeadEndwaitTime);
+            dead.OnAnimationCompleted.AddListener(() =>
+            {
+                Dead();
+            });
+            _stateMachine.AddState(States.dead, dead);
 
             /* 攻撃待機 */
             var attackIdle = new Idle_LazyEvent(_AttackIntervalTime);
@@ -234,10 +240,7 @@ namespace BlackRose.Core.Models.Units
 
             /* レーザーショット待機 */
             var lasershotidle = new Idle_LazyChange(Triggers.Attack1.ToString(), _LaserShotIntervalTime);
-            lasershotidle.OnCompleted += () =>
-            {
-                AnimaSelect();
-            };
+            lasershotidle.OnCompleted += AnimaSelect;
             _stateMachine.AddState(States.lasershot_idle, lasershotidle);
             #endregion
 
@@ -245,12 +248,12 @@ namespace BlackRose.Core.Models.Units
 
             /* ビームソード開始 */
             var beamswordstart = new Idle_LazyChange(Triggers.movestart.ToString(), 0.5f);
+            beamswordstart.OnCompleted += BeamSwordStart;
             _stateMachine.AddState(States.beamsword_Start, beamswordstart);
 
             /* ビームソード接近 */
-            var freeMove = new FreeMove(true);
-            freeMove.SetAccel(30.0f);
-            freeMove.SetDecel(20f);
+            var freeMove = new MoveOnGround(true).SetAccel(_Moveaccel).SetFriction(_Movefriction);
+            freeMove.SetRB2(_RB2);
             _stateMachine.AddState(States.beamsword_move, freeMove);
 
             /* ビームソード */
@@ -271,8 +274,7 @@ namespace BlackRose.Core.Models.Units
 
             /* ジャンプ */
             _positionJump = new PositionJump(_junpPositions.ConvertAll(p => (Vector2)p), _JumpSpeed);
-            var fixedpositionjump = _positionJump;
-            fixedpositionjump.SetRB2(_RB2);
+            _positionJump.SetRB2(_RB2);
             _positionJump.OnArrived += () =>
             {
                 GetComponent<BoxCollider2D>().isTrigger = false;
@@ -280,7 +282,7 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.LazyChange(Triggers.Landing);
                 Debug.Log("固定位置ジャンプに到達しました。");
             };
-            _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
+            _stateMachine.AddState(States.fixedpositionjump, _positionJump);
             #endregion
            
             #region === ShockWave States ===

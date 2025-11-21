@@ -1,5 +1,4 @@
-﻿using HighElixir.Hedgeable;
-using System;
+﻿using System;
 using System.Text;
 
 namespace BlackRose.Core.Models
@@ -7,7 +6,10 @@ namespace BlackRose.Core.Models
     public class StatusInfo
     {
         private float _defaultAmount;
-        private Hedgeable<float> _currentAmount;
+        private float _currentAmount;
+
+        private float _minAmount = float.MinValue;
+        private float _maxAmount = float.MaxValue;
 
         private bool _enableDynamicParams; // _temporaryChanged,_temporaryRatioを使用して値を計算するかどうか
         private float _temporaryChanged;
@@ -34,8 +36,9 @@ namespace BlackRose.Core.Models
                 if (!_enableDynamicParams)
                 {
                     var before = _currentAmount;
-                    _currentAmount.Value = value;
-                    _onAmountChanged?.Invoke(before, _currentAmount);
+                    _currentAmount = Math.Clamp(value, _minAmount, _maxAmount);
+                    if (before != _currentAmount)
+                        _onAmountChanged?.Invoke(before, _currentAmount);
                 }
                 else
                     throw new Exception("EnableDynamicParamsがtrueなため値をセットできません");
@@ -68,15 +71,10 @@ namespace BlackRose.Core.Models
 
         public StatusInfo(float defaultAmount, bool isDynamic = true)
         {
-            _currentAmount = new(defaultAmount, float.MinValue, float.MaxValue);
+            _currentAmount = defaultAmount;
             _defaultAmount = defaultAmount;
             _enableDynamicParams = isDynamic;
             _dirty = _enableDynamicParams;
-            _currentAmount.Subscribe(x =>
-            {
-                if (_enableDynamicParams) _dirty = true;
-                _onAmountChanged?.Invoke(x.OldValue, x.NewValue);
-            });
             Recalculate();
         }
         public float GetClamped(float max)
@@ -94,18 +92,32 @@ namespace BlackRose.Core.Models
         {
             _dirty = false;
             var before = _currentAmount;
-            _currentAmount.Value = (_defaultAmount + _temporaryChanged) * Math.Max(0, _temporaryRatio); // デフォルト値に一時的な変更を加え、倍率を掛ける
+            float newVal = (_defaultAmount + _temporaryChanged) * Math.Max(0, _temporaryRatio); // デフォルト値に一時的な変更を加え、倍率を掛ける
+            newVal = Math.Clamp(newVal, _minAmount, _maxAmount);
+            _currentAmount = newVal;
             if (before != _currentAmount)
                 _onAmountChanged?.Invoke(before, _currentAmount);
         }
 
         public void SetMin(float min)
         {
-            _currentAmount.SetMin(min);
+            _minAmount = min;
+            if (_currentAmount < _minAmount)
+            {
+                var before = _currentAmount;
+                _currentAmount = _minAmount;
+                _onAmountChanged?.Invoke(before, _currentAmount);
+            }
         }
         public void SetMax(float max)
         {
-            _currentAmount.SetMax(max);
+            _maxAmount = max;
+            if (_currentAmount > _maxAmount)
+            {
+                var before = _currentAmount;
+                _currentAmount = _maxAmount;
+                _onAmountChanged?.Invoke(before, _currentAmount);
+            }
         }
         public void SetDefault(float defaultAmount)
         {

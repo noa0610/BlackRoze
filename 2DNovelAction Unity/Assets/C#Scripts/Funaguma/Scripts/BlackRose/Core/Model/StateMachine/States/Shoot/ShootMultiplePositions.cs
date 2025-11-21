@@ -47,8 +47,7 @@ namespace BlackRose.Core.Models.States
                 // 弾を生成
                 Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
                 // ステータスをセット
-                instantiatedBullet.SetBulletStatus(_data, _targetLayer);
-                instantiatedBullet.SetDirection(_direction);
+                InitBullet(instantiatedBullet, _direction);
             }
 
             return base.Shoot(unit);

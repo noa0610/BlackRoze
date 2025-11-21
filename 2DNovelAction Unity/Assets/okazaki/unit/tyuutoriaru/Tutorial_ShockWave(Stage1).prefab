@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 4456186181579086384}
   - component: {fileID: 7412910521578516600}
   - component: {fileID: 6191470538540050238}
-  m_Layer: 0
-  m_Name: Square (2)
+  m_Layer: 15
+  m_Name: Tutorial_ShockWave(Stage1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 424759803315516098}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -26.0935, y: 7.5125, z: 0}
-  m_LocalScale: {x: 0.60967094, y: 0.65737826, z: 1}
+  m_LocalPosition: {x: 14.666, y: -24.5197, z: 0}
+  m_LocalScale: {x: 82.12858, y: 64.721664, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.97882813, g: 0.6245283, b: 1, a: 0.5019608}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -174,4 +174,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 2
+  m_Constraints: 7

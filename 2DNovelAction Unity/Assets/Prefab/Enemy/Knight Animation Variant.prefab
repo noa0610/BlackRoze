@@ -1,5 +1,67 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2546156533679624370
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7262734026344617287}
+  m_Layer: 11
+  m_Name: GroundChack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7262734026344617287
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2546156533679624370}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -3.9, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8675736542637663375}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2721744506198246926
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7021737912202464958}
+  m_Layer: 11
+  m_Name: ShockWavePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7021737912202464958
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2721744506198246926}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.6774233, w: -0.7355934}
+  m_LocalPosition: {x: 0.58, y: 0.12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8760765139892692747}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5619918382993025745
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,7 +72,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9146392736033722015}
   m_Layer: 11
-  m_Name: GameObject
+  m_Name: ShotPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -72,7 +134,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4259599602064700404}
   m_Layer: 11
-  m_Name: beamsword
+  m_Name: BeamSwordPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -128,6 +190,14 @@ PrefabInstance:
     - target: {fileID: 1978466800329455971, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_Layer
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 2151555726869690305, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2151555726869690305, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2197498288067554667, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_Layer
@@ -219,11 +289,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 44.6
+      value: 359.47
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -13.54
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -342,6 +412,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4259599602064700404}
+    - targetCorrespondingSourceObject: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7262734026344617287}
+    - targetCorrespondingSourceObject: {fileID: 5537936094141529518, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7021737912202464958}
     - targetCorrespondingSourceObject: {fileID: 8862649156336826451, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9146392736033722015}
@@ -365,11 +441,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 249001817088850716}
   m_SourcePrefab: {fileID: 100100000, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
---- !u!95 &2805846342470338709 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 1422733492570378800, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
-  m_PrefabInstance: {fileID: 3841235076271790757}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5742294586897490678 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8862649156336826451, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
@@ -414,7 +485,7 @@ MonoBehaviour:
       type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
       data:
         _center: {fileID: 8675736542637663375}
-        _range: 7
+        _range: 20
 --- !u!50 &1833237815832792777
 Rigidbody2D:
   serializedVersion: 4
@@ -427,10 +498,10 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 300
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 3
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -527,53 +598,45 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   _animator: {fileID: 0}
-  _muzzle: {fileID: 0}
+  _muzzle: {fileID: 7543091494001868012}
   _moveDir: {x: 0, y: 0}
   _shootDir: {x: 1, y: 0}
   player: {fileID: 3110737651922959427}
   _enableVisuableInvincible: 0
   _currentState: 
+  _groundCheck: {fileID: 7262734026344617287}
+  _groundCheckRadius: 0.1
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  _landingCheckOffset: {x: 0, y: 0, z: 0}
+  _disableCheckTime: 0.2
+  FixedAttackSelect: 0
+  cutEntry: 0
+  _AttackIntervalTime: 2
+  _EntryEndwaitTime: 6
+  _JumpSpeed: 7
+  _wallDistanse: 3
+  _wallChackRenge: 20
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 512
   _junpPositions:
-  - {fileID: 0}
-  - {fileID: 0}
-  _centerPositions: {fileID: 0}
+  - {x: 1.0448858e+20, y: 6.63e-43, z: 2.886691e+20}
+  - {x: 2.2236086e+32, y: -1.3439994e+20, z: 6.59e-43}
+  _beamswordmuzzle: {fileID: 7600474418250109406}
+  _beamswordBulletData: {fileID: 11400000, guid: 8db6df61fd8dd5a4db129f7dc80a0479, type: 2}
   _YPositions: {fileID: 7419050079201697034}
-  _anim: {fileID: 2805846342470338709}
   closeRangeDistance: 5
   _Lasershotmuzzle: {fileID: 5619918382993025745}
-  _beamswordmuzzle: {fileID: 7600474418250109406}
   _LasershotbulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
-  _LasershotTargetLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  _RB2: {fileID: 1833237815832792777}
-  _freeMove:
-    _parentName: 
-    animeTriggerName: 
-    waitForAnimeEnd: 0
-    cancelableProgress: 0
-    _isStopInExit: 0
-    _accel: 10
-    _decel: 0
-    _deadZone: 0
-  _beamswordBulletData: {fileID: 11400000, guid: 8db6df61fd8dd5a4db129f7dc80a0479, type: 2}
-  _beamswordTargetLayer:
-    serializedVersion: 2
-    m_Bits: 1024
+  _LaserShotCount: 6
+  _LaserShotStartTime: 0.5
+  _LaserShotbeforeTime: 0.5
+  _LaserShotTime: 1
+  _LaserShotIntervalTime: 1
+  _shockwaveshotmuzzle: {fileID: 2721744506198246926}
   _shockwaveBulletData: {fileID: 11400000, guid: 016ab258fb45be846af73b346a27f7b6, type: 2}
-  _shockwaveTargetLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  _positionJump:
-    _parentName: 
-    animeTriggerName: 
-    waitForAnimeEnd: 0
-    cancelableProgress: 0
-    _positions:
-    - {x: -9, y: -4}
-    - {x: 13, y: -4}
-    _jumpSpeed: 7
-    _targetIdx: 1
 --- !u!61 &249001817088850716
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -617,10 +680,15 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.2005157, y: 6.3749356}
+  m_Size: {x: 1.77, y: 6.3749356}
   m_EdgeRadius: 0.06
 --- !u!4 &8675736542637663375 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+  m_PrefabInstance: {fileID: 3841235076271790757}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8760765139892692747 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5537936094141529518, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
   m_PrefabInstance: {fileID: 3841235076271790757}
   m_PrefabAsset: {fileID: 0}

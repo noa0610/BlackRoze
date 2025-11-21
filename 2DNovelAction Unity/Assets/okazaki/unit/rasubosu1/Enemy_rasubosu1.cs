@@ -5,26 +5,33 @@ using UnityEngine;
 using HighElixir;
 using System.Collections.Generic;
 using BlackRose.Datas.Definitions;
-
+using BlackRose.Core.Models.Objects;
+using System.Collections;
 
 
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    
+
     public partial class Enemy_rasubosu1 : UnitBase
     {
-        [SerializeField] private Rigidbody2D _rb;
-        [SerializeField] private GameObject bulletPrefab;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
-        [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _firewallTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private Transform[] _firewallPoints;// 必要ならInspectorでセット
         [SerializeField] private BulletData _diffusebeamgunBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _diffusebeamgunTargetLayer; 
-        [SerializeField] private Transform[] _diffusebeamgunPoints;// 必要ならInspectorでセット
-
+        [SerializeField] private LayerMask _diffusebeamgunTargetLayer;
+        [SerializeField] private GameObject _diffusebeamgunPoint;// 必要ならInspectorでセット
+        [SerializeField] private BulletData _armpunchBulletData; // 必要ならInspectorでセット
+        [SerializeField] private LayerMask _armpunchTargetLayer;
+        [SerializeField] private GameObject _armpunchPoint;// 必要ならInspectorでセット
+        [SerializeField] private BulletData _firewallBulletData; // 必要ならInspectorでセット
+        [SerializeField] private LayerMask _firewallTargetLayer;
+        [SerializeField] private GameObject _firewallPoint;// 必要ならInspectorでセット
+        [SerializeField] private GameObject _biribiriPoint;// 必要ならInspectorでセット
+        private int punchcount = 0;
+            [SerializeField]public GameObject prefab;    // インスペクタで割り当てるプレハブ
+    [SerializeField]public Transform point;      // インスペクタで割り当てる発射位置（point）
+    [SerializeField]public float speed = 5f;     // 移動速度（右->左なので Vector3.left を使う）
+    [SerializeField]public float lifetime = 10f; // 自動破棄までの時間（秒）
         private SearchAssistanceMono _searchAssistance;
         private void SearchPlayer()
         {
@@ -38,22 +45,12 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
+            _armpunchPoint = GameObject.Find("ArmpunchPoint");
         }
 
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
-            // 見た目の向き変更など既存処理
-            if (_player != null)
-            {
-                Direction = (_player.Transform.position - transform.position).normalized;
-                if (Direction.x != 0)
-                {
-                    var scale = transform.localScale;
-                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
-                    transform.localScale = scale;
-                }
-            }
             // beamswordattackステート中のみ判定
 
         }
@@ -63,9 +60,8 @@ namespace BlackRose.Core.Models.Units
         }
         public void Attackjudgement()
         {
-            int attackIndex = UnityEngine.Random.Range(0, 3); // 0〜3 の間でランダム
-
-            switch (attackIndex)
+            int choice = Random.Range(0, 3);
+            switch (choice)
             {
                 case 0:
                     Attack1();
@@ -82,13 +78,13 @@ namespace BlackRose.Core.Models.Units
         void Attack1()
         {
             Debug.Log("アームパンチ");
-            _stateMachine.ChangeState(Triggers.Attack3);
+            _stateMachine.ChangeState(Triggers.Attack1);
         }
 
         void Attack2()
         {
             Debug.Log("拡散ビーム砲");
-            _stateMachine.ChangeState(Triggers.Attack3);
+            _stateMachine.ChangeState(Triggers.Attack2);
         }
         void Attack3()
         {
@@ -96,6 +92,35 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.ChangeState(Triggers.Attack3);
         }
 
+        void Udetobasi()
+        {
+            if (prefab == null || point == null)
+            {
+                Debug.LogWarning("prefab または point が設定されていません。");
+                return;
+            }
+
+            // point 位置にプレハブ生成
+            GameObject obj = Instantiate(prefab, point.position, point.rotation);
+
+            // Rigidbody2D を取得
+            Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                // 右→左に進む（X軸マイナス方向）
+                rb.velocity = Vector2.left * speed;
+            }
+            else
+            {
+                Debug.LogWarning("生成したプレハブに Rigidbody2D がありません。");
+            }
+            
+
+            // 一定時間後に自動削除
+            Destroy(obj, lifetime);
+        }
+    
     }
+
 
 }

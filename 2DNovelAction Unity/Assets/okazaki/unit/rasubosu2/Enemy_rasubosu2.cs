@@ -51,11 +51,6 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private int _WarpCount = 3;
         private int _CurrentWarpCount = 0;
 
-        /* メモ：現在のワープの処理動作 */
-        /*  
-         * 
-         */
-
 
         [Header("ポインタミサイル")]
         [SerializeField] private GameObject[] _MissileFallPoint;            // ミサイル落下地点
@@ -188,6 +183,14 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
+            
+            if (IsMatchingState(States.attackidle))
+            {
+                if (_player == null)
+                {
+                    _stateMachine.ChangeState(Triggers.Playerdead);
+                }
+            }
 
             // 現在ステートがワープ直前のステートに 変わった瞬間 を検知して一度だけ実行
             var curKey = _stateMachine.CurrentState.key;

@@ -60,7 +60,7 @@ namespace BlackRose.Core.Models.Units
             // States.entry
             var entryTrigger = new[]                                   /** 登場ステートのトリガー **/
             {
-                (Triggers.EntryEnd, States.idle ,"EntryEnd"),      // イベント1発生でワープ待機へ
+                (Triggers.EntryEnd, States.idle ,"EntryEnd"),          // イベント1発生でワープ待機へ
             };
             // States.idle
             var idleTrigger = new[]
@@ -84,7 +84,7 @@ namespace BlackRose.Core.Models.Units
             // States.lasershot_Start
             var lasershotStartTrigger = new[]
             {
-                (Triggers.Attack1, States.lasershot,"toShot"),
+                (Triggers.Attack1, States.lasershot_before,""),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -98,7 +98,7 @@ namespace BlackRose.Core.Models.Units
             // States.lasershot
             var lasershotTrigger = new[]
             {
-                (Triggers.Attack1end, States.attackidle,""),
+                (Triggers.Attack1end, States.attackidle,"toIdle"),
                 (Triggers.Attack1loop, States.lasershot_idle,""),
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
@@ -106,7 +106,7 @@ namespace BlackRose.Core.Models.Units
             // States.lasershot_Idle
             var lasershotidleTrigger = new[]
             {
-                (Triggers.Attack1, States.lasershot,""),            // 固有処理でトリガーをセット
+                (Triggers.Attack1, States.lasershot_before,""),            // 固有処理でトリガーをセット
                 (Triggers.Died, States.dead,""),
                 (Triggers.HalfHP, States.stun,"toStan")
             };
@@ -181,6 +181,7 @@ namespace BlackRose.Core.Models.Units
             .AddTransitions(States.idle, idleTrigger)
             .AddTransitions(States.attackidle, attackidleTrigger)
             .AddTransitions(States.lasershot_Start, lasershotStartTrigger)
+            .AddTransitions(States.lasershot_before, lasershotbeforeTrigger)
             .AddTransitions(States.lasershot, lasershotTrigger)
             .AddTransitions(States.lasershot_idle, lasershotidleTrigger)
             .AddTransitions(States.beamsword_Start, beamswordStartTrigger)
@@ -218,9 +219,9 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.lasershot_Start, lasershotStart);
 
             /* レーザーショット直前 */
-            var lasershotS = new Idle_LazyChange(Triggers.Attack1.ToString(), _LaserShotStartTime);
-            lasershotStart.OnCompleted += LaserShotStart;
-            _stateMachine.AddState(States.lasershot_Start, lasershotStart);
+            var lasershotbefore = new Idle_LazyChange(Triggers.Attack1.ToString(), _LaserShotbeforeTime);
+            lasershotbefore.OnCompleted += LaserShotBefore;
+            _stateMachine.AddState(States.lasershot_before, lasershotbefore);
 
             /* レーザーショット */
             _lasershotState = new ShootForward(_LasershotbulletData, AttackLayer);

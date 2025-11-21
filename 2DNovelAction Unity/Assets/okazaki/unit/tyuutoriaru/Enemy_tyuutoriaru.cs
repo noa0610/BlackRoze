@@ -22,11 +22,14 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("登場演出の省略")]
         [SerializeField] private bool cutEntry = false;
 
+
         [Header("固有設定")]
         [SerializeField] private float _AttackIntervalTime = 2f;
 
+
         [Header("登場演出")]
-        [SerializeField] private float _EntryEndwaitTime = 4.5f;           // 登場アニメーション終了時間（手動必須になる）
+        [SerializeField] private float _EntryEndwaitTime = 4.5f;    // 登場アニメーション終了時間（手動必須になる）
+
 
         [Header("ジャンプ")]
         [SerializeField] private float _JumpSpeed = 7f;
@@ -52,13 +55,16 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private BulletData _LasershotbulletData;
         [SerializeField] private int _LaserShotCount = 6;
 
-        [Tooltip("レーザーショット開始 → 最初の発射")]
+        [Tooltip("レーザーショット開始 → 発射直前待機")]
         [SerializeField] private float _LaserShotStartTime = 1f;
+
+        [Tooltip("発射直前待機 → 発射")]
+        [SerializeField] private float _LaserShotbeforeTime = 0.5f;
 
         [Tooltip("発射 → 発射後の後隙")]
         [SerializeField] private float _LaserShotTime = 1f;
 
-        [Tooltip("後隙 → 次の発射")]
+        [Tooltip("発射後の後隙 → 次の発射")]
         [SerializeField] private float _LaserShotIntervalTime = 1f;
         private int _shotCount;
 
@@ -303,6 +309,11 @@ namespace BlackRose.Core.Models.Units
         {
             _shotCount = 0;
             _lasershotState?.SetDirection(Direction);
+        }
+
+        private void LaserShotBefore()
+        {
+            
         }
 
         private async void LaserShotExit()

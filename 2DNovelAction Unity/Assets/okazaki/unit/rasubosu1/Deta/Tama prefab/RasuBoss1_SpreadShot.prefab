@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 6070914565028812241}
   - component: {fileID: 5361990617590762041}
   m_Layer: 0
-  m_Name: Diffusebeamgun 1
+  m_Name: RasuBoss1_SpreadShot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -80,9 +80,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 301
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.3915094, b: 0.3915094, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -182,6 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 0}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -222,11 +223,13 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 0
+  _animator: {fileID: 0}
   _muzzle: {fileID: 0}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 0}
+  _enableVisuableInvincible: 0
   _currentState: 
-  _currentMode: 
-  _currentDirection: {x: 0, y: 0}
   _range: 0
   _shootCount: 0
   _multiShoot:
@@ -245,7 +248,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
     _range: 180
-    _shootCount: 16
+    _shootCount: 10
 --- !u!114 &6070914565028812241
 MonoBehaviour:
   m_ObjectHideFlags: 0

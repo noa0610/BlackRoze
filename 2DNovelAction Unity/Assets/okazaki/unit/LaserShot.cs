@@ -5,7 +5,7 @@ using UnityEngine;
 namespace BlackRose.Core.Models.States
 {
     [Serializable]
-    public class LaserShot : StateWithAnime
+    public class LaserShot : ShootStateBase
     {
         [SerializeField] protected Rigidbody2D _rb;
         [SerializeField] private float _attackCooldown = 5f; // 攻撃クールダウン時間
@@ -31,6 +31,11 @@ namespace BlackRose.Core.Models.States
             cooldownTimer = _attackCooldown; // 最初の発射をすぐにできるように
             currentFirePointIndex = 0;
             shotCount = 0; // 発射回数リセット
+        }
+        public override bool AllowChange(IState nextState, UnitBase parent)
+        {
+            if (base.AllowChange(nextState, parent)) return true;
+            return false;
         }
 
         public override void Stay(UnitBase parent, float deltaTime)

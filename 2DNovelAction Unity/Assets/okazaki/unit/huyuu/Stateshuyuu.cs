@@ -1,11 +1,11 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_huyuu
     {
-
+        [SerializeField] private float ExplosionDelay = 0f;
         public enum States
         {
             none,
@@ -44,9 +44,9 @@ namespace BlackRose.Core.Models.Units
             };
             // ステートマシンにStatesの移動先の追加
             _stateMachine
-                .AddTransmissions(States.idle, idleTrigger)
-                .AddTransmissions(States.move, moveTrigger)
-                .AddTransmissions(States.explosion, explosionTrigger);
+                .AddTransitions(States.idle, idleTrigger)
+                .AddTransitions(States.move, moveTrigger)
+                .AddTransitions(States.explosion, explosionTrigger);
             // 死んだときに何もしないならDeadの設定はいらない
 
             // 待機
@@ -60,6 +60,7 @@ namespace BlackRose.Core.Models.Units
 
             //爆発
             // 爆発イベント（OnExplode）で死亡トリガーを発火
+            _suicideBombing.SetDelay(ExplosionDelay);
             _suicideBombing.OnCompleted += () =>
             {
                 Debug.Log("Enemy_huyuu: 爆発アニメーションが完了しました。");

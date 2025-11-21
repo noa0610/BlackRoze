@@ -4,12 +4,10 @@ using HighElixir;
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
-
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_rasubosu1
     {
-        private ShootForward diffusebeamgun;
         private enum States
         {
             none,
@@ -17,9 +15,16 @@ namespace BlackRose.Core.Models.Units
             dead,
             attackidle,
             armpunch,
+            armpunchanimaidle,
+
+            armpunchidle,
+            armpunchendile,
             diffusebeamgun,
+            diffusebeamgunidle,
             firewall,
-            firewallmove,
+            firewallanimaidle,
+            firewallshot,
+            firewallshotidle,
         }
         public enum Triggers
         {
@@ -28,11 +33,18 @@ namespace BlackRose.Core.Models.Units
             Attackcooldown,
             firewallmoveend,
             Attack1,
+            Armpunch,
+            Attack1loop,
+            Attack1loopend,
+            Attack1idle,
             Attack2,
             Attack3,
-            Attack4,
+            Firewall,
+            Firewallshot,
+            Attack3idle,
             Attack1end,
             Attack2end,
+            Attack2idle,
             Attack3end,
             shockwaveend,
             Event1,
@@ -46,67 +58,164 @@ namespace BlackRose.Core.Models.Units
             // トランスミッション
             var idleTrigger = new[]
             {
-                (Triggers.FoundPlayer, States.attackidle, "Contact"),
-                (Triggers.Died, States.dead, "")
+                (Triggers.FoundPlayer, States.attackidle, ""),
+                (Triggers.Died, States.dead, "toDead")
             };
             var attackidleTrigger = new[]
             {
-                (Triggers.Playerdead, States.idle),
-                (Triggers.Died, States.dead),
-                (Triggers.Attack1, States.armpunch),
-                (Triggers.Attack2, States.diffusebeamgun),
-                (Triggers.Attack3, States.firewallmove),
+                (Triggers.Playerdead, States.idle,""),
+                (Triggers.Died, States.dead,"toDead"),
+                (Triggers.Attack1, States.armpunchanimaidle,"FireRight"),
+                (Triggers.Attack2, States.diffusebeamgun,"FireRight"),
+                (Triggers.Attack3, States.firewallanimaidle,"FireRight")
+            };
+            var armpunchanimaidleTrigger = new[]
+            {
+                (Triggers.Armpunch, States.armpunch,""),
+                (Triggers.Died, States.dead,"toDead")
             };
             var armpunchTrigger = new[]
             {
-                (Triggers.Attack1end, States.attackidle),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack1loop, States.armpunchidle,""),
+                (Triggers.Attack1idle, States.armpunchendile,""),
+                (Triggers.Died, States.dead,"toDead")
+            };
+            var armpunchidleTrigger = new[]
+            {
+                (Triggers.Attack1loopend, States.armpunch,""),
+                (Triggers.Died, States.dead,"toDead")
+            };
+            var armpunchendileTrigger = new[]
+            {
+                (Triggers.Attack1end, States.attackidle,"ArmReturn"),
+                (Triggers.Died, States.dead,"toDead")
             };
             var diffusebeamgunTrigger = new[]
             {
-                (Triggers.Attack2end, States.attackidle),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack2idle, States.diffusebeamgunidle,""),
+                (Triggers.Died, States.dead,"toDead")
             };
-            var firewallmoveTrigger = new[]
+            var diffusebeamgunidleTrigger = new[]
             {
-                (Triggers.firewallmoveend, States.firewall),
-                (Triggers.Died, States.dead),
+                (Triggers.Attack2end, States.attackidle,""),
+                (Triggers.Died, States.dead,"toDead")
             };
             var firewallTrigger = new[]
             {
-                (Triggers.Attack3end, States.attackidle),
-                (Triggers.Died, States.dead),
+                (Triggers.Firewallshot, States.firewallshot,""),
+                (Triggers.Died, States.dead,"toDead")
+            };
+            var firewallanimaidleTrigger = new[]
+            {
+                (Triggers.Firewall, States.firewall,""),
+                (Triggers.Died, States.dead,"toDead")
+            };
+            var firewallshotTrigger = new[]
+            {
+                (Triggers.Attack3idle, States.firewallshotidle,""),
+                (Triggers.Died, States.dead,"toDead")
+            };
+            var firewallshotidle1Trigger = new[]
+            {
+                (Triggers.Attack3end, States.attackidle,"ArmReturn"),
+                (Triggers.Died, States.dead,"toDead")
             };
             _stateMachine
                 .AddTransitions(States.idle, idleTrigger)
                 .AddTransitions(States.attackidle, attackidleTrigger)
                 .AddTransitions(States.armpunch, armpunchTrigger)
+                .AddTransitions(States.armpunchanimaidle, armpunchanimaidleTrigger)
+                .AddTransitions(States.armpunchidle, armpunchidleTrigger)
+                .AddTransitions(States.armpunchendile, armpunchendileTrigger)
                 .AddTransitions(States.diffusebeamgun, diffusebeamgunTrigger)
+                .AddTransitions(States.diffusebeamgunidle, diffusebeamgunidleTrigger)
                 .AddTransitions(States.firewall, firewallTrigger)
-                .AddTransitions(States.firewallmove, firewallmoveTrigger);
+                .AddTransitions(States.firewallanimaidle, firewallanimaidleTrigger)
+                .AddTransitions(States.firewallshot, firewallshotTrigger)
+                .AddTransitions(States.firewallshotidle, firewallshotidle1Trigger);
             // ステート登録
             _stateMachine.AddState(States.idle, new Idle());
             // 死亡
-            _stateMachine.AddState(States.dead, new Idle());
+            var dead = new Idle_LazyChange(Triggers.Died.ToString(), 7, true);
+            dead.OnCompleted += () =>
+            {
+                UnitManager.instance.RemoveUnit(this);
+                Destroy(gameObject);
+            };
+            _stateMachine.AddState(States.dead, dead);
             // 攻撃待機
             var attackIdle = new Idle_LazyEvent(5f);
-            // 遅延完了時に呼びたい処理をOnCompletedで登録
             attackIdle.OnCompleted += Attackjudgement;
-            {
-                
-            }
             _stateMachine.AddState(States.attackidle, attackIdle);
+            // アームパンチアニメ待機
+            var armpunchanimaidle = new Idle_LazyChange(Triggers.Armpunch.ToString(), 5, true);
+            _stateMachine.AddState(States.armpunchanimaidle, armpunchanimaidle);
             // アームパンチ
-            _stateMachine.AddState(States.armpunch, new Idle());
+            var armpunch = new ShootForward(_armpunchBulletData, _armpunchTargetLayer)
+            .SetDirection(Vector2.down);
+            armpunch.SetGameObject(_armpunchPoint != null ? _armpunchPoint : gameObject);
+            armpunch.onShootComplete.AddListener(() =>
+            {
+                if (punchcount == 2)
+                {
+                    // 最終状態なら攻撃終了へ
+                    punchcount = 0;
+                    Debug.Log(punchcount);
+                    _stateMachine.LazyChange(Triggers.Attack1idle);
+                }
+                else
+                {
+                    ++punchcount;
+                    Debug.Log(punchcount);
+                    // 続けるなら Attack1loop を発火して armpunch に戻す（transmission で armpunch->armpunchidle に遷移）
+                    _stateMachine.LazyChange(Triggers.Attack1loop);
+                }
+            });
+            _stateMachine.AddState(States.armpunch, armpunch);
+            var armpunchidle = new Idle_LazyEvent(5f);
+            armpunchidle.OnCompleted += () =>
+            {
+                // Attack1loopend を発火して armpunch に戻す（transmission で armpunchidle->armpunch に遷移）
+                _stateMachine.LazyChange(Triggers.Attack1loopend);
+            };
+            _stateMachine.AddState(States.armpunchidle, armpunchidle);
+            // アームパンチ終了待機
+            var armpunchendile = new Idle_LazyChange(Triggers.Attack1end.ToString(), 5, true);
+            _stateMachine.AddState(States.armpunchendile, armpunchendile);
             // 拡散ビーム砲
-            diffusebeamgun = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer);
-            diffusebeamgun.SetDirection(Vector2.down);
-            diffusebeamgun.SetGameObject(_diffusebeamgunPoints.Length > 0 ? _diffusebeamgunPoints[0].gameObject : gameObject);
+            var diffusebeamgun = new ShootForward(_diffusebeamgunBulletData, _diffusebeamgunTargetLayer)
+            .SetDirection(Vector2.left);
+            diffusebeamgun.SetGameObject(_diffusebeamgunPoint != null ? _diffusebeamgunPoint : gameObject);
+            diffusebeamgun.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack2idle);
+            });
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
-            // ファイアウォール移動
-            _stateMachine.AddState(States.firewallmove, new Idle());
+            // 拡散ビーム砲待機
+            var diffusebeamgunidle = new Idle_LazyChange(Triggers.Attack2end.ToString(), 7, true);
+            _stateMachine.AddState(States.diffusebeamgunidle, diffusebeamgunidle);
+            // ファイアウォールアニメ待機
+            var firewallanimaidle = new Idle_LazyChange(Triggers.Firewall.ToString(), 2, true);
+            _stateMachine.AddState(States.firewallanimaidle, firewallanimaidle);
+
             // ファイアウォール
-            _stateMachine.AddState(States.firewall, new Idle());
+            var firewall = new Idle_LazyChange(Triggers.Firewallshot.ToString(), 2, true);
+            firewall.OnCompleted += () =>
+            {
+                Udetobasi();
+            };
+            _stateMachine.AddState(States.firewall, firewall);
+            var firewallshot = new ShootForward(_firewallBulletData, _firewallTargetLayer)
+            .SetDirection(Vector2.left);
+            firewallshot.SetGameObject(_biribiriPoint != null ? _biribiriPoint : gameObject);
+            firewallshot.onShootComplete.AddListener(() =>
+            {
+                _stateMachine.LazyChange(Triggers.Attack3idle);
+            });
+            _stateMachine.AddState(States.firewallshot, firewallshot);
+
+            var firewallshotidle = new Idle_LazyChange(Triggers.Attack3end.ToString(), 5, true);
+            _stateMachine.AddState(States.firewallshotidle, firewallshotidle);
         }
     }
 }

@@ -1718,6 +1718,56 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &3990940874051986799
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8167120589213725853}
+  - component: {fileID: 5309854860523707852}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8167120589213725853
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3990940874051986799}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 354.26196, y: -303.55386, z: 1.5673895}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4711690147849914321}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5309854860523707852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3990940874051986799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 283d2955948eba646b75dd94e83808d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BGMMixer: {fileID: 24100000, guid: 9a05fea6f0e62844c8f8eee7596576a7, type: 2}
+  _BGMVolumeText: {fileID: 2645067698705807345}
+  _BGMSlider: {fileID: 1912676207455398756}
+  VoiceMixer: {fileID: 24100000, guid: b0c45c850a5c823428952026f5f7346b, type: 2}
+  _VoiceVolumeText: {fileID: 2327531774095967852}
+  _VoiceSlider: {fileID: 7424852830625452634}
 --- !u!1 &4010749851489811611
 GameObject:
   m_ObjectHideFlags: 0
@@ -1845,56 +1895,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!1 &5036948157773419574
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 275580332882576836}
-  - component: {fileID: 4266064301757148309}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &275580332882576836
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5036948157773419574}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 354.26196, y: -303.55386, z: 1.5673895}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4711690147849914321}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4266064301757148309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5036948157773419574}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 283d2955948eba646b75dd94e83808d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BGMMixer: {fileID: 24100000, guid: 9a05fea6f0e62844c8f8eee7596576a7, type: 2}
-  _BGMVolumeText: {fileID: 2645067698705807345}
-  _BGMSlider: {fileID: 1912676207455398756}
-  VoiceMixer: {fileID: 24100000, guid: b0c45c850a5c823428952026f5f7346b, type: 2}
-  _VoiceVolumeText: {fileID: 2327531774095967852}
-  _VoiceSlider: {fileID: 7424852830625452634}
 --- !u!1 &5479487859661430607
 GameObject:
   m_ObjectHideFlags: 0
@@ -2628,7 +2628,7 @@ GameObject:
   - component: {fileID: 4382611525656101106}
   - component: {fileID: 2327531774095967852}
   m_Layer: 5
-  m_Name: AudioVolume
+  m_Name: VoiceVolume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2788,7 +2788,7 @@ RectTransform:
   - {fileID: 1135650172096633334}
   - {fileID: 7275050985555047171}
   - {fileID: 779755200633164935}
-  - {fileID: 275580332882576836}
+  - {fileID: 8167120589213725853}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

@@ -17,7 +17,8 @@ namespace BlackRose.Core.Models.Units
             Normal,
             Heavy,
             Light,
-            Dead
+            Dead,
+            Paused
         }
         public enum AITriggers : int
         {
@@ -39,7 +40,10 @@ namespace BlackRose.Core.Models.Units
             stun, recoverFromStun,
 
             // モードチェンジ
-            mC_l, mC_h, mC_n, dead
+            mC_l, mC_h, mC_n, dead,
+
+            // その他
+            pause, resume
         }
 
         // 外部
@@ -157,12 +161,13 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterState(AIStates.Light, new Idle<AIController>());
             _fms.RegisterState(AIStates.Heavy, new Idle<AIController>());
             _fms.RegisterState(AIStates.Dead, new Idle<AIController>());
+            _fms.RegisterState(AIStates.Paused, new Idle<AIController>());
             // 任意遷移
-            _fms.RegisterAnyTransition(AITriggers.mC_h, AIStates.Heavy);
-            _fms.RegisterAnyTransition(AITriggers.mC_l, AIStates.Light);
-            _fms.RegisterAnyTransition(AITriggers.mC_n, AIStates.Normal);
+            _fms.RegisterAnyTransition(AITriggers.pause, AIStates.Paused, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.mC_h, AIStates.Heavy, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.mC_l, AIStates.Light, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.mC_n, AIStates.Normal, "Reset");
             _fms.RegisterAnyTransition(AITriggers.dead, AIStates.Dead, "toDead");
-
 
             _normalMode.Register();
             _lightMode.Register();

@@ -15,6 +15,28 @@ namespace BlackRose.Core.Models.Units
 
         public IObservable<Unit> OnCanceledJump => _onCanceledJump;
 
+        public override void Pause()
+        {
+            _fms.Send(AITriggers.pause);
+            GetComponent<PlayerInput>().DeactivateInput();
+        }
+
+        public override void Play()
+        {
+            GetComponent<PlayerInput>().ActivateInput();
+            switch (CurrentMode)
+            {
+                case NormalMode:
+                    _fms.Send(AITriggers.mC_n);
+                    break;
+                case LightMode:
+                    _fms.Send(AITriggers.mC_l);
+                    break;
+                case HeavyMode:
+                    _fms.Send(AITriggers.mC_h);
+                    break;
+            }
+        }
         // === Input Action ===
         private void OnJump(InputValue value)
         {

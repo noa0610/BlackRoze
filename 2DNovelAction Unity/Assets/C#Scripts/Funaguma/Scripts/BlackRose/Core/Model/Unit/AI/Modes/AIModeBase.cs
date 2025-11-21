@@ -118,7 +118,6 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Jump, _jump, "OnAir", "Cancelable");
             _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable", "Move");
             hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable", "Move", "Dash");
-            // NOTE : Trail演出の追加？
             hook.OnEnter.Subscribe(x =>
             {
                 _parent.TrailRenderer.emitting = true;
@@ -139,7 +138,7 @@ namespace BlackRose.Core.Models.Units
             }).AddTo(_parent);
             RegisterStates();
 
-
+            //_stateMachine.RegisterAnyTransition(Triggers.pause, SubState.Idle, "toIdle");
             // ShootInterval
             _stateMachine.RegisterTransition(SubState.ShootInterval, Triggers.watingTimeHasElapsed, SubState.Idle, "toIdle");
 

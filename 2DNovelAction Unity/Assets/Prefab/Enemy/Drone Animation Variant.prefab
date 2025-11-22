@@ -97,11 +97,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 887951272397785444, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.44
+      value: -0.12
       objectReference: {fileID: 0}
     - target: {fileID: 887951272397785444, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.87
+      value: -3.55
       objectReference: {fileID: 0}
     - target: {fileID: 887951272397785444, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
       propertyPath: m_LocalPosition.z
@@ -158,6 +158,10 @@ PrefabInstance:
     - target: {fileID: 2061165588363546887, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
       propertyPath: m_Layer
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 2061165588363546887, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2083824342646719589, guid: 72cb64e539f8fb34ea3567aa07b7c614, type: 3}
       propertyPath: m_Layer
@@ -467,6 +471,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 0}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -486,22 +491,35 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 1024
+  _animator: {fileID: 0}
   _muzzle: {fileID: 0}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 5566679719008075393}
+  _enableVisuableInvincible: 0
   _currentState: 
-  _currentMode: 
-  _currentDirection: {x: 0, y: 0}
   _suicideBombing:
     _parentName: 
     animeTriggerName: 
     waitForAnimeEnd: 0
     cancelableProgress: 0
     _knockBack: 0
-    _time: 1.5
+    _time: 0.3
     _radius: 2
-    _damage: -5
+    _damage: 20
     _delay: 0.4
     _collider: {fileID: 6285255894146946779}
+  _ExplosionPartecl: {fileID: 7300873433291539213, guid: 1b9a024061c5e8d4dba98c9709153b87, type: 3}
+  _ExplosionParteclTime: 4
+  _DeadEndwaitTime: 0.2
+  _DeadPartecl: {fileID: 1381896084548930411, guid: 1042e4b7a55beb74fb770f919acd47a7, type: 3}
+  _DeadParteclTime: 4
+  _ExplosionSEName: "\u5927\u78321"
+  _ExplosionSEVolume: 0.4
+  _DamageSEName: "\u6575\u30C0\u30E1\u30FC\u30B81"
+  _DamageSEVolume: 0.2
+  _DeadSEName: "\u6575\u30C0\u30E1\u30FC\u30B82"
+  _DeadSEVolume: 0.4
   ExplosionDelay: 0
 --- !u!61 &5092649469929487127
 BoxCollider2D:

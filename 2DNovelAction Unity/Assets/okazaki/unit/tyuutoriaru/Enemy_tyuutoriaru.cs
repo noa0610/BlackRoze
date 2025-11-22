@@ -10,6 +10,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using BlackRose.Core.Models.Systems;
+
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
@@ -81,19 +82,17 @@ namespace BlackRose.Core.Models.Units
 
 
         [Header("死亡状態")]
-        [SerializeField] private bool _wontDie = false;
-        [SerializeField] private float _DeadEndwaitTime = 6.5f;
+        [SerializeField] private bool _wontDie = false;                   // 死亡状態に移行しない
+        [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
 
 
         private Rigidbody2D _RB2;
         private Animator _anim;
         private int currentAttack = 1; // 初期値は1（レーザーショットから発動）
-        private int nowstate = 2;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
-        private bool _waitingForAttack1 = false;
 
-        private bool _isAnimating = false; // アニメ再生中フラグ（AnimaSelect の重複実行防止）
+
         private bool _waitingForAttack2 = false;
         private SearchAssistanceMono _searchAssistance;
         private CancellationTokenSource _cancellation;

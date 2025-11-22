@@ -300,6 +300,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2272767455261737482, guid: 93af96077621c804abb2b85cb37fc971, type: 3}
+      propertyPath: managedReferences[6833280287476023296]._range
+      value: 5.7
+      objectReference: {fileID: 0}
     - target: {fileID: 2888263531422257, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_Layer
       value: 11
@@ -386,11 +390,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5293365150635828082, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.7
+      value: 0.53
       objectReference: {fileID: 0}
     - target: {fileID: 5293365150635828082, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: -7.29
       objectReference: {fileID: 0}
     - target: {fileID: 5293365150635828082, guid: 187de72f7538ae049a111e4e3f0a3297, type: 3}
       propertyPath: m_LocalPosition.z
@@ -492,10 +496,6 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 11
       objectReference: {fileID: 0}
-    - target: {fileID: 2272767455261737482, guid: 93af96077621c804abb2b85cb37fc971, type: 3}
-      propertyPath: managedReferences[6833280287476023296]._range
-      value: 5.7
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -588,7 +588,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 10
+  m_Mass: 250
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 4
@@ -766,6 +766,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 1241215281527682335}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -785,16 +786,19 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 1024
+  _animator: {fileID: 0}
   _muzzle: {fileID: 8168082047041762953}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 1000132401954266558}
+  _enableVisuableInvincible: 0
   _currentState: 
-  _currentMode: 
-  _currentDirection: {x: 0, y: 0}
   _groundCheck: {fileID: 4816869675306539957}
   _groundCheckRadius: 0.1
   _groundLayer:
     serializedVersion: 2
     m_Bits: 512
+  _landingCheckOffset: {x: 0, y: 0, z: 0}
   _disableCheckTime: 0.2
   attackCooldown: 3
   idleStartWait: 2.5
@@ -805,6 +809,21 @@ MonoBehaviour:
   stunDuration: 2
   stunKnockbackForce: -1
   stunKnockbackDir: {x: 0.78, y: 0.9}
+  _DeadEndwaitTime: 0.2
+  _DeadPartecl: {fileID: 1381896084548930411, guid: 1042e4b7a55beb74fb770f919acd47a7, type: 3}
+  _DeadParteclTime: 4
+  _DefenseSEName: "\u9632\u5FA1"
+  _DefenseSEVolume: 0.5
+  _DefenseBreakSEName: "\u9632\u5FA1\u7834\u58CA"
+  _DefenseBreakSEVolume: 0.5
+  _GrenadeSEName: "\u7206\u767A"
+  _GrenadeSEVolume: 0.5
+  _TackleSEName: "\u30BF\u30C3\u30AF\u30EB"
+  _TackleSEVolume: 0.5
+  _DamageSEName: "\u6575\u30C0\u30E1\u30FC\u30B81"
+  _DamageSEVolume: 0.2
+  _DeadSEName: "\u6575\u30C0\u30E1\u30FC\u30B82"
+  _DeadSEVolume: 0.4
   animator: {fileID: 5648569111994715141}
 --- !u!95 &5648569111994715141 stripped
 Animator:

@@ -9,13 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f34f122ce1e27f4baa65174604d674d, type: 3}
-  m_Name: Guarder_Bullet
+  m_Script: {fileID: 11500000, guid: 5e7d09974cce0b747bd549481c967662, type: 3}
+  m_Name: ShooterStatus
   m_EditorClassIdentifier: 
-  bulletName: GurderBullet
-  prefab: {fileID: 9103901003500308599, guid: c1f21611a0b33f848b46225ce030f067, type: 3}
-  originalstatus:
-    hp: 0
-    time: 2
-    damage: 10
-    speed: 10
+  id: 0
+  unitName: shooter
+  description: 
+  maxHp: 18
+  speed: 10
+  speedInAir: 2
+  dashSpeed: 0
+  power: 1
+  jumpPower: 0
+  damageTakeScale: 1
+  tags: 2

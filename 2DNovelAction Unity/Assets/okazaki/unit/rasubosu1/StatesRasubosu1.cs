@@ -8,6 +8,7 @@ namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_rasubosu1
     {
+        private Idle dead;
         private enum States
         {
             none,
@@ -152,35 +153,37 @@ namespace BlackRose.Core.Models.Units
                 .AddTransitions(States.firewallshotidle, firewallshotidle1Trigger);
 
             #region === Basic States ===
+
             /* 登場演出 */
             var entry = new Idle_LazyChange(Triggers.EntryEnd.ToString(), _EntryEndwaitTime);
+            entry.OnCompleted += EntryEnd;
             _stateMachine.AddState(States.entry, entry);
 
-            // 待機
+            /* 待機 */
             _stateMachine.AddState(States.idle, new Idle());
 
-            // 死亡
-            var dead = new Idle_LazyChange(Triggers.Died.ToString(), 7, true);
-            dead.OnCompleted += () =>
+            /* 死亡 */
+            dead = new Idle_LazyEvent(_DeadEndwaitTime);
+            dead.OnAnimationCompleted.AddListener(() =>
             {
-                UnitManager.instance.RemoveUnit(this);
-                Destroy(gameObject);
-            };
+                Dead();
+            });
             _stateMachine.AddState(States.dead, dead);
 
-            // 攻撃待機
-            var attackIdle = new Idle_LazyEvent(3f);
+            /* 攻撃待機 */
+            var attackIdle = new Idle_LazyEvent(_AttackIntervalTime);
             attackIdle.OnCompleted += AttackSelect;
             _stateMachine.AddState(States.attackidle, attackIdle);
             #endregion
 
             #region === ArmPunch States ===
-            // アームパンチ開始
-            var armpunchStart = new Idle_LazyChange(Triggers.Armpunch.ToString(), _ArmPunchStartTime, true);
+
+            /* アームパンチ開始 */
+            var armpunchStart = new Idle_LazyChange(Triggers.Armpunch.ToString(), _ArmPunchStartTime);
             armpunchStart.OnCompleted += RandomArmPunchFallPoint;
             _stateMachine.AddState(States.armpunch_Start, armpunchStart);
 
-            // アームパンチ
+            /* アームパンチ */
             var armpunch = new ShootForward(_armpunchBulletData, AttackLayer)
             .SetDirection(Vector2.down);
             armpunch.SetGameObject(_armpunchPoint != null ? _armpunchPoint : gameObject);
@@ -203,7 +206,7 @@ namespace BlackRose.Core.Models.Units
             });
             _stateMachine.AddState(States.armpunch, armpunch);
 
-            // アームパンチ待機
+            /* アームパンチ待機 */
             var armpunchidle = new Idle_LazyEvent(_ArmPunchWaitTime);
             armpunchidle.OnCompleted += () =>
             {
@@ -212,13 +215,14 @@ namespace BlackRose.Core.Models.Units
             };
             _stateMachine.AddState(States.armpunch_Idle, armpunchidle);
 
-            // アームパンチ終了
-            var armpunchendile = new Idle_LazyChange(Triggers.Attack1end.ToString(), _ArmPunchEndTime, true);
+            /* アームパンチ終了 */
+            var armpunchendile = new Idle_LazyChange(Triggers.Attack1end.ToString(), _ArmPunchEndTime);
             _stateMachine.AddState(States.armpunch_end, armpunchendile);
             #endregion
             
             #region === SpreadShot States ===
-            // 拡散ビーム砲
+
+            /* 拡散ビーム砲 */
             var diffusebeamgun = new ShootForward(_SpreadShotBulletData, AttackLayer)
             .SetDirection(Vector2.left);
             diffusebeamgun.SetGameObject(_SpreadShotPoint != null ? _SpreadShotPoint : gameObject);
@@ -228,36 +232,37 @@ namespace BlackRose.Core.Models.Units
             });
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);
 
-            // 拡散ビーム砲待機
-            var diffusebeamgunidle = new Idle_LazyChange(Triggers.Attack2end.ToString(), _SpreadShotEndTime, true);
+            /* 拡散ビーム砲待機 */
+            var diffusebeamgunidle = new Idle_LazyChange(Triggers.Attack2end.ToString(), _SpreadShotEndTime);
             _stateMachine.AddState(States.diffusebeamgunidle, diffusebeamgunidle);
             #endregion
 
             #region === FireWall States ===
-            // ファイアウォール開始
-            var firewallanimaidle = new Idle_LazyChange(Triggers.Firewall.ToString(), _ArmPunchStartTime, true);
+
+            /* ファイアウォール開始 */
+            var firewallanimaidle = new Idle_LazyChange(Triggers.Firewall.ToString(), _fireWallStartTime);
             _stateMachine.AddState(States.firewallanimaidle, firewallanimaidle);
 
-            // ファイアウォール生成
-            var firewall = new Idle_LazyChange(Triggers.Firewallshot.ToString(), 2, true);
+            /* ファイアウォール生成 */
+            var firewall = new Idle_LazyChange(Triggers.Firewallshot.ToString(), _fireWallWaitTime);
             firewall.OnCompleted += () =>
             {
                 FireWallArmMove();
             };
             _stateMachine.AddState(States.firewall, firewall);
 
-            // ファイアウォール照射
+            /* ファイアウォール照射 */
             var firewallshot = new ShootForward(_firewallBulletData, AttackLayer)
             .SetDirection(Vector2.left);
-            firewallshot.SetGameObject(_biribiriPoint != null ? _biribiriPoint : gameObject);
+            firewallshot.SetGameObject(gameObject);
             firewallshot.onShootComplete.AddListener(() =>
             {
                 _stateMachine.LazyChange(Triggers.Attack3idle);
             });
             _stateMachine.AddState(States.firewallshot, firewallshot);
 
-            // ファイアウォール終了
-            var firewallshotidle = new Idle_LazyChange(Triggers.Attack3end.ToString(), 5, true);
+            /* ファイアウォール終了 */
+            var firewallshotidle = new Idle_LazyChange(Triggers.Attack3end.ToString(), _fireWallEndTime);
             _stateMachine.AddState(States.firewallshotidle, firewallshotidle);
             #endregion
         }

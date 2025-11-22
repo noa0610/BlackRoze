@@ -1,10 +1,12 @@
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
+using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using HighElixir;
 using System.Collections.Generic;
-using BlackRose.Datas.Definitions;
+using System;
 using BlackRose.Core.Models.Objects;
 using System.Collections;
 using UnityEditor.U2D.Animation;
@@ -24,9 +26,8 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("登場演出の省略")]
         [SerializeField] private bool cutEntry = false;
 
-        // [Header("固有処理")]
-
-        
+        [Header("固有処理")]
+        [SerializeField] private float _AttackIntervalTime = 2f;
 
         [Header("登場演出")]
         [SerializeField] private float _EntryEndwaitTime = 4.5f;           // 登場アニメーション終了時間（手動必須になる）
@@ -63,23 +64,23 @@ namespace BlackRose.Core.Models.Units
 
         [Header("ファイアウォール")]
         [SerializeField] private BulletData _firewallBulletData;
-        [SerializeField] private GameObject _biribiriPoint;
         [SerializeField] public GameObject _fireWallArmprefab;
-        [SerializeField] public Transform point;      // アーム発射位置
-        [SerializeField] public float speed = 5f;     // 移動速度（右->左なので Vector3.left を使う）
+        [SerializeField] public Transform _ArmInitpoint;      // アーム発射位置
+        [SerializeField] public float _fireWallArmMovespeed = 5f;
         [SerializeField] public float lifetime = 10f; // 自動破棄までの時間（秒）
 
-        /*
-        課題点　ファイアウォール
-        １，ファイアウォールから落下させるDamageFloorでダメージ床が生成されない（エラーが発生中）
-        解決法→DamageFloorを削除する？　そもそもタイルマップと相性悪？
-        　
-        ２，アームとファイアウォールの生成位置の見た目上のズレ
-        解決法→アーム専用のファイアウォールBulletの数値設定用スクリプトを作成？
+        [Tooltip("ファイアウォール開始 → 攻撃直前へ")]
+        [SerializeField] private float _fireWallStartTime = 2f;
 
-        ３，次の生成までの時間設定
-        解決法→アーム専用のファイアウォールBulletの数値設定用スクリプトを作成？
-        */
+        [Tooltip("攻撃直前 → アーム生成")]
+        [SerializeField] private float _fireWallWaitTime = 0.5f;
+
+        [Tooltip("アーム生成 → ファイアウォール終了")]
+        [SerializeField] private float _fireWallEndTime = 6f;
+
+        
+        [Header("死亡状態")]
+        [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
 
 
         private UnitBase _player;
@@ -108,18 +109,42 @@ namespace BlackRose.Core.Models.Units
             {
                 _stateMachine.Awake("attackidle", false);
                 _animator.SetTrigger("toIdle");
+                IsInvincible = false;
             }
             else
             {
                 _stateMachine.Awake("entry", false);
+                IsInvincible = true;
             }
+        }
+
+        private void EntryEnd()
+        {
+            IsInvincible = false;
         }
 
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
-            // beamswordattackステート中のみ判定
+        }
 
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            if (statusManager.ReadValue(Status.HP) <= 0)
+            {
+                _stateMachine.ChangeState(Triggers.Died);
+            }
+        }
+
+        private async void Dead()
+        {
+            IsInvincible = true; // 攻撃不可
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
+
+            Destroy(gameObject);
         }
 
         #region === AttackSelect ===
@@ -142,7 +167,7 @@ namespace BlackRose.Core.Models.Units
                 return;
             }
 
-            int choice = Random.Range(0, 3);
+            int choice = UnityEngine.Random.Range(0, 3);
             switch (choice)
             {
                 case 0:
@@ -176,6 +201,7 @@ namespace BlackRose.Core.Models.Units
         #endregion
 
         #region === ArmPunch ===
+        // パンチ落下範囲の中央位置の初期化設定
         private void InitArmPunchFallPoint()
         {
             _armpunchPoint = Instantiate(EmptyObject);
@@ -189,28 +215,29 @@ namespace BlackRose.Core.Models.Units
         // パンチの落下ポイントを決める
         private void RandomArmPunchFallPoint()
         {
-            _armpunchPoint.transform.position = new Vector2(Random.Range(_startArmPunchPos.x - _ArmWidthFall, _startArmPunchPos.x + _ArmWidthFall), _ArmHeightOfFall);
+            _armpunchPoint.transform.position = new Vector2(UnityEngine.Random.Range(_startArmPunchPos.x - _ArmWidthFall, _startArmPunchPos.x + _ArmWidthFall), _ArmHeightOfFall);
         }
         #endregion
 
         #region === FireWall ===
+        // アームを移動
         void FireWallArmMove()
         {
-            if (_fireWallArmprefab == null || point == null)
+            if (_fireWallArmprefab == null || _ArmInitpoint == null)
             {
                 Debug.LogWarning("prefab または point が設定されていません。");
                 return;
             }
 
             // point 位置にプレハブ生成
-            GameObject obj = Instantiate(_fireWallArmprefab, point.position, point.rotation);
+            GameObject obj = Instantiate(_fireWallArmprefab, _ArmInitpoint.position, _ArmInitpoint.rotation);
 
             // Rigidbody2D を取得
             Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
-                // 右→左に進む（X軸マイナス方向）
-                rb.velocity = Vector2.left * speed;
+                // 右に進む
+                rb.velocity = Vector2.right * _fireWallArmMovespeed;
             }
             else
             {

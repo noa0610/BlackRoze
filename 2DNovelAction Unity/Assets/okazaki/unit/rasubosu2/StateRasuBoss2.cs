@@ -217,9 +217,9 @@ namespace BlackRose.Core.Models.Units
 
             /* 登場演出 */
             var entry = new Idle_LazyChange(Triggers.EntryEnd.ToString(), _EntryEndwaitTime);
+            entry.OnCompleted += EntryEnd;
             _stateMachine.AddState(States.entry, entry);
             
-
             /* 待機 */
             _stateMachine.AddState(States.idle, new Idle());
 
@@ -232,13 +232,13 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.dead, dead);
 
             /* 攻撃待機 */
-            var attackIdle = new Idle_LazyEvent(0.5f);
-            // 遅延完了時に呼びたい処理をOnCompletedで登録
+            var attackIdle = new Idle_LazyEvent(_AttackIntervalTime);
             attackIdle.OnCompleted += AttackSelect;
             _stateMachine.AddState(States.attackidle, attackIdle);
             #endregion
 
             #region === Warp States ===
+
             /* ワープ待機 */
             var warpidle = new Idle_LazyChange(Triggers.Warpcooldown.ToString(), _WarpIntervalTime, true);
             warpidle.OnCompleted += WarpIdleStay;
@@ -258,6 +258,7 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === PointerMissile States ===
+
             /* ポインターミサイル直前 */
             var pointermissilebefore = new Idle_LazyChange(Triggers.Attack1.ToString(), _MissileFallTime);
             _stateMachine.AddState(States.pointermissile_before, pointermissilebefore);
@@ -269,6 +270,7 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === CrossWave States ===
+
             /* クロスウェーブ開始ワープ直前 */
             var crosswavebeforewarp = new Idle();
             _stateMachine.AddState(States.crosswave_beforewarp, crosswavebeforewarp);
@@ -289,6 +291,7 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === WarpShot States ===
+
             /* ワープショット開始ワープ直前 */
             var warpShotbeforewarp = new Idle();
             _stateMachine.AddState(States.warpShot_beforewarp, warpShotbeforewarp);
@@ -310,6 +313,7 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === FlashBeamSword States ===
+            
             /* フラッシュビームソード開始 */
             var flashBeamSwordbefore = new Idle_LazyChange(Triggers.Attack4dash.ToString(), _FlashBeamSwordStartDashTime);
             flashBeamSwordbefore.OnCompleted += FlashBeamSwordBeforeStay;

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -8381216389615061597}
   m_Layer: 15
   m_Name: normal_halfCharge
-  m_TagString: Untagged
+  m_TagString: Playerbullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -174,9 +174,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7333477883841852803}
     m_Modifications:
+    - target: {fileID: 2657651414796680385, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.15
+      objectReference: {fileID: 0}
     - target: {fileID: 5718541488175236380, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
       propertyPath: m_Name
       value: Ps_PlayerShot Medium Orange
+      objectReference: {fileID: 0}
+    - target: {fileID: 5874575087871846387, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5874575087871846387, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5874575087871846387, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5874575087871846387, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
       propertyPath: m_LocalPosition.x
@@ -217,6 +233,18 @@ PrefabInstance:
     - target: {fileID: 5874575087871846387, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198078765184412729, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: ShapeModule.arc.value
+      value: 360
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198078765184412729, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 0.29
+      objectReference: {fileID: 0}
+    - target: {fileID: 8994961621603520588, guid: f3e5bb3e167691349aa2ac24056876b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.19
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

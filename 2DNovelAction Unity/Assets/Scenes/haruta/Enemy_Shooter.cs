@@ -3,9 +3,12 @@ using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
+using BlackRose.Core.Models.Systems;
+using System.Collections;
 using System.Collections.Generic;
 using HighElixir;
 using System;
+using Cysharp.Threading.Tasks;
 using BlackRose.Core.UI;
 
 namespace BlackRose.Core.Models.Units
@@ -40,7 +43,14 @@ namespace BlackRose.Core.Models.Units
             Damage,
         }
 
-        
+        private enum StartDirection
+        {
+            Left,
+            Right
+        }
+        [SerializeField] private StartDirection _StartDirection = StartDirection.Left;
+
+
         [SerializeField] private Animator _anim;
         [SerializeField] private Rigidbody2D _rb2;
 
@@ -50,7 +60,7 @@ namespace BlackRose.Core.Models.Units
 
 
         [Header("ショット")]
-        [SerializeField] private BulletData _bulletData;       
+        [SerializeField] private BulletData _bulletData;
         [SerializeField] private float shootInterval = 0.5f;
         [SerializeField] private int maxShootCount = 3;
         [SerializeField] private float shootReadyDuration = 0.15f;
@@ -74,22 +84,27 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float wallCheckHeight = 0.6f;     // 壁判定高度
         [SerializeField] private LayerMask groundLayer;            // 地面レイヤー
 
-        private int moveDirection = 1; // 左向きスタート
+
+        [Header("死亡状態")]
+        [SerializeField] private float _DeadEndwaitTime = 0.2f;
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
 
 
+        [Header("SE")]
+        [SerializeField] private string _EncountSEName = "発見";
+        [SerializeField] private float _EncountSEVolume = 0.5f;
+        [SerializeField] private string _ShotSEName = "シューター・ショット";
+        [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "敵ダメージ2";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
+
+        private UnitBase _player;
         private bool canAttack = false;
         private float firstAttackDelay = 1.0f; // 最初の攻撃までの待機秒数
         private float firstAttackTimer = 0f;
-
-
-        protected override void OnGrounded()
-        {
-            if (IsMatchingState(States.move))
-            {
-                CheckEnvironment(); // ← 壁 or 崖を判定してFlip
-            }
-        }
-        protected override void OnUnGrounded() { }
 
         protected override void RegisterStats()
         {
@@ -140,6 +155,10 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.shootReady, shootready); // アニメーション専用
 
             attack = new ShootForward(_bulletData, AttackLayer);
+            attack.onShootComplete.AddListener(() =>
+            {
+                PlaySE(_ShotSEName, _ShotSEVolume);
+            });
             attack.SetGameObject(_muzzle);
             _stateMachine.AddState(States.shoot, attack);
 
@@ -147,15 +166,73 @@ namespace BlackRose.Core.Models.Units
             knockBack.KnockbackForce = 1f;
             _stateMachine.AddState(States.knockBack, knockBack);
 
-            var dead = new Idle();
+            var dead = new Idle_LazyEvent(_DeadEndwaitTime);
+            dead.OnAnimationCompleted.AddListener(() =>
+            {
+                Dead();
+            });
             _stateMachine.AddState(States.dead, dead);
         }
-        
+
 
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
-            MoveDirection = new Vector2(moveDirection, 0);
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            InitDirection();
+        }
+
+
+        /// <summary>
+        /// 外部から呼び出されるダメージ処理
+        /// </summary>
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            PlaySE(_DamageSEName, _DamageSEVolume);
+            if (statusManager.ReadValue(Status.HP) <= 0)
+            {
+                PlaySE(_DeadSEName, _DeadSEVolume);
+                _stateMachine.ChangeState(Triggers.Died);
+            }
+            _stateMachine.ChangeState(Triggers.Damage);
+            _anim?.SetTrigger("Damage"); // 被弾アニメがあるなら
+        }
+
+        private async void Dead()
+        {
+            if (_DeadPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+
+            PlaySE(_DeadSEName, _DeadSEVolume);
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
         }
 
 
@@ -164,56 +241,23 @@ namespace BlackRose.Core.Models.Units
             var list = UnitManager.instance.GetUnitList();
 
             // Execute が true かつ対象が1体以上いる場合のみ found を true にする
-            bool found = _searchAssistance.Execute("yellow", list, out _);
-
-
-            if (IsMatchingState(States.idle))//今のステートがidleかつYellowの中に当てはまるオブジェクトが一つでもある
+            if (_searchAssistance.Execute("yellow", list, out var units))
             {
-                if (_searchAssistance.Execute("yellow", list, out _))
-                {
-                    var player = GameObject.FindGameObjectWithTag("Player");
-                    if (player != null)
-                    {
-                        float dir = player.transform.position.x - transform.position.x;
-
-                        // 向きが違っていたら反転
-                        if (dir > 0 && moveDirection < 0)
-                        { // プレイヤーが右側
-                            Flip();
-                        }// ← これでMoveOnGroundの移動方向も変わる
-                        else if (dir < 0 && moveDirection > 0) // プレイヤーが左側
-                        {
-                            Flip();
-                        }
-                    }
-                    _stateMachine.ChangeState(Triggers.FoundPlayer);
-                    //ismatchingStatesがidleではないため
-
-                }
-                else
-                    _stateMachine.ChangeState(Triggers.MissingPlayer);
+                _player = units.GetUnitNearest(transform.position);
+                _stateMachine.ChangeState(Triggers.FoundPlayer);
             }
-            else if (IsMatchingState(States.move))//いまのすてーとがmove
+            else
             {
-                if (found)
+                _player = null;
+            }
+
+
+            if (IsMatchingState(States.idle) || IsMatchingState(States.move))
+            {
+                if (_player != null)
                 {
-
-                    var player = GameObject.FindGameObjectWithTag("Player");
-                    if (player != null)
-                    {
-                        float dir = player.transform.position.x - transform.position.x;
-
-                        // 向きが違っていたら反転
-                        if (dir > 0 && moveDirection < 0)
-                        { // プレイヤーが右側
-                            Flip();
-                        }// ← これでMoveOnGroundの移動方向も変わる
-                        else if (dir < 0 && moveDirection > 0) // プレイヤーが左側
-                        {
-                            Flip();
-                        }
-                    }
-
+                    PlaySE(_EncountSEName, _EncountSEVolume);
+                    PlayerTurnAround();
                     _stateMachine.ChangeState(Triggers.FoundPlayer);
                 }
                 else
@@ -222,7 +266,15 @@ namespace BlackRose.Core.Models.Units
                 }
             }
         }
-        
+
+        protected override void OnGrounded()
+        {
+            if (IsMatchingState(States.move))
+            {
+                CheckEnvironment(); // ← 壁 or 崖を判定してFlip
+            }
+        }
+
         public void OnAttackEnd()
         {
             // アニメーションが終わったタイミングでのみ Idle へ戻す
@@ -257,23 +309,15 @@ namespace BlackRose.Core.Models.Units
 
             SearchPlayer();
 
-            // 既存の処理（攻撃や死亡処理）
+            // 発見状態
             if (IsMatchingState(States.Encount))
             {
+                PlayerTurnAround();
                 encountTimer += Time.fixedDeltaTime;
                 if (encountTimer >= encountDuration)
                 {
-                    var player = GameObject.FindGameObjectWithTag("Player");
-                    if (player != null)
-                    {
-                        float dir = player.transform.position.x - transform.position.x;
-                        if (dir > 0 && moveDirection < 0) Flip();
-                        else if (dir < 0 && moveDirection > 0) Flip();
-                    }
                     encountTimer = 0f;
-
-                    // ★ ここでshootCountをリセット
-                    shootCount = 0; // プレイヤー発見後、攻撃開始直前にリセット
+                    shootCount = 0;
                     _stateMachine.ChangeState(Triggers.AttackRange);
                 }
             }
@@ -295,7 +339,6 @@ namespace BlackRose.Core.Models.Units
 
             if (IsMatchingState(States.shoot) && shootCount <= maxShootCount - 1)//ここで一回
             {
-
                 shootTimer += Time.fixedDeltaTime;
                 if (shootTimer >= shootInterval)//ここで3回打っている
                 {
@@ -304,10 +347,9 @@ namespace BlackRose.Core.Models.Units
                     var current = _stateMachine.CurrentState;
                     if (current.state is ShootForward shoot)
                         shoot.SetDirection(Direction).Enter(current.state, this);
-                    ;
-
+                    PlaySE(_ShotSEName, _ShotSEVolume);
                     shootCount++;
-                    Debug.Log($"🔫 Shoot 発射! ({shootCount}/{maxShootCount - 1})");
+                    Debug.Log($"Shoot 発射! ({shootCount}/{maxShootCount - 1})");
 
                     if (shootCount >= maxShootCount - 1)
                     {
@@ -327,17 +369,6 @@ namespace BlackRose.Core.Models.Units
 
         }
 
-        /// <summary>
-        /// 外部から呼び出されるダメージ処理
-        /// </summary>
-        protected override void OnTakeDamage(IUnit from, float damage)
-        {
-            if (IsMatchingState(States.dead)) return; // すでに死亡していたら無視
-                                                      // HPが残っている → KnockBackステートへ
-            _stateMachine.ChangeState(Triggers.Damage);
-            _anim?.SetTrigger("Damage"); // 被弾アニメがあるなら
-
-        }
         private void CheckEnvironment()
         {
             // 前方の壁をRayでチェック
@@ -351,12 +382,14 @@ namespace BlackRose.Core.Models.Units
             {
                 Debug.Log("wallhit Flip");
                 Flip();
+                _rb2.velocity = Vector2.zero;
             }
 
             if (groundHit.collider == null)
             {
                 Debug.Log("groundlost Flip");
                 Flip();
+                _rb2.velocity = Vector2.zero;
             }
 
             // デバッグ表示
@@ -364,12 +397,49 @@ namespace BlackRose.Core.Models.Units
             Debug.DrawRay(groundCheck.position, Vector2.down * graundCheckDistance, Color.blue);
         }
 
+        private void InitDirection()
+        {
+            switch (_StartDirection)
+            {
+                case StartDirection.Left:
+                    MoveDirection = Vector2.left;
+                    Direction = Vector2.left;
+
+                    break;
+                case StartDirection.Right:
+                    MoveDirection = Vector2.right;
+                    Direction = Vector2.right;
+                    break;
+            }
+
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (Direction.x >= 0f ? 1f : -1f);
+            transform.localScale = scale;
+        }
+
         private void Flip()
         {
-            moveDirection *= -1; // 方向を反転
-            transform.Rotate(0, 180, 0); // 見た目を反転
-            Direction = new Vector2(moveDirection, 0); // ← これでMoveOnGroundの移動方向も変わる
-            MoveDirection = Direction;
+            MoveDirection = new Vector2(-MoveDirection.x, MoveDirection.y);
+            Direction = new Vector2(-Direction.x, Direction.y);
+
+            var scale = transform.localScale;
+            scale.x = -scale.x;
+            transform.localScale = scale;
+        }
+
+        private void PlayerTurnAround()
+        {
+            // 見た目の向き変更など既存処理
+            if (_player != null)
+            {
+                var toPlayer = (_player.transform.position - transform.position).normalized;
+                Direction = (toPlayer.x > 0) ? Vector2.right : Vector2.left;
+                MoveDirection = new Vector2(Direction.x, MoveDirection.y);
+
+                var scale = transform.localScale;
+                scale.x = Mathf.Abs(scale.x) * (Direction.x >= 0f ? 1f : -1f);
+                transform.localScale = scale;
+            }
         }
 
 

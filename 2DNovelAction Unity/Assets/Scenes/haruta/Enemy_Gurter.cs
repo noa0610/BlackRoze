@@ -4,6 +4,7 @@ using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using HighElixir;
 using System;
 using Unity.VisualScripting;
@@ -22,6 +23,7 @@ namespace BlackRose.Core.Models.Units
         public float AngleDeg => angleDeg;
         public int FacingSign => transform.localScale.x >= 0f ? 1 : -1;
 
+
         [Header("シールドタックル")]
         [SerializeField] private float tackleforce = 30f;
         [SerializeField] private float tackletime = 0.8f;
@@ -33,6 +35,24 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float stunKnockbackForce = 15f; // ノックバックの強さ
         [SerializeField] private Vector2 stunKnockbackDir = new Vector2(0.78f, 0.9f); // ノックバック方向
 
+        [Header("死亡状態")]
+        [SerializeField] private float _DeadEndwaitTime = 0.2f;
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
+
+        [Header("SE")]
+        [SerializeField] private string _DefenseSEName = "防御";
+        [SerializeField] private float _DefenseSEVolume = 0.5f;
+        [SerializeField] private string _DefenseBreakSEName = "防御破壊";
+        [SerializeField] private float _DefenseBreakSEVolume = 0.5f;
+        [SerializeField] private string _GrenadeSEName = "爆発";
+        [SerializeField] private float _GrenadeSEVolume = 0.5f;
+        [SerializeField] private string _TackleSEName = "タックル";
+        [SerializeField] private float _TackleSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.5f;
+        [SerializeField] private string _DeadSEName = "敵ダメージ2";
+        [SerializeField] private float _DeadSEVolume = 0.5f;
 
 
         private float idleStartTimer = 0f;
@@ -153,22 +173,32 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.AddState(States.ShieldIdle, new Idle());
             _stateMachine.AddState(States.AttackWait, new Idle());
 
-            var shieldTackle = new Stun(Rigidbody2D, 1, true);
+            var shieldTackle = new Stun(Rigidbody2D, 1, false);
             shieldTackle.KnockbackForce = tackleforce;
             _stateMachine.AddState(States.ShieldTackle, shieldTackle);
 
             shoot = new ShootForward(_bulletData, AttackLayer);
+            shoot.onShootComplete.AddListener(() =>
+            {
+                PlaySE(_GrenadeSEName, _GrenadeSEVolume);
+            });
+
             shoot.SetGameObject(_muzzle);
             shoot.SetDirection(Direction);
             _stateMachine.AddState(States.ShoulderGrenade, shoot);
 
 
             // ✅ スタンステートをインスペクタ値で設定
-            var stunState = new Stun(Rigidbody2D, stunDuration, true).SetKnockback(stunKnockbackDir); // ノックバック方向設定
+            var stunState = new Stun(Rigidbody2D, stunDuration, false).SetKnockback(stunKnockbackDir); // ノックバック方向設定
             stunState.KnockbackForce = stunKnockbackForce; // ノックバック力設定
             _stateMachine.AddState(States.Stun, stunState);
 
-            _stateMachine.AddState(States.Dead, new Idle());
+            var dead = new Idle_LazyEvent(_DeadEndwaitTime);
+            dead.OnAnimationCompleted.AddListener(() =>
+            {
+                Dead();
+            });
+            _stateMachine.AddState(States.Dead, dead);
         }
 
 
@@ -176,7 +206,59 @@ namespace BlackRose.Core.Models.Units
         {
             base.Start();
             _stateMachine.ChangeState(States.Idle);
+            _animator = GetComponent<Animator>();
+        }
 
+        // 一定以下のダメージを防ぐ
+        protected override bool BeforeTakeDamage(IUnit from, ref float damage)
+        {
+            bool isdefense = _shieldDefense.ShieldThrough(damage);
+            if(isdefense == false) PlaySE(_DefenseSEName, _DefenseSEVolume);
+            return isdefense;
+        }
+
+        /// <summary>
+        /// 外部から呼び出されるダメージ処理
+        /// </summary>
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            PlaySE(_DamageSEName, _DamageSEVolume);
+            if (statusManager.ReadValue(Status.HP) <= 0)
+            {
+                _stateMachine.ChangeState(Triggers.Died);
+            }
+        }
+        private async void Dead()
+        {
+            if (_DeadPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+
+            PlaySE(_DeadSEName, _DeadSEVolume);
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
         }
 
         protected override void FixedUpdate()
@@ -196,6 +278,7 @@ namespace BlackRose.Core.Models.Units
             {
                 if (!_isStunning) // スタン開始時の1回だけ実行
                 {
+                    PlaySE(_DefenseBreakSEName, _DefenseBreakSEVolume);
                     _isStunning = true;
                     OnStunStart?.Invoke(); // シールドを無効化
 
@@ -206,17 +289,10 @@ namespace BlackRose.Core.Models.Units
             }
 
 
-            if (IsMatchingState(States.Dead))
-            {
-                UnitManager.instance.RemoveUnit(this);
-                Destroy(gameObject);
-            }
-
             if (IsMatchingState(States.AttackWait) || IsMatchingState(States.ShieldIdle))
             {
                 SearchPlayer();
             }
-
 
 
             if (cooldownTimer > 0)
@@ -228,6 +304,7 @@ namespace BlackRose.Core.Models.Units
                 // ShieldTackle に入った瞬間だけ発火
                 if (!_isAttacking)
                 {
+                    PlaySE(_TackleSEName, _TackleSEVolume);
                     _isAttacking = true;
                     OnAttackStart?.Invoke(); // シールドに攻撃ONを通知
                 }
@@ -257,7 +334,6 @@ namespace BlackRose.Core.Models.Units
         private void AutoRecoverFromStun()
         {
             if (!_isStunning) return; // 二重実行防止
-
 
             animator.SetTrigger("stunrecover"); // ✅ リカバーアニメーション再生
         }
@@ -382,15 +458,6 @@ namespace BlackRose.Core.Models.Units
             {
                 _stateMachine.ChangeState(Triggers.FoundPlayer);
             }
-        }
-
-        /// <summary>
-        /// 外部から呼び出されるダメージ処理
-        /// </summary>
-        protected override void OnTakeDamage(IUnit from, float damage)
-        {
-            if (IsMatchingState(States.Dead)) return; // すでに死亡していたら無視
-                                                      // HPが残っている → KnockBackステートへ
         }
     }
 }

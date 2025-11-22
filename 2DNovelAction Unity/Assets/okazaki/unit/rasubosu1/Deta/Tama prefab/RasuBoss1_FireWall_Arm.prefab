@@ -84,6 +84,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1557206952117268798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8201907410401988012}
+  m_Layer: 0
+  m_Name: FireWallPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8201907410401988012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557206952117268798}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.02, y: -5.99, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8516704310154551195}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2004923613438613290
 GameObject:
   m_ObjectHideFlags: 0
@@ -96,7 +127,6 @@ GameObject:
   - component: {fileID: 6577946881499969490}
   - component: {fileID: 3077716388026457205}
   - component: {fileID: 907202552997789325}
-  - component: {fileID: 5591835954243295326}
   - component: {fileID: 6517036581977899307}
   m_Layer: 0
   m_Name: RasuBoss1_FireWall_Arm
@@ -115,11 +145,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 61.70412, y: 0.3239622, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: -1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6221579817325028249}
-  - {fileID: 2671553252767065519}
+  - {fileID: 8201907410401988012}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6577946881499969490
@@ -246,21 +276,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 9.6, y: 4.4}
   m_EdgeRadius: 0
---- !u!114 &5591835954243295326
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2004923613438613290}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1393594b2b448e7419a46a680bc541d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spawnObject: {fileID: 2339239911094070482, guid: 5f60591d2f63f6d4783912fcde7eb0b9, type: 3}
-  interval: 0.2
-  lifeTime: 0.5
 --- !u!114 &6517036581977899307
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,65 +292,3 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   _direction: {x: 0, y: 0}
---- !u!1001 &595674023898333063
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 8516704310154551195}
-    m_Modifications:
-    - target: {fileID: 424759803315516098, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_Name
-      value: RasuBoss1_FireWall
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.98
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -3.33
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
---- !u!4 &2671553252767065519 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3267082086231267880, guid: 7d54788bd798ab34b88e53583111d9ae, type: 3}
-  m_PrefabInstance: {fileID: 595674023898333063}
-  m_PrefabAsset: {fileID: 0}

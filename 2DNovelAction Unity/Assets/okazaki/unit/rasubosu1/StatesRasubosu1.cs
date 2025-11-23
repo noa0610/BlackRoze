@@ -189,6 +189,7 @@ namespace BlackRose.Core.Models.Units
             armpunch.SetGameObject(_armpunchPoint != null ? _armpunchPoint : gameObject);
             armpunch.onShootComplete.AddListener(() =>
             {
+                PlaySE(_ArmFallSEName, _ArmFallSEVolume);
                 // 攻撃終了
                 if (punchcount >= _armPunchCount)
                 {
@@ -198,7 +199,6 @@ namespace BlackRose.Core.Models.Units
                 }
                 else
                 {
-                    PlaySE(_ArmFallSEName, _ArmFallSEVolume);
                     ++punchcount;
                     Debug.Log(punchcount);
                     RandomArmPunchFallPoint();

@@ -20,7 +20,7 @@ public class SoundManager : SingletonBehavior<SoundManager>
     }
 
     // 一度再生してから、次再生出来るまでの間隔(秒)
-    private float INTERVAL = 0.2f;
+    [SerializeField] private float INTERVAL = 0.2f;
 
     // AudioSource（スピーカー）を同時に鳴らしたい音の数だけ用意
     private AudioSource[] _seSources = new AudioSource[20];

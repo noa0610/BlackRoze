@@ -15,7 +15,7 @@ public class SceneSelectLoad : MonoBehaviour
 
 
 
-public void OnButtonClick(string  _AfterLoadingSceneName)//引数の中はロード後のシーン名を指定
+    public void OnButtonClick(string _AfterLoadingSceneName)//引数の中はロード後のシーン名を指定
     {
         if (TargetObject == null)//nullの場合はアニメーションなしでロードシーンへ
         {
@@ -37,5 +37,10 @@ public void OnButtonClick(string  _AfterLoadingSceneName)//引数の中はロー
     {
         Debug.Log("シーン遷移します。");
         SceneManager.LoadScene(LoadEffectName); // ロードシーンへ遷移
+    }
+
+    public void SetTarget(RectTransform rectTransform)
+    {
+        TargetObject = rectTransform;
     }
 }

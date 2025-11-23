@@ -146,6 +146,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _DashSEVolume = 0.5f;
         [SerializeField] private string _ShotSEName = "ビームライフル";
         [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _WaveSEName = "クロスウェーブ";
+        [SerializeField] private float _WaveSEVolume = 0.5f;
         [SerializeField] private string _PointeSEName = "高速移動";
         [SerializeField] private float _PointeSEVolume = 0.5f;
         [SerializeField] private string _ChargeSEName = "敵チャージ短縮";
@@ -607,7 +609,7 @@ namespace BlackRose.Core.Models.Units
             {
                 for (int i = 1; i <= _CrossWaveShootCount; i++)
                 {
-                    PlaySE(_ShotSEName, _ShotSEVolume);
+                    PlaySE(_WaveSEName, _WaveSEVolume);
                     crosswave.DirectShoot(this);
                     await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveShootIntervalTime), cancellationToken: _cancellation.Token);
                 }

@@ -211,8 +211,6 @@ namespace BlackRose.Core.Models.Units
                     _DeadParteclTime);
             }
 
-            PlaySE(_DeadSEName, _DeadSEVolume);
-
             await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
 
             UnitManager.instance.RemoveUnit(this);

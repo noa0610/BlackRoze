@@ -198,6 +198,7 @@ namespace BlackRose.Core.Models.Units
                 }
                 else
                 {
+                    PlaySE(_ArmFallSEName, _ArmFallSEVolume);
                     ++punchcount;
                     Debug.Log(punchcount);
                     RandomArmPunchFallPoint();
@@ -228,6 +229,7 @@ namespace BlackRose.Core.Models.Units
             diffusebeamgun.SetGameObject(_SpreadShotPoint != null ? _SpreadShotPoint : gameObject);
             diffusebeamgun.onShootComplete.AddListener(() =>
             {
+                PlaySE(_ShotSEName, _ShotSEVolume);
                 _stateMachine.LazyChange(Triggers.Attack2idle);
             });
             _stateMachine.AddState(States.diffusebeamgun, diffusebeamgun);

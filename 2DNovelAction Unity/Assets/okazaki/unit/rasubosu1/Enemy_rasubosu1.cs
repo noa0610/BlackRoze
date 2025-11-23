@@ -36,7 +36,7 @@ namespace BlackRose.Core.Models.Units
         [Header("アームパンチ")]
         [SerializeField] private BulletData _armpunchBulletData;
         [SerializeField] private int _armPunchCount = 2;
-        
+
         [Tooltip("空のオブジェクトのプレハブなら何でもOK")]
         [SerializeField] private GameObject EmptyObject;          // 位置指定用の空のプレハブ
         [SerializeField] private float _ArmHeightOfFall = 10f;    // パンチを落とす高さ
@@ -78,9 +78,30 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("アーム生成 → ファイアウォール終了")]
         [SerializeField] private float _fireWallEndTime = 6f;
 
-        
+
         [Header("死亡状態")]
         [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
+
+
+        [Header("SE")]
+        [SerializeField] private string _EntrySEName = "ロボット起動";
+        [SerializeField] private float _EntrySEVolume = 0.5f;
+        [SerializeField] private string _ArmFireSEName = "アーム発射";
+        [SerializeField] private float _ArmFireSEVolume = 0.5f;
+        [SerializeField] private string _ArmReturnSEName = "アーム戻り";
+        [SerializeField] private float _ArmReturnSEVolume = 0.5f;
+        [SerializeField] private string _ArmFallSEName = "アーム落下";
+        [SerializeField] private float _ArmFallSEVolume = 0.5f;
+        [SerializeField] private string _ShotSEName = "ビーム砲";
+        [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _FireWallSEName = "レーザー";
+        [SerializeField] private float _FireWallSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "撃破";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
 
 
         private UnitBase _player;
@@ -130,8 +151,16 @@ namespace BlackRose.Core.Models.Units
 
         protected override void OnTakeDamage(IUnit from, float damage)
         {
+            PlaySE(_DamageSEName, _DamageSEVolume);
             if (statusManager.ReadValue(Status.HP) <= 0)
             {
+                PlaySE(_DeadSEName, _DeadSEVolume);
+                if (_DeadPartecl != null)
+                {
+                    Destroy(
+                        Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                        _DeadParteclTime);
+                }
                 _stateMachine.ChangeState(Triggers.Died);
             }
         }
@@ -211,7 +240,7 @@ namespace BlackRose.Core.Models.Units
             _startArmPunchPos = _armpunchPoint.transform.localPosition;
         }
 
-        
+
         // パンチの落下ポイントを決める
         private void RandomArmPunchFallPoint()
         {
@@ -231,6 +260,7 @@ namespace BlackRose.Core.Models.Units
 
             // point 位置にプレハブ生成
             GameObject obj = Instantiate(_fireWallArmprefab, _ArmInitpoint.position, _ArmInitpoint.rotation);
+            PlaySE(_FireWallSEName, _FireWallSEVolume);
 
             // Rigidbody2D を取得
             Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
@@ -247,6 +277,21 @@ namespace BlackRose.Core.Models.Units
             Destroy(obj, lifetime);
         }
         #endregion
+
+        private void EntrySE()
+        {
+            PlaySE(_EntrySEName, _EntrySEVolume);
+        }
+
+        private void ArmFireSE()
+        {
+            PlaySE(_ArmFireSEName, _ArmFireSEVolume);
+        }
+
+        private void ArmReturnSE()
+        {
+            PlaySE(_ArmReturnSEName, _ArmReturnSEVolume);
+        }
 
         private bool IsMatchingState(States state)
         {

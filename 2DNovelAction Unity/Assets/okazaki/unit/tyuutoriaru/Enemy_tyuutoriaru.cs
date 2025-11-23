@@ -16,6 +16,14 @@ namespace BlackRose.Core.Models.Units
     [RequireComponent(typeof(SearchAssistanceMono))]
     public partial class Enemy_tyuutoriaru : GroundedUnit
     {
+        private enum StartDirection
+        {
+            Left,
+            Right
+        }
+        [Header("最初の向き")]
+        [SerializeField] private StartDirection _StartDirection = StartDirection.Left;
+
         [Header("デバッグ")]
         [Tooltip("攻撃選択の固定化(１，レーザーショット ２，ビームソード)")]
         [SerializeField] private int FixedAttackSelect = 0;
@@ -85,6 +93,34 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private bool _wontDie = false;                   // 死亡状態に移行しない
         [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
 
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
+
+
+        [Header("SE")]
+        [SerializeField] private string _MoveSEName = "ロボットの足音";
+        [SerializeField] private float _MoveSEVolume = 0.5f;
+        [SerializeField] private float _MoveSEInterval = 1f;
+        [SerializeField] private string _RandSEName = "ドスン"; // 着地
+        [SerializeField] private float _RandSEVolume = 0.5f;
+        [SerializeField] private string _ShotSEName = "ビームライフル";
+        [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _SwordSmallSEName = "ブンッ 斬撃音 弱";
+        [SerializeField] private float _SwordSmallSEVolume = 0.5f;
+        [SerializeField] private string _SwordSEName = "ブンッ 斬撃音";
+        [SerializeField] private float _SwordSEVolume = 0.5f;
+        [SerializeField] private string _StanSEName = "防御破壊";
+        [SerializeField] private float _StanSEVolume = 0.5f;
+        [SerializeField] private string _ChargeSEName = "敵チャージ";
+        [SerializeField] private float _ChargeSEVolume = 0.5f;
+        [SerializeField] private string _ShockWaveSEName = "ショックウェーブ";
+        [SerializeField] private float _ShockWaveSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "撃破";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
+        private float _moveSETimer = 0;
+
 
         private Rigidbody2D _RB2;
         private Animator _anim;
@@ -123,6 +159,7 @@ namespace BlackRose.Core.Models.Units
             _RB2 = GetComponent<Rigidbody2D>();
             _anim = GetComponent<Animator>();
             _cancellation = new CancellationTokenSource();
+            InitDirection();
         }
 
         private void EntryEnd()
@@ -132,11 +169,9 @@ namespace BlackRose.Core.Models.Units
 
         private bool _halfHpTriggered = false;
 
-        protected override bool BeforeTakeDamage(IUnit from, ref float damage)
-            => !IsInvincible;
-
         protected override void OnTakeDamage(IUnit from, float damage)
         {
+            PlaySE(_DamageSEName, _DamageSEVolume);
             if (!_halfHpTriggered)
             {
                 var hpStatus = statusManager.GetStatus(Status.HP);
@@ -150,6 +185,7 @@ namespace BlackRose.Core.Models.Units
                     if (hp <= maxHp / 2f)
                     {
                         _halfHpTriggered = true;
+                        PlaySE(_StanSEName, _StanSEVolume);
                         Debug.Log("HPが半分以下になりました");
                         _stateMachine.ChangeState(Triggers.HalfHP);
                         IsInvincible = true;
@@ -157,10 +193,57 @@ namespace BlackRose.Core.Models.Units
                 }
             }
         }
+
+        private async void Dead()
+        {
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel(); // UniTask停止
+
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel();  // UniTask停止
+            _cancellation.Dispose(); // リソース解放
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            GetComponent<FlowchartFirer>().Fire();
+
+            await UniTask.Delay(TimeSpan.FromSeconds(0.1));
+
+            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
+
+            Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
+        }
+
+
         protected override void OnDeath()
         {
             base.OnDeath();
             if (_wontDie) return;
+            PlaySE(_DeadSEName, _DeadSEVolume);
+            if (_DeadPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
             _stateMachine.ChangeState(Triggers.Died);
         }
         #endregion
@@ -214,6 +297,26 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        private void InitDirection()
+        {
+            switch (_StartDirection)
+            {
+                case StartDirection.Left:
+                    MoveDirection = Vector2.left;
+                    Direction = Vector2.left;
+
+                    break;
+                case StartDirection.Right:
+                    MoveDirection = Vector2.right;
+                    Direction = Vector2.right;
+                    break;
+            }
+
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (Direction.x >= 0f ? 1f : -1f);
+            transform.localScale = scale;
+        }
+
         private void WallChack()
         {
             if (WallChackPoint == null) return;
@@ -221,28 +324,6 @@ namespace BlackRose.Core.Models.Units
             RaycastHit2D rayhit = Physics2D.Raycast(ray.origin, ray.direction, 1f, _WallLayer);
             _wallChack = rayhit.collider ? true : false;
             Debug.DrawRay(WallChackPoint.transform.position, MoveDirection, Color.red);
-        }
-
-        private async void Dead()
-        {
-            IsInvincible = true; // 攻撃不可
-
-            _cancellation.Cancel(); // UniTask停止
-
-            IsInvincible = true; // 攻撃不可
-
-            _cancellation.Cancel();  // UniTask停止
-            _cancellation.Dispose(); // リソース解放
-
-            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
-
-            GetComponent<FlowchartFirer>().Fire();
-
-            await UniTask.Delay(TimeSpan.FromSeconds(0.1));
-
-            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
-
-            Destroy(gameObject);
         }
 
 
@@ -373,6 +454,7 @@ namespace BlackRose.Core.Models.Units
 
         private async void LaserShotExit()
         {
+            PlaySE(_ShotSEName, _ShotSEVolume);
             _shotCount++;
             await UniTask.Delay(TimeSpan.FromSeconds(_LaserShotTime), cancellationToken: _cancellation.Token);
 
@@ -409,6 +491,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (_waitingForAttack2) yield break;
             _waitingForAttack2 = true;
+            PlaySE(_SwordSEName, _SwordSEVolume);
             try
             {
                 if (_anim == null)
@@ -451,12 +534,15 @@ namespace BlackRose.Core.Models.Units
         private void BeamSwordStart()
         {
             TurnAround();
+            PlaySE(_SwordSmallSEName, _SwordSmallSEVolume);
             MoveDirection = Direction;
         }
 
         private async void BeamSwordMoveStay()
         {
             float playerdictance = _player.Transform.position.x - transform.position.x;
+
+            MoveSE(_MoveSEInterval);
 
             // プレイヤーの近くまで接近したら
             if (Mathf.Abs(playerdictance) <= _beamswordDistance)
@@ -470,6 +556,26 @@ namespace BlackRose.Core.Models.Units
             }
         }
         #endregion
+
+        private void EntryMoveSE()
+        {
+            PlaySE(_MoveSEName, _MoveSEVolume);
+        }
+
+        private void EntrySwordSmallSE()
+        {
+            PlaySE(_SwordSmallSEName, _SwordSmallSEVolume);
+        }
+
+        private void MoveSE(float interval)
+        {
+            _moveSETimer += Time.deltaTime;
+            if (_moveSETimer >= interval)
+            {
+                PlaySE(_MoveSEName, _MoveSEVolume);
+                _moveSETimer = 0;
+            }
+        }
 
         private bool IsMatchingState(States state)
         {

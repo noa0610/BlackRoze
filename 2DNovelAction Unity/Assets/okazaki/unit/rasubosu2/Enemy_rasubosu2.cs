@@ -245,6 +245,31 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        private async void Dead()
+        {
+            _rb2d.gravityScale = gravity;
+            capcol2D.isTrigger = false;
+
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel(); // UniTask停止
+
+            _rb2d.gravityScale = gravity;
+            capcol2D.isTrigger = false;
+
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel();  // UniTask停止
+            _cancellation.Dispose(); // リソース解放
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
+
+            Destroy(gameObject);
+        }
+
+
         // ワープの前隙のディレイ⇒無敵時間のコルーチン開始⇒Warpに遷移
         private void WarpIdleStay()
         {
@@ -708,31 +733,7 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("フラッシュビームソード開始");
             _stateMachine.ChangeState(Triggers.Attack4start);
         }
-
-        private async void Dead()
-        {
-            _rb2d.gravityScale = gravity;
-            capcol2D.isTrigger = false;
-
-            IsInvincible = true; // 攻撃不可
-
-            _cancellation.Cancel(); // UniTask停止
-
-            _rb2d.gravityScale = gravity;
-            capcol2D.isTrigger = false;
-
-            IsInvincible = true; // 攻撃不可
-
-            _cancellation.Cancel();  // UniTask停止
-            _cancellation.Dispose(); // リソース解放
-
-            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
-
-            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
-
-            Destroy(gameObject);
-        }
-
+        
 
         private bool IsMatchingState(States state)
         {

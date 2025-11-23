@@ -91,27 +91,6 @@ public class SoundManager : SingletonBehavior<SoundManager>
     }
 
     /// <summary>
-    /// 名前で指定したSEを再生する関数
-    /// </summary>
-    /// <param seName="seName">SE名</param>
-    public void PlaySE(string seName)
-    {
-        if (_seData.ContainsKey(seName))
-        {
-            if (Time.realtimeSinceStartup - _seData[seName].playedTime > INTERVAL) {
-                var audioSource = GetUnusedSourceSE();
-
-                if (audioSource)
-                {
-                    audioSource.clip = _seData[seName].audioClip;
-                    audioSource.Play();
-                    _seData[seName].playedTime = Time.realtimeSinceStartup;
-                }
-            }
-        }
-    }
-
-    /// <summary>
     /// 名前で指定したSEを再生する関数　引数で音量調節
     /// </summary>
     /// <param seName="seName">SE名</param>
@@ -129,28 +108,6 @@ public class SoundManager : SingletonBehavior<SoundManager>
                     audioSource.volume = Mathf.Clamp01(volume);
                     audioSource.Play();
                     _seData[seName].playedTime = Time.realtimeSinceStartup;
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// 名前で指定したBGMを再生する関数
-    /// </summary>
-    /// <param bgmName="bgmName">BGM名</param>
-    public void PlayBGM(string bgmName)
-    {
-        if (_bgmData.ContainsKey(bgmName))
-        {
-            if (Time.realtimeSinceStartup - _bgmData[bgmName].playedTime > INTERVAL)
-            {
-                var audioSource = GetUnusedSourceBGM();
-
-                if (audioSource)
-                {
-                    audioSource.clip = _bgmData[bgmName].audioClip;
-                    audioSource.Play();
-                    _bgmData[bgmName].playedTime = Time.realtimeSinceStartup;
                 }
             }
         }

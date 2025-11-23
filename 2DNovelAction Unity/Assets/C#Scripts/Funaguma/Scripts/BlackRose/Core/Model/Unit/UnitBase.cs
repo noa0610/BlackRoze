@@ -186,7 +186,7 @@ namespace BlackRose.Core.Models.Units
         public virtual void Play() { }
         #endregion
 
-        protected void PlaySE(string bgmName, float volume = 1f)
+        public void PlaySE(string bgmName, float volume = 1f)
         {
             if (SoundManager.instance != null && bgmName != null)
             {

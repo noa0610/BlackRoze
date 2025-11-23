@@ -59,6 +59,7 @@ namespace BlackRose.Core.Models.Units
             // 分裂
             _multiShoot.onShootComplete.AddListener(() =>
             {
+                PlaySE(_SpreadSEName, _SpreadSEVolume);
                 _stateMachine.LazyChange(Triggers.SplitEnd);
             });
 

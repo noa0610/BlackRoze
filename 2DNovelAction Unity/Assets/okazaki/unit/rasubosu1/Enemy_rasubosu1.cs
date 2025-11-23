@@ -83,7 +83,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
         [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
         [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
-
+        [SerializeField] private GameObject _DeadExplosionPartecl; // 死亡時の爆破エフェクト
+        [SerializeField] private Transform _LeftArmPoint;
+        [SerializeField] private Transform _RightArmPoint;
 
         [Header("SE")]
         [SerializeField] private string _EntrySEName = "ロボット起動";
@@ -102,6 +104,10 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _DamageSEVolume = 0.2f;
         [SerializeField] private string _DeadSEName = "撃破";
         [SerializeField] private float _DeadSEVolume = 0.4f;
+        [SerializeField] private string _ExplosionSEName = "爆発";
+        [SerializeField] private float _ExplosionSEVolume = 0.4f;
+        [SerializeField] private string _ShutDownSEName = "シャットアウト";
+        [SerializeField] private float _ShutDownSEVolume = 0.4f;
 
 
         private UnitBase _player;
@@ -256,6 +262,7 @@ namespace BlackRose.Core.Models.Units
             {
                 Debug.LogWarning("prefab または point が設定されていません。");
                 return;
+
             }
 
             // point 位置にプレハブ生成
@@ -291,6 +298,37 @@ namespace BlackRose.Core.Models.Units
         private void ArmReturnSE()
         {
             PlaySE(_ArmReturnSEName, _ArmReturnSEVolume);
+        }
+
+        private void ExplosionSE()
+        {
+            PlaySE(_ExplosionSEName, _ExplosionSEVolume);
+        }
+
+        private void ShatDownSE()
+        {
+            PlaySE(_ShutDownSEName, _ShutDownSEVolume);
+        }
+
+
+        private void ArmLeftExplosionEffect()
+        {
+            if (_DeadExplosionPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadExplosionPartecl, new Vector3(_LeftArmPoint.position.x, _LeftArmPoint.position.y, _DeadExplosionPartecl.transform.position.z), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+        }
+
+        private void ArmRightExplosionEffect()
+        {
+            if (_DeadExplosionPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadExplosionPartecl, new Vector3(_RightArmPoint.position.x, _RightArmPoint.position.y, _DeadExplosionPartecl.transform.position.z), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
         }
 
         private bool IsMatchingState(States state)

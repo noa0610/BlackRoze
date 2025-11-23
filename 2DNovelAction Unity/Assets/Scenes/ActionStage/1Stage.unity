@@ -949,6 +949,8 @@ PrefabInstance:
     - {fileID: 4040739428832058563, guid: 991232f36f3feb74ab098835ede372d0, type: 3}
     - {fileID: 4033334779704491108, guid: 991232f36f3feb74ab098835ede372d0, type: 3}
     - {fileID: 4445724452648723227, guid: 991232f36f3feb74ab098835ede372d0, type: 3}
+    - {fileID: 7499212776877698371, guid: 991232f36f3feb74ab098835ede372d0, type: 3}
+    - {fileID: 504229171807482996, guid: 991232f36f3feb74ab098835ede372d0, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -2216,7 +2218,7 @@ PrefabInstance:
       objectReference: {fileID: 487390787}
     - target: {fileID: 8702873743418900140, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -46.002857
+      value: -24.5
       objectReference: {fileID: 0}
     - target: {fileID: 8702873743418900140, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2256,6 +2258,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4972723851407103380, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
+    - {fileID: 1362367716079446497, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
+    - {fileID: 8936819185141739734, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -2266,6 +2270,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 487390787}
   m_SourcePrefab: {fileID: 100100000, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
+--- !u!114 &692742095 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6691415542365362169, guid: 70dbab22d03b08749833e358c89c5b43, type: 3}
+  m_PrefabInstance: {fileID: 692742094}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487390785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a334fe2ffb574b3583ff3b18b4792d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &707524946
 GameObject:
   m_ObjectHideFlags: 0
@@ -2979,7 +2994,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61dddfdc5e0e44ca298d8f46f7f5a915, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedFlowchart: {fileID: 739155805}
+  selectedFlowchart: {fileID: 692742095}
 --- !u!4 &907137461
 Transform:
   m_ObjectHideFlags: 1
@@ -4439,7 +4454,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Stage1_Ep.2 Variant
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9106887932216846447, guid: 7f542817d7f2e1041852d7aee5def0d3, type: 3}
+    - {fileID: 3105683222235459206, guid: 7f542817d7f2e1041852d7aee5def0d3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:

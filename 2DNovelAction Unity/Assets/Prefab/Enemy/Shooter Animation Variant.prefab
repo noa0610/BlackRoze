@@ -183,11 +183,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3907048296755657312, guid: 129622074149e2e4aa4dc530824f36af, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.02
+      value: 4.9484506
       objectReference: {fileID: 0}
     - target: {fileID: 3907048296755657312, guid: 129622074149e2e4aa4dc530824f36af, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.43
+      value: -6.613717
       objectReference: {fileID: 0}
     - target: {fileID: 3907048296755657312, guid: 129622074149e2e4aa4dc530824f36af, type: 3}
       propertyPath: m_LocalPosition.z
@@ -349,7 +349,7 @@ MonoBehaviour:
       type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
       data:
         _center: {fileID: 774464777512150218}
-        _range: 10
+        _range: 12
     - rid: 5706967078420086789
       type: {class: FilterByTag, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
       data:
@@ -366,10 +366,10 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 200
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 2
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -445,6 +445,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 0}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -464,21 +465,25 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 1024
+  _animator: {fileID: 0}
   _muzzle: {fileID: 6922461563341103271}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 4394767696210527799}
+  _enableVisuableInvincible: 0
   _currentState: 
-  _currentMode: 
-  _currentDirection: {x: 0, y: 0}
   _groundCheck: {fileID: 6602075468401256632}
   _groundCheckRadius: 0.1
   _groundLayer:
     serializedVersion: 2
     m_Bits: 512
+  _landingCheckOffset: {x: 0, y: 0, z: 0}
   _disableCheckTime: 0.2
+  _StartDirection: 0
   _anim: {fileID: 4889332069086991840}
   _rb2: {fileID: 3747567230072702665}
-  _Accel: 4
-  _Friction: 0.3
+  _Accel: 20
+  _Friction: 0.2
   _bulletData: {fileID: 11400000, guid: be329650ceb71e34f8870e87207a066f, type: 2}
   shootInterval: 0.5
   maxShootCount: 3
@@ -491,6 +496,17 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
+  _DeadEndwaitTime: 0.2
+  _DeadPartecl: {fileID: 1381896084548930411, guid: 1042e4b7a55beb74fb770f919acd47a7, type: 3}
+  _DeadParteclTime: 4
+  _EncountSEName: "\u767A\u898B"
+  _EncountSEVolume: 0.5
+  _ShotSEName: "\u30B7\u30E5\u30FC\u30BF\u30FC\u30FB\u30B7\u30E7\u30C3\u30C8"
+  _ShotSEVolume: 0.5
+  _DamageSEName: "\u6575\u30C0\u30E1\u30FC\u30B81"
+  _DamageSEVolume: 0.2
+  _DeadSEName: "\u6575\u30C0\u30E1\u30FC\u30B82"
+  _DeadSEVolume: 0.4
 --- !u!61 &1205693042308258673
 BoxCollider2D:
   m_ObjectHideFlags: 0

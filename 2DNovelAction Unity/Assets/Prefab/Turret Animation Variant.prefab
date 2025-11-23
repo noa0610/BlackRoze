@@ -69,11 +69,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4799635594041973526, guid: ab11a3d0a9fbd7d43b2ee86196843bed, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -42.069942
+      value: 0.7680826
       objectReference: {fileID: 0}
     - target: {fileID: 4799635594041973526, guid: ab11a3d0a9fbd7d43b2ee86196843bed, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.6438198
+      value: -6.8527446
       objectReference: {fileID: 0}
     - target: {fileID: 4799635594041973526, guid: ab11a3d0a9fbd7d43b2ee86196843bed, type: 3}
       propertyPath: m_LocalPosition.z
@@ -340,7 +340,7 @@ MonoBehaviour:
   player: {fileID: 3414824451926019565}
   _enableVisuableInvincible: 0
   _currentState: 
-  _bulletData: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
+  _bulletData: {fileID: 11400000, guid: 945ff60832e00c6489fc12441f33c8ed, type: 2}
   _shootInterval: 3.5
   _shootFireCount: 3
   _trishootInterval: 0.1
@@ -351,6 +351,17 @@ MonoBehaviour:
   _shootIntervalCount: 0
   _shootCount: 0
   _trishootIntervalCount: 0
+  _DeadEndwaitTime: 0.2
+  _DeadPartecl: {fileID: 1381896084548930411, guid: 1042e4b7a55beb74fb770f919acd47a7, type: 3}
+  _DeadParteclTime: 4
+  _EncountSEName: "\u6A5F\u68B0\u52D5\u4F5C\u97F3"
+  _EncountSEVolume: 0.3
+  _ShotSEName: "\u30BF\u30EC\u30C3\u30C8\u30FB\u767A\u5C04\u97F3"
+  _ShotSEVolume: 0.3
+  _DamageSEName: "\u6575\u30C0\u30E1\u30FC\u30B81"
+  _DamageSEVolume: 0.2
+  _DeadSEName: "\u6575\u30C0\u30E1\u30FC\u30B82"
+  _DeadSEVolume: 0.4
   _shoot:
     _parentName: 
     animeTriggerName: 

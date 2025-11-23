@@ -13,6 +13,7 @@ namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
 
+    // 拡散ショットの弾のUnit
     public partial class Diifusebeamgun : UnitBase
     {
         [Tooltip("同時シュートする際の最大角度")]

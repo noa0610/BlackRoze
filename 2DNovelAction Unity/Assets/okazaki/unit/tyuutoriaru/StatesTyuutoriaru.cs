@@ -275,6 +275,7 @@ namespace BlackRose.Core.Models.Units
             /* ジャンプ */
             _positionJump = new PositionJump(_junpPositions.ConvertAll(p => (Vector2)p), _JumpSpeed);
             _positionJump.SetRB2(_RB2);
+            _positionJump.SetRandSE(_RandSEName, _RandSEVolume);
             _positionJump.OnArrived += () =>
             {
                 GetComponent<BoxCollider2D>().isTrigger = false;
@@ -293,6 +294,10 @@ namespace BlackRose.Core.Models.Units
 
             /* ショックウェーブ待機 */
             var shockwaveidle = new Idle_LazyChange(Triggers.shockwaveidleend.ToString(), 2.6f, true);
+            shockwaveidle.OnCompleted += () =>
+            {
+                PlaySE(_ChargeSEName, _ChargeSEVolume);
+            };
             _stateMachine.AddState(States.shockwaveidle, shockwaveidle);
 
             /* ショックウェーブアニメ待機 */
@@ -306,6 +311,7 @@ namespace BlackRose.Core.Models.Units
             // 弾発射完了時にショックウェーブ終了トリガーを発火
             shockwave.onShootComplete.AddListener(() =>
             {
+                PlaySE(_ShockWaveSEName, _ShockWaveSEVolume);
                 _stateMachine.LazyChange(Triggers.Shockwaveend);
                 IsInvincible = false;
             });

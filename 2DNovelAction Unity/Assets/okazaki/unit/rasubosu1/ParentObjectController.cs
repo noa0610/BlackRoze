@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// ファイアウォールをアームに追従させる用
 public class ParentObjectController : MonoBehaviour
 {
     [SerializeField] public string parentName = "ParentObject"; // 親オブジェクトの名前を指定
@@ -16,6 +17,7 @@ public class ParentObjectController : MonoBehaviour
             parentTransform = parent.transform;
             transform.SetParent(parentTransform);
             initialLocalPosition = transform.localPosition;
+            transform.position = parentTransform.position;
 
             Debug.Log($"{gameObject.name} を {parent.name} の子にしました。");
         }
@@ -29,9 +31,8 @@ public class ParentObjectController : MonoBehaviour
     {
         if (parentTransform == null) return;
 
-        // 親のX軸だけを追従
         Vector3 newPosition = transform.position;
-        newPosition.x = parentTransform.position.x;
+        newPosition = parentTransform.position;
         transform.position = newPosition;
     }
 }

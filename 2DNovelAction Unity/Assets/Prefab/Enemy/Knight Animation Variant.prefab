@@ -86,12 +86,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5619918382993025745}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0.044812657, w: 0.9989955}
+  m_LocalPosition: {x: 0.81778973, y: -0.037950765, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5742294586897490678}
+  m_Father: {fileID: 6900527287162220028}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7419050079201697034
 GameObject:
@@ -319,12 +319,24 @@ PrefabInstance:
       value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 359.47
+      value: 9.240341
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -13.54
+      value: -2.37
       objectReference: {fileID: 0}
     - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -358,6 +370,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5698520922881425451, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_Layer
       value: 11
@@ -389,6 +405,10 @@ PrefabInstance:
     - target: {fileID: 6764616975792678473, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_Layer
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 6764616975792678473, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6962570378253540680, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       propertyPath: m_Layer
@@ -452,7 +472,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5537936094141529518, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7021737912202464958}
-    - targetCorrespondingSourceObject: {fileID: 8862649156336826451, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 7677889640552134489, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9146392736033722015}
     m_AddedComponents:
@@ -478,9 +498,14 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6800856823766862954}
   m_SourcePrefab: {fileID: 100100000, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
---- !u!4 &5742294586897490678 stripped
+--- !u!95 &2805846342470338709 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1422733492570378800, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+  m_PrefabInstance: {fileID: 3841235076271790757}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6900527287162220028 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 8862649156336826451, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 7677889640552134489, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}
   m_PrefabInstance: {fileID: 3841235076271790757}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7543091494001868012 stripped
@@ -535,7 +560,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 300
+  m_Mass: 3000
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 3
@@ -634,7 +659,7 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 1024
-  _animator: {fileID: 0}
+  _animator: {fileID: 2805846342470338709}
   _muzzle: {fileID: 7543091494001868012}
   _moveDir: {x: 0, y: 0}
   _shootDir: {x: 1, y: 0}
@@ -648,6 +673,7 @@ MonoBehaviour:
     m_Bits: 512
   _landingCheckOffset: {x: 0, y: 0, z: 0}
   _disableCheckTime: 0.2
+  _StartDirection: 0
   FixedAttackSelect: 0
   cutEntry: 0
   _AttackIntervalTime: 2
@@ -675,14 +701,37 @@ MonoBehaviour:
   _Lasershotmuzzle: {fileID: 5619918382993025745}
   _LasershotbulletData: {fileID: 11400000, guid: 319206b3c6018d343b0a656baf192042, type: 2}
   _LaserShotCount: 6
-  _LaserShotStartTime: 0.5
+  _LaserShotStartTime: 0.2
   _LaserShotbeforeTime: 0.5
   _LaserShotTime: 0.5
   _LaserShotIntervalTime: 1
   _shockwaveshotmuzzle: {fileID: 2721744506198246926}
   _shockwaveBulletData: {fileID: 11400000, guid: 016ab258fb45be846af73b346a27f7b6, type: 2}
-  _wontDie: 0
+  _wontDie: 1
   _DeadEndwaitTime: 7
+  _DeadPartecl: {fileID: 0}
+  _DeadParteclTime: 4
+  _MoveSEName: "\u30ED\u30DC\u30C3\u30C8\u306E\u8DB3\u97F3"
+  _MoveSEVolume: 0.5
+  _MoveSEInterval: 1
+  _RandSEName: "\u30C9\u30B9\u30F3"
+  _RandSEVolume: 0.5
+  _ShotSEName: "\u30D3\u30FC\u30E0\u30E9\u30A4\u30D5\u30EB"
+  _ShotSEVolume: 0.5
+  _SwordSmallSEName: "\u30D6\u30F3\u30C3 \u65AC\u6483\u97F3 \u5F31"
+  _SwordSmallSEVolume: 0.5
+  _SwordSEName: "\u30D6\u30F3\u30C3 \u65AC\u6483\u97F3"
+  _SwordSEVolume: 0.5
+  _StanSEName: "\u9632\u5FA1\u7834\u58CA"
+  _StanSEVolume: 0.5
+  _ChargeSEName: "\u6575\u30C1\u30E3\u30FC\u30B8"
+  _ChargeSEVolume: 0.5
+  _ShockWaveSEName: "\u30B7\u30E7\u30C3\u30AF\u30A6\u30A7\u30FC\u30D6"
+  _ShockWaveSEVolume: 0.5
+  _DamageSEName: "\u6575\u30C0\u30E1\u30FC\u30B81"
+  _DamageSEVolume: 0.2
+  _DeadSEName: "\u6483\u7834"
+  _DeadSEVolume: 0.4
 --- !u!61 &249001817088850716
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -741,7 +790,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _flowchart: {fileID: 0}
-  _message: Boss
+  _message: 
+  _flowchartName: 
 --- !u!4 &8675736542637663375 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5559876913351654954, guid: b7af718418825ae4caf60188bb63ddf2, type: 3}

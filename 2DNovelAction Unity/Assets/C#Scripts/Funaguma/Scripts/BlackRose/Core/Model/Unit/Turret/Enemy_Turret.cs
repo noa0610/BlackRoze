@@ -34,6 +34,22 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private int _shootCount;            // 現在までに撃ったカウント
         [SerializeField] private float _trishootIntervalCount = 0f; // 3点バースト用のインターバルタイマー
 
+        [Header("死亡状態")]
+        [SerializeField] private float _DeadEndwaitTime = 0.2f;
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
+
+
+        [Header("SE")]
+        [SerializeField] private string _EncountSEName = "機械動作音";
+        [SerializeField] private float _EncountSEVolume = 0.5f;
+        [SerializeField] private string _ShotSEName = "タレット・発射音";
+        [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "敵ダメージ2";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
+
         private void SearchPlayer()
         {
             if (_searchAssistance.Execute("", UnitManager.instance.GetUnitList(), out var units))
@@ -72,6 +88,51 @@ namespace BlackRose.Core.Models.Units
             _searchAssistance = GetComponent<SearchAssistanceMono>();
             // HPUI.instance.Get(this); // HPUIに登録  
         }
+
+        /// <summary>
+        /// 外部から呼び出されるダメージ処理
+        /// </summary>
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            PlaySE(_DamageSEName, _DamageSEVolume);
+            if (statusManager.ReadValue(Status.HP) <= 0)
+            {
+                _stateMachine.ChangeState(Triggers.Died);
+            }
+        }
+        private async void Dead()
+        {
+            if (_DeadPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+
+            PlaySE(_DeadSEName, _DeadSEVolume);
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
+        }
+
         protected override void AfterFixedUpdate()
         {
             // Debug.Log($"{IsInvincible}");
@@ -101,12 +162,6 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        protected override void OnDeath()
-        {
-            base.OnDeath();
-            UnitManager.instance.RemoveUnit(this);
-            Destroy(gameObject);
-        }
         private bool IsMatchState(States state)
         {
             return _stateMachine.CurrentState.key == _states[state];

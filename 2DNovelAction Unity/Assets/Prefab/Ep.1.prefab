@@ -68,7 +68,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 5019257920785435869}
   selectedCommands:
-  - {fileID: 680451269457112344}
+  - {fileID: 809290621592756021}
   variables: []
   description: Player
   stepPause: 0
@@ -315,7 +315,7 @@ MonoBehaviour:
   itemId: 4
   indentLevel: 0
   targetObject: {fileID: 0}
-  methodName: Pause
+  methodName: PlayerDisable
   delay: 0
 --- !u!114 &809290621592756021
 MonoBehaviour:
@@ -332,5 +332,5 @@ MonoBehaviour:
   itemId: 5
   indentLevel: 0
   targetObject: {fileID: 0}
-  methodName: Play
+  methodName: PlayerEnable
   delay: 0

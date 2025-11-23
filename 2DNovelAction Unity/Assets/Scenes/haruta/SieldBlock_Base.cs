@@ -83,6 +83,7 @@ namespace BlackRose.Core.Models.Units
         {
             Debug.Log("シールド防御無効化：スタン中");
             var col = GetComponent<Collider2D>();
+            isDefenseEnabled = false;
             if (col != null) col.enabled = false;
         }
 
@@ -90,6 +91,7 @@ namespace BlackRose.Core.Models.Units
         {
             Debug.Log("シールド防御再有効化：スタン終了");
             var col = GetComponent<Collider2D>();
+            isDefenseEnabled = true;
             if (col != null) col.enabled = true;
         }
 
@@ -106,13 +108,15 @@ namespace BlackRose.Core.Models.Units
             isDefenseEnabled = enabled;
         }
 
-    [Header("タックル設定（Inspectorで調整可）")]
-    [SerializeField] protected float damageScale = 1f; // ガーダーの power に対する倍率
-    [SerializeField] protected float tackleStunDuration = 0.5f; // タックルで与えるスタン時間（秒）
+        [Header("タックル設定（Inspectorで調整可）")]
+        [SerializeField] protected float damageScale = 1f; // ガーダーの power に対する倍率
+        [SerializeField] protected float tackleStunDuration = 0.5f; // タックルで与えるスタン時間（秒）
 
-    [Header("ノックバック設定（Inspectorで調整可）")]
-    [SerializeField] protected Vector2 knockbackDirection = new Vector2(1f, 0.6f); // ローカル方向（Xは正方向 -> 被弾側へ反転可）
-    [SerializeField] protected float knockbackForce = 8f; // インパルスの強さ
+        [Header("ノックバック設定（Inspectorで調整可）")]
+        [SerializeField] protected Vector2 knockbackDirection = new Vector2(1f, 0.6f); // ローカル方向（Xは正方向 -> 被弾側へ反転可）
+        [SerializeField] protected float knockbackForce = 8f; // インパルスの強さ
+
+        private bool isHit = false;
 
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
@@ -194,6 +198,7 @@ namespace BlackRose.Core.Models.Units
 
             if (collision.gameObject.CompareTag("Playerbullet"))
             {
+                isHit = true;
                 Bullet bullet = collision.gameObject.GetComponent<Bullet>();
                 if (bullet != null)
                 {
@@ -202,6 +207,7 @@ namespace BlackRose.Core.Models.Units
                     if (damage <= 3f)
                     {
                         Debug.Log("ダメージが3以下のため、シールドが防御しました");
+                        Destroy(collision.gameObject);
                     }
                     else
                     {
@@ -214,6 +220,18 @@ namespace BlackRose.Core.Models.Units
                     Debug.LogError("Bulletコンポーネントが見つかりません");
                 }
             }
+            isHit = false;
+        }
+
+        public bool ShieldThrough(float damage)
+        {
+            if (!isDefenseEnabled) return true;
+
+            if (damage <= 3f)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

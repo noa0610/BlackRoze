@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
+
 namespace BlackRose.Core.Models.Objects
 {
     [DefaultExecutionOrder(-3)]
@@ -13,9 +18,12 @@ namespace BlackRose.Core.Models.Objects
         [SerializeField] private bool _enable = true;
         [SerializeField] private bool _isStart = false; // スタート地点かどうか
         private UnitBase _target;
+
+        public bool IsStart => _isStart;
 #if UNITY_EDITOR
         [SerializeField] private int count = 0; // スタート地点のカウント
-#endif
+    #endif
+
         public void SetEnable(bool enable)
         {
             _enable = enable;
@@ -23,14 +31,59 @@ namespace BlackRose.Core.Models.Objects
 
         private void SetStart()
         {
-            foreach (var point in points)
+            // Clear other start flags in the same scene
+            var all = FindObjectsOfType<RespawnPoint>(true);
+            foreach (var point in all)
             {
-                if (point.Equals(this))
-                    continue;
-                point._isStart = false;
+                if (point == this) continue;
+                if (point.gameObject.scene != this.gameObject.scene) continue;
+                if (point._isStart)
+                {
+                    point._isStart = false;
+    #if UNITY_EDITOR
+                    EditorUtility.SetDirty(point);
+                    EditorSceneManager.MarkSceneDirty(point.gameObject.scene);
+    #endif
+                }
             }
-            PlayerSpawnner.SetRespawnPoint(this);
+
+            // At runtime or editor, ensure PlayerSpawnner exists and set this as current respawn point
+            var mgr = EnsurePlayerSpawner();
+            if (mgr != null)
+            {
+                mgr.SetRespawnPoint(this);
+            }
         }
+
+        // Ensure a PlayerSpawnner exists in the scene; create one if missing
+        private PlayerSpawnner EnsurePlayerSpawner()
+        {
+    #if UNITY_EDITOR
+            // Try instance first
+            var mgr = PlayerSpawnner.instance;
+            if (mgr != null) return mgr;
+
+            // Find existing in scene
+            mgr = FindObjectOfType<PlayerSpawnner>(true);
+            if (mgr != null) return mgr;
+
+            // Create new GameObject with PlayerSpawnner
+            var go = new GameObject("PlayerSpawnner");
+            Undo.RegisterCreatedObjectUndo(go, "Create PlayerSpawnner");
+            mgr = go.AddComponent<PlayerSpawnner>();
+            EditorUtility.SetDirty(mgr);
+            EditorSceneManager.MarkSceneDirty(go.scene);
+            return mgr;
+    #else
+            // Runtime: if instance exists return it, otherwise create a GameObject and add component
+            var mgr = PlayerSpawnner.instance;
+            if (mgr != null) return mgr;
+            var go = new GameObject("PlayerSpawnner");
+            mgr = go.AddComponent<PlayerSpawnner>();
+            return mgr;
+    #endif
+        }
+
         // === Unity Lifecycle ===
         private void Awake()
         {
@@ -43,9 +96,12 @@ namespace BlackRose.Core.Models.Objects
         }
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (_enable && collision.gameObject.Equals(_target.gameObject))
+            if (!_enable) return;
+            if (_target == null) return;
+            if (collision.gameObject.Equals(_target.gameObject))
             {
-                PlayerSpawnner.SetRespawnPoint(this);
+                var mgr = EnsurePlayerSpawner();
+                if (mgr != null) mgr.SetRespawnPoint(this);
                 SetEnable(false);
                 Debug.Log("SetSpawnPoint");
             }
@@ -55,7 +111,7 @@ namespace BlackRose.Core.Models.Objects
         {
             points.Remove(this);
         }
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
         private void Reset()
         {
             if (!points.Contains(this)) points.Add(this);
@@ -67,7 +123,15 @@ namespace BlackRose.Core.Models.Objects
         {
             if (!gameObject.activeInHierarchy) return;
             if (!points.Contains(this)) points.Add(this);
-            if (_isStart) SetStart();
+
+            // When _isStart is set in the inspector, clear others in the same scene and mark scene dirty
+            if (_isStart)
+            {
+                SetStart();
+                // Ensure this object is marked dirty so the flag is serialized
+                EditorUtility.SetDirty(this);
+                EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            }
         }
 
         public void SetTarget(UnitBase target)

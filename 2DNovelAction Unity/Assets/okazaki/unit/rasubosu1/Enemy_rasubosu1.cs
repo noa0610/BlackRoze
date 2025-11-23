@@ -180,6 +180,22 @@ namespace BlackRose.Core.Models.Units
             UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
 
             Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
         }
 
         #region === AttackSelect ===

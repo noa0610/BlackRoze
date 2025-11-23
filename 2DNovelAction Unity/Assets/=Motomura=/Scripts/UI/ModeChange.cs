@@ -3,35 +3,67 @@ using UnityEngine.UI;
 
 public class ModeChange : MonoBehaviour
 {
-    [SerializeField] public GFFInputAction _InputAction;//InputActionのインスタンス
-    [SerializeField] private Image targetImage;
-    [SerializeField]private Sprite NORMAL;
-    [SerializeField]private Sprite RIGHT;
-    [SerializeField]private Sprite HEAVY;
+    [SerializeField] public PlayerControls _InputAction;
+    [SerializeField] private Image _targetImage;
+    [SerializeField] private Sprite NORMAL;
+    [SerializeField] private Sprite RIGHT;
+    [SerializeField] private Sprite HEAVY;
+    [SerializeField] private Sprite ActionRobot;
+    [SerializeField] private bool IsAR;
+    [SerializeField] private bool IsStory;
 
     void Start()
     {
-        targetImage.sprite = NORMAL;
-        _InputAction = new GFFInputAction();//InputActionのインスタンスを生成
-        _InputAction.Enable();//InputActionを有効化
+        _InputAction = new PlayerControls();//InputActionのインスタンスを生成
+        _InputAction.Enable();
+        if(IsAR)
+        {
+            _targetImage.sprite = ActionRobot;
+        }
+        else
+        {
+            _targetImage.sprite = NORMAL;
+        }
+
     }
 
     void Update()
     {
-        if (_InputAction.GFF.ChangeMode.triggered)//[W] key
+        if(IsAR || IsStory) return;
+        
+        if (_InputAction.Player.ModeChange1.triggered) // C
         {
-            switch (targetImage.sprite.name)
+            switch (_targetImage.sprite.name)//HEAVY
             {
                 case "NORMAL":
-                    targetImage.sprite = RIGHT;            //|ライトモード  
+                    _targetImage.sprite = HEAVY;
                     break;
                 case "RIGHT":
-                    targetImage.sprite = HEAVY;            //|ヘビーモード
+                    _targetImage.sprite = HEAVY;
                     break;
                 case "HEAVY":
-                    targetImage.sprite = NORMAL;           //|ノーマルモード
+                    _targetImage.sprite = NORMAL;
                     break;
             }
         }
+        if (_InputAction.Player.ModeChange2.triggered)// V
+        {
+            switch (_targetImage.sprite.name)
+            {
+                case "NORMAL":
+                    _targetImage.sprite = RIGHT;
+                    break;
+                case "RIGHT":
+                    _targetImage.sprite = NORMAL;
+                    break;
+                case "HEAVY":
+                    _targetImage.sprite = RIGHT;
+                    break;
+            }
+        }
+    }
+    public void Story()
+    {
+        IsStory =! IsStory;
     }
 }

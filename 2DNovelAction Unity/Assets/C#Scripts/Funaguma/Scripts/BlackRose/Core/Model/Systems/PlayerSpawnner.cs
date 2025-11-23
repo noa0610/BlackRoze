@@ -42,6 +42,28 @@ namespace BlackRose.Core.Models.Objects
             //Player.Refresh();
         }
 
+        // ステータスをリフレッシュする
+        public static void Respwan(UnitBase Player, RespawnPoint customRespawnPoint = null)
+        {
+            if (customRespawnPoint == null)
+            {
+                Player.transform.position = _currentRespawnPoint.transform.position;
+            }
+            else
+            {
+                Player.transform.position = customRespawnPoint.transform.position;
+            }
+            Player.Refresh();
+        }
+
+        public static void ShowRespawnMenu()
+        {
+            var respawnMenu = UnityEngine.Object.FindObjectOfType<UI.RespawnMenu>();
+            if (respawnMenu != null)
+            {
+                respawnMenu.Show();
+            }
+        }
 
         public void InitialSpawn()
         {

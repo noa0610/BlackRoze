@@ -86,6 +86,11 @@ namespace BlackRose.Core.Models.Units
         #endregion
 #endif
 
+        // Statusを初期値にセットする
+        public virtual void Refresh()
+        {
+            _statusManager.Initialize(_status);
+        }
         #region === Initialization ===
         protected virtual string StartState => "idle";
         protected abstract void RegisterStats();

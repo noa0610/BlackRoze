@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1143193844370278341
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3926394559072071309}
+  m_Layer: 0
+  m_Name: WarpEffectPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3926394559072071309
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143193844370278341}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8336330669994746648}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1522298863261645847
 GameObject:
   m_ObjectHideFlags: 0
@@ -422,7 +453,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.31
+      value: -4.1
       objectReference: {fileID: 0}
     - target: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       propertyPath: m_LocalPosition.z
@@ -501,6 +532,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6753519908012651428}
+    - targetCorrespondingSourceObject: {fileID: 5674758896760979809, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3926394559072071309}
     - targetCorrespondingSourceObject: {fileID: 1626959197532327409, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7074610201825749812}
@@ -526,6 +560,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3969425424043744331, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2383846278908014310}
+    - targetCorrespondingSourceObject: {fileID: 3969425424043744331, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3649038503970896207}
   m_SourcePrefab: {fileID: 100100000, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
 --- !u!1 &749401636788387378 stripped
 GameObject:
@@ -631,6 +668,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _tagetRenderer: {fileID: 0}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -650,19 +688,23 @@ MonoBehaviour:
   _attackLayer:
     serializedVersion: 2
     m_Bits: 1024
+  _animator: {fileID: 0}
   _muzzle: {fileID: 0}
+  _moveDir: {x: 0, y: 0}
+  _shootDir: {x: 1, y: 0}
   player: {fileID: 5663758465659762284}
+  _enableVisuableInvincible: 0
   _currentState: 
-  _currentMode: 
-  _currentDirection: {x: 1, y: 0}
   _groundCheck: {fileID: 3231937653694539685}
   _groundCheckRadius: 0.2
   _groundLayer:
     serializedVersion: 2
     m_Bits: 512
+  _landingCheckOffset: {x: 0, y: 0, z: 0}
   _disableCheckTime: 0.1
   FixedAttackSelect: 0
   cutEntry: 0
+  _AttackIntervalTime: 0.5
   closeRangeDistance: 5
   _EntryEndwaitTime: 4.5
   _WarpMovingRange: 10
@@ -672,6 +714,9 @@ MonoBehaviour:
   _WarpInvincibleRemovedTime: 0.3
   _WarpEndTime: 0.3
   _WarpCount: 2
+  _WarpPartecl: {fileID: 7152319618539677636, guid: 36e985c3edf868e499dcdd14f81c9909, type: 3}
+  _WarpParteclPoint: {fileID: 3926394559072071309}
+  _WarpParteclTime: 4
   _MissileFallPoint:
   - {fileID: 6146976930355417288}
   - {fileID: 6723273675122953208}
@@ -711,6 +756,33 @@ MonoBehaviour:
   _FlashBeamSwordDashStopTime: 0.8
   _FlashBeamSwordEndTime: 0.6
   _DeadEndwaitTime: 6.5
+  _DeadPartecl: {fileID: 0}
+  _DeadParteclTime: 4
+  _ScenSelectLoad: {fileID: 3649038503970896207}
+  _SceneName: "\uFF11\uFF17\uFF0C\u30CE\u30D9\u30EB\uFF1A\u4E0B\u8D64\u902E\u6355"
+  LoadGameObjectName: ScenePlate
+  _WarpSEName: "\u30EF\u30FC\u30D7\u79FB\u52D5"
+  _WarpSEVolume: 0.5
+  _RandSEName: "\u7740\u5730"
+  _RandSEVolume: 0.5
+  _SaberSEName: "\u30BB\u30A4\u30D0\u30FC"
+  _SaberSEVolume: 0.2
+  _SwordSEName: "\u30C0\u30C3\u30B7\u30E5\u30B9\u30E9\u30C3\u30B7\u30E5"
+  _SwordSEVolume: 0.5
+  _DashSEName: "\u30C0\u30C3\u30B7\u30E5\u958B\u59CB"
+  _DashSEVolume: 0.5
+  _ShotSEName: "\u30D3\u30FC\u30E0\u30E9\u30A4\u30D5\u30EB"
+  _ShotSEVolume: 0.5
+  _WaveSEName: "\u30AF\u30ED\u30B9\u30A6\u30A7\u30FC\u30D6"
+  _WaveSEVolume: 0.5
+  _PointeSEName: "\u9AD8\u901F\u79FB\u52D5"
+  _PointeSEVolume: 0.5
+  _ChargeSEName: "\u6575\u30C1\u30E3\u30FC\u30B8\u77ED\u7E2E"
+  _ChargeSEVolume: 0.5
+  _DamageSEName: "\u6575\u30C0\u30E1\u30FC\u30B81"
+  _DamageSEVolume: 0.2
+  _DeadSEName: "\u6483\u7834"
+  _DeadSEVolume: 0.4
 --- !u!50 &2317092710630986869
 Rigidbody2D:
   serializedVersion: 4
@@ -773,6 +845,22 @@ CapsuleCollider2D:
   m_Offset: {x: -0.06, y: -0.4}
   m_Size: {x: 1, y: 4.3}
   m_Direction: 0
+--- !u!114 &3649038503970896207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 749401636788387378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ce0486983a0a894a9b47c9f16e2573b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TargetObject: {fileID: 0}
+  ENDPosition: {x: 0, y: 0, z: 0}
+  AnimationTime: 1
+  LoadEffectName: Load_GFF
 --- !u!4 &1922598360013170257 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2872771754806428712, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
@@ -786,5 +874,10 @@ Transform:
 --- !u!4 &7405980251619618317 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6608751501220138100, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
+  m_PrefabInstance: {fileID: 4427130470967681657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8336330669994746648 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5674758896760979809, guid: 9d5cddc53a4f128428f1635ee612cee8, type: 3}
   m_PrefabInstance: {fileID: 4427130470967681657}
   m_PrefabAsset: {fileID: 0}

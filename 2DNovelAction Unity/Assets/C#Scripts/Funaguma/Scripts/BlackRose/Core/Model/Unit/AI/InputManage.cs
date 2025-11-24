@@ -15,6 +15,28 @@ namespace BlackRose.Core.Models.Units
 
         public IObservable<Unit> OnCanceledJump => _onCanceledJump;
 
+        public override void Pause()
+        {
+            _fms.Send(AITriggers.pause);
+            GetComponent<PlayerInput>().DeactivateInput();
+        }
+
+        public override void Play()
+        {
+            GetComponent<PlayerInput>().ActivateInput();
+            switch (CurrentMode)
+            {
+                case NormalMode:
+                    _fms.Send(AITriggers.mC_n);
+                    break;
+                case LightMode:
+                    _fms.Send(AITriggers.mC_l);
+                    break;
+                case HeavyMode:
+                    _fms.Send(AITriggers.mC_h);
+                    break;
+            }
+        }
         // === Input Action ===
         private void OnJump(InputValue value)
         {
@@ -34,7 +56,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (!value.isPressed)
             {
-                _fms.LazySend(AITriggers.cancelMove);
+                _fms.LazySend(AITriggers.cancelDash);
                 return;
             }
             if (!IsGrounded) return;
@@ -92,14 +114,12 @@ namespace BlackRose.Core.Models.Units
             }
             CurrentMode.OnGrounded();
         }
+
         protected override void OnAirToGound()
         {
-            if (!_fms.HasTagOnChild("OnGround"))
-            {
-                Debug.Log(_fms.Current.info.ToString());
-                CurrentMode.OnAirToGround();
-                _fms.LazySend(AITriggers.landing, true);
-            }
+            TrailRenderer.emitting = false;
+            CurrentMode.OnAirToGround();
+            _fms.Send(AITriggers.landing);
         }
         protected override void OnFall()
         {

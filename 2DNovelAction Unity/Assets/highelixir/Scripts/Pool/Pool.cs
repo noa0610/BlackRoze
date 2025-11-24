@@ -99,6 +99,7 @@ namespace HighElixir.Pools
         {
             if (Disposed) throw new ObjectDisposedException(nameof(Pool<T>));
             var obj = Get_Internal();
+            if (obj == null) obj = Get_Internal(); // 念のため再取得
             OnGetEvt?.Invoke(obj);
             return obj;
         }

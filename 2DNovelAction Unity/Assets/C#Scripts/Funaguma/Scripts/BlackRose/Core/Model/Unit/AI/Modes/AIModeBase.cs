@@ -20,13 +20,16 @@ namespace BlackRose.Core.Models.Units
             ShootInterval,
             Move,
             Jump,
+
             // Shoot
             Shoot,
             Half,
             Full,
+
             //
             Dash,
             Falling,
+            Landing,
             Skill,
             SpecialAttack,
 
@@ -46,6 +49,10 @@ namespace BlackRose.Core.Models.Units
 
         [Header("Animator")]
         [SerializeField] private string _skillAnimeTrigger;
+        [SerializeField] private string _shootTrig = "toShot";
+        [SerializeField] private string _halfShootTrig = "toShot";
+        [SerializeField] private string _fullShootTrig = "toShot";
+        [SerializeField] private string _walkTrig = "toRan";
 
         protected AIController _parent;
         protected StateMachine<AIController, Triggers, SubState> _stateMachine;
@@ -61,7 +68,7 @@ namespace BlackRose.Core.Models.Units
             var op = new StateMachineOption<AIController, AITriggers, SubState>(_parent);
             op.Logger = _parent.logger;
             op.QueueMode = HighElixir.StateMachine.QueueMode.DoEverything;
-            op.LogLevel = RequiredLoggerLevel.ERROR;
+            op.LogLevel = RequiredLoggerLevel.ALL;
             op.EnableOverriding = true;
 
             _stateMachine = new(op);
@@ -75,75 +82,78 @@ namespace BlackRose.Core.Models.Units
                 }
                 if (y.State.HasTag("Cancelable"))
                 {
+                    if (!y.State.HasTag("OnAir"))
+                    {
+                        if (x != SubState.Dash)
+                            y.RegisterTransition(AITriggers.moveInput, SubState.Move, _walkTrig);
+                        y.RegisterTransition(Triggers.dashInput, SubState.Dash, "toDash");
+                        y.RegisterTransition(Triggers.jumpInput, SubState.Jump, "toJump");
+                    }
                     y.RegisterTransition(Triggers.skillInput, SubState.Skill, _skillAnimeTrigger);
-                    y.RegisterTransition(Triggers.shootInput, SubState.Shoot);
-                    y.RegisterTransition(Triggers.halfCharge, SubState.Half);
-                    y.RegisterTransition(Triggers.fullCharge, SubState.Full);
+                    y.RegisterTransition(Triggers.shootInput, SubState.Shoot, _shootTrig);
+                    y.RegisterTransition(Triggers.halfCharge, SubState.Half, _halfShootTrig);
+                    y.RegisterTransition(Triggers.fullCharge, SubState.Full, _fullShootTrig);
+                    if (x != SubState.Landing)
+                        y.RegisterTransition(Triggers.falling, SubState.Falling, "toFall");
                 }
             });
 #if UNITY_EDITOR
+            var last = 0;
             _stateMachine.OnTransition.Subscribe(x =>
             {
                 _currentState = x.ToState.ToString();
+                var t = Time.frameCount;
+                Debug.Log($"[{last}->{t}]{x.ToString()}");
+                last = t;
             });
 #endif
-            _stateMachine.RegisterState(SubState.Idle, new Idle<AIController>(), "OnGround", "Cancelable");
-            _stateMachine.RegisterState(SubState.Jump, _jump, "OnAir", "Cancelable");
-            _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable");
-            var hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable");
-            
-            // NOTE : Trail演出の追加？
+            _stateMachine.RegisterState(SubState.Idle, new Idle<AIController>(), "Cancelable");
+            var hook = _stateMachine.RegisterState(SubState.Landing, new Idle<AIController>(), "Cancelable");
             hook.OnEnter.Subscribe(x =>
             {
+                //Debug.Log("Landed");
+                _stateMachine.LazySend(Triggers.landed);
+            }).AddTo(_parent);
+
+            _stateMachine.RegisterState(SubState.Jump, _jump, "OnAir", "Cancelable");
+            _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable", "Move");
+            hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable", "Move", "Dash");
+            hook.OnEnter.Subscribe(x =>
+            {
+                _parent.TrailRenderer.emitting = true;
             });
             hook.OnExit.Subscribe(x =>
             {
-                if (x is StateMachine<AIController, AITriggers, SubState>.StateInfo info && info.ID == SubState.Jump)
+                if (x is StateMachine<AIController, AITriggers, SubState>.StateInfo info && info.ID != SubState.Jump)
                 {
-                    
-                }
-                else
-                {
+                    _parent.TrailRenderer.emitting = false;
+
                 }
             });
             _stateMachine.RegisterState(SubState.ShootInterval, new Idle<AIController>(), "Cancelable");
-            _stateMachine.RegisterState(SubState.Falling, _parent.MoveAir, "OnAir", "Falling", "Cancelable");
-
+            hook = _stateMachine.RegisterState(SubState.Falling, _parent.MoveAir, "OnAir", "Cancelable");
+            hook.OnEnter.Subscribe(_ =>
+            {
+                _parent.GroundCheckDirectory(GroundState.Falling);
+            }).AddTo(_parent);
             RegisterStates();
 
-            // Idle
-            _stateMachine.RegisterTransitions(
-                SubState.Idle,
-                    (Triggers.moveInput, SubState.Move, ""),
-                    (Triggers.dashInput, SubState.Dash, ""),
-                    (Triggers.jumpInput, SubState.Jump, "")
-                );
-
+            //_stateMachine.RegisterAnyTransition(Triggers.pause, SubState.Idle, "toIdle");
             // ShootInterval
-            _stateMachine.RegisterTransitions(
-                SubState.ShootInterval,
-                    (Triggers.watingTimeHasElapsed, SubState.Idle, ""),
-                    (Triggers.jumpInput, SubState.Jump, ""),
-                    (Triggers.moveInput, SubState.Move, "")
-                );
+            _stateMachine.RegisterTransition(SubState.ShootInterval, Triggers.watingTimeHasElapsed, SubState.Idle, "toIdle");
 
             // Move
-            _stateMachine.RegisterTransitions(
-                SubState.Move,
-                    (Triggers.cancelMove, SubState.Idle, ""),
-                    (Triggers.jumpInput, SubState.Jump, ""),
-                    (Triggers.dashInput, SubState.Dash, "")
-                );
+            _stateMachine.RegisterTransition(SubState.Move, Triggers.cancelMove, SubState.Idle, "toIdle");
 
             _stateMachine.RegisterTransitions(SubState.Dash,
-                (Triggers.cancelMove, SubState.Idle, ""),
-                (Triggers.jumpInput, SubState.Jump, "")
+                (Triggers.cancelMove, SubState.Idle, "toIdle"),
+                (Triggers.cancelDash, SubState.Move, _walkTrig)
                 );
 
 
             // 任意遷移
-            _stateMachine.RegisterAnyTransition(AITriggers.falling, SubState.Falling);
-            _stateMachine.RegisterAnyTransition(AITriggers.landing, SubState.Idle);
+            _stateMachine.RegisterAnyTransition(AITriggers.landing, SubState.Landing, "toRand");
+            _stateMachine.RegisterTransition(SubState.Landing, AITriggers.landed, SubState.Idle, "toIdle");
 
             // 共通アニメータ登録
 
@@ -167,6 +177,12 @@ namespace BlackRose.Core.Models.Units
         // Grounded Event
         public virtual void OnGrounded()
         {
+            if (_stateMachine.Current.id != SubState.Dash &&
+                _stateMachine.Current.id == SubState.Move &&
+                !_parent.Animator.GetCurrentAnimatorStateInfo(0).IsName("AI_Ran"))
+            {
+                _parent.Animator.SetTrigger(_walkTrig);
+            }
         }
 
         public virtual void OnAirToGround()

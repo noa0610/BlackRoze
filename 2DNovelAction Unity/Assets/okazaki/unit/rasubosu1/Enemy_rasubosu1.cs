@@ -10,6 +10,7 @@ using System;
 using BlackRose.Core.Models.Objects;
 using System.Collections;
 using UnityEditor.U2D.Animation;
+using BlackRose.Core.Models.Systems;
 
 
 namespace BlackRose.Core.Models.Units
@@ -26,11 +27,15 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("登場演出の省略")]
         [SerializeField] private bool cutEntry = false;
 
+        [Tooltip("攻撃遷移の停止")]
+        [SerializeField] private bool attackStop = false;
+
         [Header("固有処理")]
         [SerializeField] private float _AttackIntervalTime = 2f;
 
         [Header("登場演出")]
         [SerializeField] private float _EntryEndwaitTime = 4.5f;           // 登場アニメーション終了時間（手動必須になる）
+        [SerializeField] private FlowchartFirer _EntryEventFlowFirer;
 
 
         [Header("アームパンチ")]
@@ -83,7 +88,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
         [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
         [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
-
+        [SerializeField] private GameObject _DeadExplosionPartecl; // 死亡時の爆破エフェクト
+        [SerializeField] private Transform _LeftArmPoint;
+        [SerializeField] private Transform _RightArmPoint;
 
         [Header("SE")]
         [SerializeField] private string _EntrySEName = "ロボット起動";
@@ -102,6 +109,10 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _DamageSEVolume = 0.2f;
         [SerializeField] private string _DeadSEName = "撃破";
         [SerializeField] private float _DeadSEVolume = 0.4f;
+        [SerializeField] private string _ExplosionSEName = "爆発";
+        [SerializeField] private float _ExplosionSEVolume = 0.4f;
+        [SerializeField] private string _ShutDownSEName = "シャットアウト";
+        [SerializeField] private float _ShutDownSEVolume = 0.4f;
 
 
         private UnitBase _player;
@@ -139,9 +150,23 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        public override void Pause()
+        {
+            attackStop = true;
+        }
+
+        public override void Play()
+        {
+            attackStop = false;
+        }
+
         private void EntryEnd()
         {
             IsInvincible = false;
+            if (_EntryEventFlowFirer)
+            {
+                _EntryEventFlowFirer.Fire();
+            }
         }
 
         protected override void AfterFixedUpdate()
@@ -152,17 +177,19 @@ namespace BlackRose.Core.Models.Units
         protected override void OnTakeDamage(IUnit from, float damage)
         {
             PlaySE(_DamageSEName, _DamageSEVolume);
-            if (statusManager.ReadValue(Status.HP) <= 0)
+        }
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            PlaySE(_DeadSEName, _DeadSEVolume);
+            if (_DeadPartecl != null)
             {
-                PlaySE(_DeadSEName, _DeadSEVolume);
-                if (_DeadPartecl != null)
-                {
-                    Destroy(
-                        Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
-                        _DeadParteclTime);
-                }
-                _stateMachine.ChangeState(Triggers.Died);
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
             }
+            _stateMachine.ChangeState(Triggers.Died);
         }
 
         private async void Dead()
@@ -174,11 +201,29 @@ namespace BlackRose.Core.Models.Units
             UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
 
             Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
         }
 
         #region === AttackSelect ===
         public void AttackSelect()
         {
+            if (attackStop) return;
+
             if (FixedAttackSelect != 0)
             {
                 switch (FixedAttackSelect)
@@ -244,6 +289,10 @@ namespace BlackRose.Core.Models.Units
         // パンチの落下ポイントを決める
         private void RandomArmPunchFallPoint()
         {
+            if(_player != null)
+            {
+                _armpunchPoint.transform.position = new Vector2(_player.transform.position.x, _ArmHeightOfFall);
+            }
             _armpunchPoint.transform.position = new Vector2(UnityEngine.Random.Range(_startArmPunchPos.x - _ArmWidthFall, _startArmPunchPos.x + _ArmWidthFall), _ArmHeightOfFall);
         }
         #endregion
@@ -256,6 +305,7 @@ namespace BlackRose.Core.Models.Units
             {
                 Debug.LogWarning("prefab または point が設定されていません。");
                 return;
+
             }
 
             // point 位置にプレハブ生成
@@ -293,10 +343,40 @@ namespace BlackRose.Core.Models.Units
             PlaySE(_ArmReturnSEName, _ArmReturnSEVolume);
         }
 
+        private void ExplosionSE()
+        {
+            PlaySE(_ExplosionSEName, _ExplosionSEVolume);
+        }
+
+        private void ShatDownSE()
+        {
+            PlaySE(_ShutDownSEName, _ShutDownSEVolume);
+        }
+
+
+        private void ArmLeftExplosionEffect()
+        {
+            if (_DeadExplosionPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadExplosionPartecl, new Vector3(_LeftArmPoint.position.x, _LeftArmPoint.position.y, _DeadExplosionPartecl.transform.position.z), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+        }
+
+        private void ArmRightExplosionEffect()
+        {
+            if (_DeadExplosionPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadExplosionPartecl, new Vector3(_RightArmPoint.position.x, _RightArmPoint.position.y, _DeadExplosionPartecl.transform.position.z), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+        }
+
         private bool IsMatchingState(States state)
         {
             return _stateMachine.CurrentState.key == _stateNames[state];
         }
-
     }
 }

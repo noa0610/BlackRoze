@@ -16,12 +16,24 @@ namespace BlackRose.Core.Models.Units
     [RequireComponent(typeof(SearchAssistanceMono))]
     public partial class Enemy_rasubosu2 : GroundedUnit
     {
+
+        private enum StartDirection
+        {
+            Left,
+            Right
+        }
+        [Header("最初の向き")]
+        [SerializeField] private StartDirection _StartDirection = StartDirection.Left;
+
         [Header("デバッグ")]
         [Tooltip("攻撃選択の固定化(１，ポインタミサイル ２，クロスウェーブ ３，連続ワープショット ４，一閃ビームソード)")]
         [SerializeField] private int FixedAttackSelect = 0;                // 攻撃選択の固定化
 
         [Tooltip("登場演出の省略")]
         [SerializeField] private bool cutEntry = false;
+
+        [Tooltip("攻撃遷移の停止")]
+        [SerializeField] private bool attackStop = false;
 
 
         [Header("固有設定")]
@@ -50,6 +62,9 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _WarpEndTime = 0.5f;
 
         [SerializeField] private int _WarpCount = 3;
+        [SerializeField] private GameObject _WarpPartecl; // ワープ時のエフェクト
+        [SerializeField] private Transform _WarpParteclPoint; // エフェクト発生位置
+        [SerializeField] private float _WarpParteclTime = 4f;  // エフェクト発生時間
         private int _CurrentWarpCount = 0;
 
 
@@ -121,7 +136,38 @@ namespace BlackRose.Core.Models.Units
 
 
         [Header("死亡状態")]
-        [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
+        [SerializeField] private float _DeadEndwaitTime = 6.5f;   // 死亡アニメーション終了時間（手動必須になる）
+        [SerializeField] private GameObject _DeadPartecl;         // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;     // エフェクト発生時間
+        [SerializeField] private SceneSelectLoad _ScenSelectLoad;
+        [SerializeField] private string _SceneName;
+        [SerializeField] private string LoadGameObjectName;
+
+
+
+        [Header("SE")]
+        [SerializeField] private string _WarpSEName = "ワープ移動";
+        [SerializeField] private float _WarpSEVolume = 0.5f;
+        [SerializeField] private string _RandSEName = "着地";
+        [SerializeField] private float _RandSEVolume = 0.5f;
+        [SerializeField] private string _SaberSEName = "セイバー";
+        [SerializeField] private float _SaberSEVolume = 0.5f;
+        [SerializeField] private string _SwordSEName = "ダッシュスラッシュ";
+        [SerializeField] private float _SwordSEVolume = 0.5f;
+        [SerializeField] private string _DashSEName = "ダッシュ開始";
+        [SerializeField] private float _DashSEVolume = 0.5f;
+        [SerializeField] private string _ShotSEName = "ビームライフル";
+        [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _WaveSEName = "クロスウェーブ";
+        [SerializeField] private float _WaveSEVolume = 0.5f;
+        [SerializeField] private string _PointeSEName = "高速移動";
+        [SerializeField] private float _PointeSEVolume = 0.5f;
+        [SerializeField] private string _ChargeSEName = "敵チャージ短縮";
+        [SerializeField] private float _ChargeSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "撃破";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
 
         private Rigidbody2D _rb2d;
         private float gravity;
@@ -157,6 +203,16 @@ namespace BlackRose.Core.Models.Units
             _prevStateKey = _stateMachine.CurrentState.key;
         }
 
+        public override void Pause()
+        {
+            attackStop = true;
+        }
+
+        public override void Play()
+        {
+            attackStop = false;
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -165,6 +221,7 @@ namespace BlackRose.Core.Models.Units
             gravity = _rb2d.gravityScale;
             _startTransform = transform;
             _cancellation = new CancellationTokenSource();
+            InitDirection();
         }
 
         private void EntryEnd()
@@ -181,6 +238,11 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.Event1);
                 Debug.Log($"{_player.name}");
             }
+            else if (IsMatchingState(States.attackidle) && _searchAssistance.Execute("ShortDistance", list, out var units2))
+            {
+                _player = units2.GetUnitNearest(transform.position);
+                Debug.Log($"{_player.name}");
+            }
         }
 
         protected override void OnGrounded()
@@ -188,10 +250,47 @@ namespace BlackRose.Core.Models.Units
             Debug.Log($"IsGrounded : {IsGrounded}");
         }
 
+
+        private void TurnAround()
+        {
+            // 見た目の向き変更など既存処理
+            if (_player != null)
+            {
+                Direction = (_player.Transform.position - transform.position).normalized;
+                Direction = (Direction.x > 0) ? Vector2.right : Vector2.left;
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
+            }
+        }
+
+        private void InitDirection()
+        {
+            switch (_StartDirection)
+            {
+                case StartDirection.Left:
+                    MoveDirection = Vector2.left;
+                    Direction = Vector2.left;
+
+                    break;
+                case StartDirection.Right:
+                    MoveDirection = Vector2.right;
+                    Direction = Vector2.right;
+                    break;
+            }
+
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (Direction.x >= 0f ? 1f : -1f);
+            transform.localScale = scale;
+        }
+
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();
-            
+
             if (IsMatchingState(States.attackidle))
             {
                 if (_player == null)
@@ -239,10 +338,20 @@ namespace BlackRose.Core.Models.Units
 
         protected override void OnTakeDamage(IUnit from, float damage)
         {
-            if (statusManager.ReadValue(Status.HP) <= 0)
+            PlaySE(_DamageSEName, _DamageSEVolume);
+        }
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            PlaySE(_DeadSEName, _DeadSEVolume);
+            if (_DeadPartecl != null)
             {
-                _stateMachine.ChangeState(Triggers.Died);
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
             }
+            _stateMachine.ChangeState(Triggers.Died);
         }
 
         private async void Dead()
@@ -262,14 +371,35 @@ namespace BlackRose.Core.Models.Units
             _cancellation.Cancel();  // UniTask停止
             _cancellation.Dispose(); // リソース解放
 
+            _ScenSelectLoad.SetTarget(GameObject.Find(LoadGameObjectName).GetComponent<RectTransform>());
+
             await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            // シーンをロード
+            _ScenSelectLoad.OnButtonClick(_SceneName);
 
             UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
 
             Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
         }
 
-
+        #region === Warp ===
         // ワープの前隙のディレイ⇒無敵時間のコルーチン開始⇒Warpに遷移
         private void WarpIdleStay()
         {
@@ -525,6 +655,7 @@ namespace BlackRose.Core.Models.Units
             Transform cameraPos = Camera.main.transform;
             return new Vector2(cameraPos.transform.localPosition.x, warpPosY);
         }
+        #endregion
 
         private async void MissileEnter()
         {
@@ -545,6 +676,7 @@ namespace BlackRose.Core.Models.Units
             {
                 for (int i = 1; i <= _CrossWaveShootCount; i++)
                 {
+                    PlaySE(_WaveSEName, _WaveSEVolume);
                     crosswave.DirectShoot(this);
                     await UniTask.Delay(TimeSpan.FromSeconds(_CrossWaveShootIntervalTime), cancellationToken: _cancellation.Token);
                 }
@@ -558,10 +690,13 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        #region === WarpShot ===
+
         private async void WarpShotEnter()
         {
             try
             {
+                PlaySE(_ShotSEName, _ShotSEVolume);
                 _currentWarpShotCount++;
                 await UniTask.Delay(TimeSpan.FromSeconds(_WarpShotEndTime), cancellationToken: _cancellation.Token);
                 _stateMachine.ChangeState(Triggers.Attack3end);
@@ -571,7 +706,9 @@ namespace BlackRose.Core.Models.Units
                 Debug.Log("WarpShotEnter がキャンセルされました");
             }
         }
+        #endregion
 
+        #region === FlashBeamSword ===
         private void FlashBeamSwordBeforeStay()
         {
             TurnAround();
@@ -602,6 +739,7 @@ namespace BlackRose.Core.Models.Units
         {
             try
             {
+                PlaySE(_SwordSEName, _SwordSEVolume);
                 _rb2d.velocity *= 0.5f;
                 await UniTask.Delay(TimeSpan.FromSeconds(_FlashBeamSwordDashStopTime), cancellationToken: _cancellation.Token);
                 _rb2d.gravityScale = gravity;
@@ -622,6 +760,7 @@ namespace BlackRose.Core.Models.Units
             _wallChack = rayhit.collider ? true : false;
             Debug.DrawRay(WallChackPoint.transform.position, MoveDirection, Color.red);
         }
+        #endregion
 
 
         // 無敵時間開始コルーチン
@@ -634,22 +773,8 @@ namespace BlackRose.Core.Models.Units
         //     IsInvincible = false;
         // }
 
-        private void TurnAround()
-        {
-            // 見た目の向き変更など既存処理
-            if (_player != null)
-            {
-                Direction = (_player.Transform.position - transform.position).normalized;
-                Direction = (Direction.x > 0) ? Vector2.right : Vector2.left;
-                if (Direction.x != 0)
-                {
-                    var scale = transform.localScale;
-                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
-                    transform.localScale = scale;
-                }
-            }
-        }
 
+        #region === Attack ===
         private void AttackSelect()
         {
             _CurrentWarpCount = 0;
@@ -733,7 +858,51 @@ namespace BlackRose.Core.Models.Units
             Debug.Log("フラッシュビームソード開始");
             _stateMachine.ChangeState(Triggers.Attack4start);
         }
-        
+        #endregion
+
+        #region === SE ===
+        private void RandSE()
+        {
+            PlaySE(_RandSEName, _RandSEVolume);
+        }
+
+        private void SaberSE()
+        {
+            PlaySE(_SaberSEName, _SaberSEVolume);
+        }
+
+        private void WarpSE()
+        {
+            PlaySE(_WarpSEName, _WarpSEVolume);
+        }
+
+        private void PointerSE()
+        {
+            PlaySE(_PointeSEName, _PointeSEVolume);
+        }
+
+        private void ChargeSE()
+        {
+            PlaySE(_ChargeSEName, _ChargeSEVolume);
+        }
+
+        private void DashSE()
+        {
+            PlaySE(_DashSEName, _ChargeSEVolume);
+        }
+        #endregion
+
+
+        private void WarpEffect()
+        {
+            if (_WarpPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_WarpPartecl, new Vector3(_WarpParteclPoint.position.x, _WarpParteclPoint.position.y, _WarpPartecl.transform.position.z), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+            WarpSE();
+        }
 
         private bool IsMatchingState(States state)
         {

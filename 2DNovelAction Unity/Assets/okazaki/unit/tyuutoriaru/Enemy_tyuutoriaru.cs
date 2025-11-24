@@ -92,7 +92,6 @@ namespace BlackRose.Core.Models.Units
         [Header("死亡状態")]
         [SerializeField] private bool _wontDie = false;                   // 死亡状態に移行しない
         [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
-
         [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
         [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
 
@@ -241,7 +240,7 @@ namespace BlackRose.Core.Models.Units
             if (_DeadPartecl != null)
             {
                 Destroy(
-                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y + 2), Quaternion.identity, null),
                     _DeadParteclTime);
             }
             _stateMachine.ChangeState(Triggers.Died);

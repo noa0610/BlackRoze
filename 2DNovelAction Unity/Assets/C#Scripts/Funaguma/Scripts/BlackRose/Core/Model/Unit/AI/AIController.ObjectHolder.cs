@@ -19,5 +19,6 @@ namespace BlackRose.Core.Models.Units
         public ReflectMono ReflectMono => _reflectMono;
         public AutoFlipHelper AutoFlipper => _flippingUnit;
         public TrailRenderer TrailRenderer => _trailRenderer;
+        public ParticleHelper ParticleHelper => _helper;
     }
 }

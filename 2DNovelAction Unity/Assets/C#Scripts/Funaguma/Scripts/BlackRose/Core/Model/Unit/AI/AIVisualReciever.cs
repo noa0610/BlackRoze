@@ -53,5 +53,16 @@ namespace BlackRose.Core.Models.Units
         public void PlayOther1SE() => Play(_other1SE);
         public void PlayOther2SE() => Play(_other2SE);
         public void PlayOther3SE() => Play(_other3SE);
+
+        public void RequestGoundCheck()
+        {
+            if (_target is GroundedUnit groundedUnit)
+            {
+                if (groundedUnit.IsGrounded)
+                {
+                    _target.Animator.SetTrigger("toRand");
+                }
+            }
+        }
     }
 }

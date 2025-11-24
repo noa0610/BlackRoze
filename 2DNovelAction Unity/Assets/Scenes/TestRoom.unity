@@ -458,6 +458,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ActionRobot Animation
       objectReference: {fileID: 0}
+    - target: {fileID: 3912201086884086257, guid: cbca8a64bb2c95945ba47ff09f9b979c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -692,9 +696,9 @@ MonoBehaviour:
   _status: {fileID: 11400000, guid: 2d212e9d4ddabd241987f0a2d879ae0f, type: 2}
   _attackLayer:
     serializedVersion: 2
-    m_Bits: 0
-  _animator: {fileID: 0}
-  _muzzle: {fileID: 0}
+    m_Bits: 1024
+  _animator: {fileID: 376800506}
+  _muzzle: {fileID: 376800504}
   _moveDir: {x: 0, y: 0}
   _shootDir: {x: 1, y: 0}
   player: {fileID: 376800507}
@@ -716,11 +720,11 @@ MonoBehaviour:
         cancelableProgress: 0.7
         _targetLayer:
           serializedVersion: 2
-          m_Bits: 0
+          m_Bits: 1024
         _data: {fileID: 11400000, guid: 72a8695b17c57164fbe71d0f2dadba0c, type: 2}
         _createPos: 0
         _direction: {x: 1, y: 0}
-        _muzzle: {fileID: 0}
+        _muzzle: {fileID: 376800504}
         _onShootComplete:
           m_PersistentCalls:
             m_Calls: []
@@ -757,7 +761,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b255a1da54d9dc4f806f7671f6efd4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tagetRenderer: {fileID: 0}
+  _tagetRenderer: {fileID: 376800504}
   d_target: 0
   d_duration: 0
   d_speed: 0
@@ -1084,6 +1088,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1905131736}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &504270367 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+  m_PrefabInstance: {fileID: 4632434513985191665}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e599cba1d099e1a4897d1789a4d4bb2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &508113456
 GameObject:
   m_ObjectHideFlags: 0
@@ -1746,7 +1761,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!61 &696662397
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2334,17 +2349,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   INTERVAL: 0.2
---- !u!114 &883694263 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5300790362989203252, guid: cbca8a64bb2c95945ba47ff09f9b979c, type: 3}
-  m_PrefabInstance: {fileID: 310913623}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7fafcf1a151ad9c4cb1504133415ab0c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &942277594
 GameObject:
   m_ObjectHideFlags: 0
@@ -3053,7 +3057,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72510813811798444a5977fd2d9168e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerUnit: {fileID: 883694263}
+  _playerUnit: {fileID: 504270367}
 --- !u!114 &1248203013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5649,13 +5653,73 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._shootSE.SEName
+      value: "\u30D3\u30FC\u30E0\u30E9\u30A4\u30D5\u30EB"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._shootSE.Volume
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._skillSE.SEName
+      value: "\u5927\u78321"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._skillSE.Volume
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._shootSE.SEName
+      value: "\u30D3\u30FC\u30E0\u30E9\u30A4\u30D5\u30EB"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._shootSE.Volume
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._skillSE.SEName
+      value: "\u30EF\u30FC\u30D7\u79FB\u52D5"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._fullshootSE.SEName
+      value: "\u62E1\u6563"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._fullshootSE.Volume
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._halfshootSE.SEName
+      value: "\u62E1\u6563"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _lightMode._halfshootSE.Volume
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._fullshootSE.SEName
+      value: "\u30D3\u30FC\u30E0\u7832"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._fullshootSE.Volume
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._halfshootSE.SEName
+      value: "\u30D3\u30FC\u30E0\u7832"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047717348341845496, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
+      propertyPath: _normalMode._halfshootSE.Volume
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 4339143411383458475, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
       propertyPath: m_Name
       value: AI
       objectReference: {fileID: 0}
     - target: {fileID: 4339143411383458475, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7858135452110561513, guid: ca21f4b69c44e444ea6f5a61484d74ed, type: 3}
       propertyPath: m_LocalPosition.x

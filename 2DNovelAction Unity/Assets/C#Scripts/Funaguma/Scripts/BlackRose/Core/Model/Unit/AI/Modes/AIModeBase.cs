@@ -59,6 +59,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected VisualInfo _halfshootSE;
         [SerializeField] protected VisualInfo _fullshootSE;
         [SerializeField] protected VisualInfo _skillSE;
+        protected bool _halfEffectPlayed = false;
+        protected bool _fullEffectPlayed = false;
 
         protected AIController _parent;
         protected StateMachine<AIController, Triggers, SubState> _stateMachine;
@@ -72,9 +74,9 @@ namespace BlackRose.Core.Models.Units
         {
             Debug.Log(GetType().Name + ":登録処理");
             var op = new StateMachineOption<AIController, AITriggers, SubState>(_parent);
-            op.Logger = _parent.logger;
+            //op.Logger = _parent.logger;
             op.QueueMode = HighElixir.StateMachine.QueueMode.DoEverything;
-            op.LogLevel = RequiredLoggerLevel.ALL;
+            //op.LogLevel = RequiredLoggerLevel.ALL;
             op.EnableOverriding = true;
 
             _stateMachine = new(op);
@@ -109,7 +111,7 @@ namespace BlackRose.Core.Models.Units
             {
                 _currentState = x.ToState.ToString();
                 var t = Time.frameCount;
-                Debug.Log($"[{last}->{t}]{x.ToString()}");
+                //Debug.Log($"[{last}->{t}]{x.ToString()}");
                 last = t;
             });
 #endif
@@ -127,6 +129,7 @@ namespace BlackRose.Core.Models.Units
             hook.OnEnter.Subscribe(x =>
             {
                 _parent.TrailRenderer.emitting = true;
+                _parent.PlaySE("ダッシュ開始");
             });
             hook.OnExit.Subscribe(x =>
             {
@@ -212,6 +215,8 @@ namespace BlackRose.Core.Models.Units
             {
                 InvokeHalfShoot();
             }
+            _halfEffectPlayed = false;
+            _fullEffectPlayed = false;
         }
 
         public abstract void InvokeShoot();
@@ -248,6 +253,19 @@ namespace BlackRose.Core.Models.Units
         public void Bind(AIController parent)
         {
             _parent = parent;
+            Timer.GetReactiveProperty(_parent.ChargeTime).Subscribe(t =>
+            {
+                if (!_halfEffectPlayed && t.Current >= _chargeTime[0])
+                {
+                    _halfEffectPlayed = true;
+                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position);
+                }
+                else if (!_fullEffectPlayed && t.Current >= _chargeTime[1])
+                {
+                    _fullEffectPlayed = true;
+                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position);
+                }
+            }).AddTo(_parent);
         }
     }
 }

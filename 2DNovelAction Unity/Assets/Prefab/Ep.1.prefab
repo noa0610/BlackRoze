@@ -19,6 +19,8 @@ GameObject:
   - component: {fileID: 103591318314401866}
   - component: {fileID: 680451269457112344}
   - component: {fileID: 809290621592756021}
+  - component: {fileID: 6817254753566708077}
+  - component: {fileID: 3492029821969172570}
   m_Layer: 5
   m_Name: Ep.1
   m_TagString: Untagged
@@ -54,21 +56,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 85.68144, y: 204.89551}
+  scrollPos: {x: 88.992935, y: 732.15173}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
   blockViewHeight: 400
-  zoom: 0.5500004
+  zoom: 0.25
   scrollViewRect:
     serializedVersion: 2
     x: 0
     y: 0
     width: 0
     height: 0
-  selectedBlocks:
-  - {fileID: 5019257920785435869}
-  selectedCommands:
-  - {fileID: 809290621592756021}
+  selectedBlocks: []
+  selectedCommands: []
   variables: []
   description: Player
   stepPause: 0
@@ -220,7 +220,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 212.40674
     y: 182.82858
-    width: 71.81816
+    width: 69.2
     height: 40
   tint: {r: 1, g: 0, b: 0, a: 1}
   useCustomTint: 1
@@ -230,8 +230,10 @@ MonoBehaviour:
   eventHandler: {fileID: 1052391264680501485}
   commandList:
   - {fileID: 680451269457112344}
+  - {fileID: 6817254753566708077}
   - {fileID: 7281650593106792115}
   - {fileID: 809290621592756021}
+  - {fileID: 3492029821969172570}
   - {fileID: 103591318314401866}
   suppressAllAutoSelections: 1
 --- !u!114 &7281650593106792115
@@ -330,6 +332,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemId: 5
+  indentLevel: 0
+  targetObject: {fileID: 0}
+  methodName: Story
+  delay: 0
+--- !u!114 &6817254753566708077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7819873112554820548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17a200dbd67304446a3019434503338a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 6
+  indentLevel: 0
+  targetObject: {fileID: 0}
+  methodName: Story
+  delay: 0
+--- !u!114 &3492029821969172570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7819873112554820548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17a200dbd67304446a3019434503338a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 7
   indentLevel: 0
   targetObject: {fileID: 0}
   methodName: PlayerEnable

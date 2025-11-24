@@ -10,6 +10,7 @@ using System;
 using BlackRose.Core.Models.Objects;
 using System.Collections;
 using UnityEditor.U2D.Animation;
+using BlackRose.Core.Models.Systems;
 
 
 namespace BlackRose.Core.Models.Units
@@ -26,11 +27,15 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("登場演出の省略")]
         [SerializeField] private bool cutEntry = false;
 
+        [Tooltip("攻撃遷移の停止")]
+        [SerializeField] private bool attackStop = false;
+
         [Header("固有処理")]
         [SerializeField] private float _AttackIntervalTime = 2f;
 
         [Header("登場演出")]
         [SerializeField] private float _EntryEndwaitTime = 4.5f;           // 登場アニメーション終了時間（手動必須になる）
+        [SerializeField] private FlowchartFirer _EntryEventFlowFirer;
 
 
         [Header("アームパンチ")]
@@ -145,9 +150,23 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        public override void Pause()
+        {
+            attackStop = true;
+        }
+
+        public override void Play()
+        {
+            attackStop = false;
+        }
+
         private void EntryEnd()
         {
             IsInvincible = false;
+            if (_EntryEventFlowFirer)
+            {
+                _EntryEventFlowFirer.Fire();
+            }
         }
 
         protected override void AfterFixedUpdate()
@@ -158,17 +177,19 @@ namespace BlackRose.Core.Models.Units
         protected override void OnTakeDamage(IUnit from, float damage)
         {
             PlaySE(_DamageSEName, _DamageSEVolume);
-            if (statusManager.ReadValue(Status.HP) <= 0)
+        }
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            PlaySE(_DeadSEName, _DeadSEVolume);
+            if (_DeadPartecl != null)
             {
-                PlaySE(_DeadSEName, _DeadSEVolume);
-                if (_DeadPartecl != null)
-                {
-                    Destroy(
-                        Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
-                        _DeadParteclTime);
-                }
-                _stateMachine.ChangeState(Triggers.Died);
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
             }
+            _stateMachine.ChangeState(Triggers.Died);
         }
 
         private async void Dead()
@@ -201,6 +222,8 @@ namespace BlackRose.Core.Models.Units
         #region === AttackSelect ===
         public void AttackSelect()
         {
+            if (attackStop) return;
+
             if (FixedAttackSelect != 0)
             {
                 switch (FixedAttackSelect)
@@ -266,6 +289,10 @@ namespace BlackRose.Core.Models.Units
         // パンチの落下ポイントを決める
         private void RandomArmPunchFallPoint()
         {
+            if(_player != null)
+            {
+                _armpunchPoint.transform.position = new Vector2(_player.transform.position.x, _ArmHeightOfFall);
+            }
             _armpunchPoint.transform.position = new Vector2(UnityEngine.Random.Range(_startArmPunchPos.x - _ArmWidthFall, _startArmPunchPos.x + _ArmWidthFall), _ArmHeightOfFall);
         }
         #endregion
@@ -351,6 +378,5 @@ namespace BlackRose.Core.Models.Units
         {
             return _stateMachine.CurrentState.key == _stateNames[state];
         }
-
     }
 }

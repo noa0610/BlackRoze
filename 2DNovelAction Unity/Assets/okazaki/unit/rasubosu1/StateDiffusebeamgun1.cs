@@ -60,6 +60,8 @@ namespace BlackRose.Core.Models.Units
             _multiShoot.onShootComplete.AddListener(() =>
             {
                 PlaySE(_SpreadSEName, _SpreadSEVolume);
+                UnitManager.instance.RemoveUnit(this);
+                Destroy(gameObject);
                 _stateMachine.LazyChange(Triggers.SplitEnd);
             });
 

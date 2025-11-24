@@ -1,5 +1,52 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1805393185194864115
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 390630949675160986}
+  - component: {fileID: 7224830072556512591}
+  m_Layer: 11
+  m_Name: EntryEventFire
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &390630949675160986
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805393185194864115}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4118925123656937604}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7224830072556512591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1805393185194864115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7c4f332d60b3394bb3aad3d4c70be42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _flowchart: {fileID: 0}
+  _message: BossEntry
+  _flowchartName: Stage5_Ep.2 Variant
 --- !u!1 &2977431855141317625
 GameObject:
   m_ObjectHideFlags: 0
@@ -318,6 +365,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 349739739043617964, guid: d965c6bb2cf929f47a47c04a3aaad044, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6284757144671156148}
+    - targetCorrespondingSourceObject: {fileID: 349739739043617964, guid: d965c6bb2cf929f47a47c04a3aaad044, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 390630949675160986}
     - targetCorrespondingSourceObject: {fileID: 8048227296704236191, guid: d965c6bb2cf929f47a47c04a3aaad044, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7803068409754799058}
@@ -555,8 +605,10 @@ MonoBehaviour:
   _currentState: 
   FixedAttackSelect: 0
   cutEntry: 0
+  attackStop: 0
   _AttackIntervalTime: 2
   _EntryEndwaitTime: 4.5
+  _EntryEventFlowFirer: {fileID: 7224830072556512591}
   _armpunchBulletData: {fileID: 11400000, guid: b687c05afe6a60545aeaf1f249d67549, type: 2}
   _armPunchCount: 2
   EmptyObject: {fileID: 3433492019147966438, guid: 9f9ddfb35792a414c8b26a3a4aa5df35, type: 3}
@@ -616,7 +668,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _flowchart: {fileID: 0}
   _message: BossDead
-  _flowchartName: Stage5_EP3
+  _flowchartName: Stage5_Ep.3 Variant
 --- !u!4 &3512830479134400422 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 951330818178954126, guid: d965c6bb2cf929f47a47c04a3aaad044, type: 3}

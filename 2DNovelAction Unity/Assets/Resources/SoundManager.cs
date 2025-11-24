@@ -99,7 +99,7 @@ public class SoundManager : SingletonBehavior<SoundManager>
     {
         if (_seData.ContainsKey(seName))
         {
-            Debug.Log($"SoundManager: Playing SE '{seName}'");
+            //Debug.Log($"SoundManager: Playing SE '{seName}'");
             if (Time.realtimeSinceStartup - _seData[seName].playedTime > INTERVAL) {
                 var audioSource = GetUnusedSourceSE();
 
@@ -110,14 +110,14 @@ public class SoundManager : SingletonBehavior<SoundManager>
                     audioSource.Play();
                     _seData[seName].playedTime = Time.realtimeSinceStartup;
                 }
-                else
-                    Debug.LogWarning("SoundManager: All SE AudioSources are in use!");
+                //else
+                //    Debug.LogWarning("SoundManager: All SE AudioSources are in use!");
             }
         }
-        else
-        {
-            Debug.LogWarning($"SoundManager: SE '{seName}' not found!");
-        }
+        //else
+        //{
+        //    Debug.LogWarning($"SoundManager: SE '{seName}' not found!");
+        //}
     }
 
     /// <summary>

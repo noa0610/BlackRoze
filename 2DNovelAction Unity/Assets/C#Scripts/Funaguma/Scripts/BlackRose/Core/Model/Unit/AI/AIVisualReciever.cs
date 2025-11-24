@@ -62,6 +62,7 @@ namespace BlackRose.Core.Models.Units
                 {
                     _target.Animator.SetTrigger("toRand");
                 }
+                //Debug.Log("AIVisualReciever: RequestGoundCheck executed : Res " + groundedUnit.IsGrounded);
             }
         }
     }

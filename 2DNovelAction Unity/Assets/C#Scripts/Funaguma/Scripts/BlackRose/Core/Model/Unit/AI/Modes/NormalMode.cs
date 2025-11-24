@@ -53,10 +53,14 @@ namespace BlackRose.Core.Models.Units
             }, initZero: true);
             _elapsedTicket = Timer.CountDownRegister(_intervalDelay, "射撃制限", initZero: true);
 
-            _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
-            _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
-            _stateMachine.RegisterState(SubState.Full, _full, "Shoot");
-            _stateMachine.RegisterState(SubState.Skill, _warpState, "Skill");
+            _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_shootSE.SEName, _shootSE.Volume));
+            _stateMachine.RegisterState(SubState.Half, _half, "Shoot")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_halfshootSE.SEName, _halfshootSE.Volume));
+            _stateMachine.RegisterState(SubState.Full, _full, "Shoot")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_fullshootSE.SEName, _fullshootSE.Volume));
+            _stateMachine.RegisterState(SubState.Skill, _warpState, "Skill")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_skillSE.SEName, _skillSE.Volume));
 
             // Skill
             _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "toIdle");

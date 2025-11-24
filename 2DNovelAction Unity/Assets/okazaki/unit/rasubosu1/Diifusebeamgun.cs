@@ -53,6 +53,12 @@ namespace BlackRose.Core.Models.Units
             _searchAssistance = GetComponent<SearchAssistanceMono>();
         }
 
+        protected override void OnDeath()
+        {
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
+        }
+
         // Start is called before the first frame update
     }
 }

@@ -186,7 +186,7 @@ namespace BlackRose.Core.Models.Units
             if (_DeadPartecl != null)
             {
                 Destroy(
-                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y + 2), Quaternion.identity, null),
                     _DeadParteclTime);
             }
             _stateMachine.ChangeState(Triggers.Died);

@@ -349,6 +349,7 @@ Transform:
   - {fileID: 215184077}
   - {fileID: 719595579}
   - {fileID: 539531719}
+  - {fileID: 1976585523}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &388907663
@@ -1896,7 +1897,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 66.633484
     y: 98.32672
-    width: 106.8
+    width: 106
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -3109,6 +3110,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: SayDialog
       objectReference: {fileID: 0}
+    - target: {fileID: 5771659579036784238, guid: d10160bbd8ef7c040abb1a01cf829aad, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5771659579036784238, guid: d10160bbd8ef7c040abb1a01cf829aad, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5771659579036784238, guid: d10160bbd8ef7c040abb1a01cf829aad, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6939210639113684615, guid: d10160bbd8ef7c040abb1a01cf829aad, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -4076,17 +4089,6 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 5
---- !u!114 &1957279983 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1912676207455398756, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
-  m_PrefabInstance: {fileID: 6374582715314226047}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1961768665
 GameObject:
   m_ObjectHideFlags: 0
@@ -4206,10 +4208,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 283d2955948eba646b75dd94e83808d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BGMAudioSources:
-  - {fileID: 684460255}
-  _AudioVolumeText: {fileID: 841302604}
-  _AudioSlider: {fileID: 1957279983}
+  BGMMixer: {fileID: 0}
+  _BGMVolumeText: {fileID: 0}
+  _BGMSlider: {fileID: 0}
+  VoiceMixer: {fileID: 0}
+  _VoiceVolumeText: {fileID: 0}
+  _VoiceSlider: {fileID: 0}
 --- !u!224 &2050609692 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3447524305846907200, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}

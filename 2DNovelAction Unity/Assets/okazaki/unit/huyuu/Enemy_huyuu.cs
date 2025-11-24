@@ -48,7 +48,7 @@ namespace BlackRose.Core.Models.Units
                 if (_ExplosionPartecl != null)
                 {
                     Destroy(
-                        Instantiate(_ExplosionPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y), Quaternion.identity, null),
+                        Instantiate(_ExplosionPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y), Quaternion.identity, null),
                         _ExplosionParteclTime);
                 }
                 _stateMachine.ChangeState(Triggers.AttackRange);
@@ -85,7 +85,7 @@ namespace BlackRose.Core.Models.Units
             if (_DeadPartecl != null)
             {
                 Destroy(
-                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 1), Quaternion.identity, null),
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y + 1), Quaternion.identity, null),
                     _DeadParteclTime);
             }
 

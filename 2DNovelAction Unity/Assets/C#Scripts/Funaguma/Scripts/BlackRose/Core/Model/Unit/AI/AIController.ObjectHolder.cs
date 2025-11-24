@@ -11,6 +11,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private GameObject _preWarp;
         [SerializeField] private ReflectMono _reflectMono;
         [SerializeField] private TrailRenderer _trailRenderer;
+        [SerializeField] private ParticleHelper _helper;
 
         private AutoFlipHelper _flippingUnit;
 
@@ -18,5 +19,6 @@ namespace BlackRose.Core.Models.Units
         public ReflectMono ReflectMono => _reflectMono;
         public AutoFlipHelper AutoFlipper => _flippingUnit;
         public TrailRenderer TrailRenderer => _trailRenderer;
+        public ParticleHelper ParticleHelper => _helper;
     }
 }

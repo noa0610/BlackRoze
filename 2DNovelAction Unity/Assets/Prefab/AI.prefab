@@ -2978,6 +2978,8 @@ Transform:
   - {fileID: 4925699724908547106}
   - {fileID: 4894512972348741866}
   - {fileID: 5687018842097389028}
+  - {fileID: 4472617161953577426}
+  - {fileID: 4304816066064801180}
   m_Father: {fileID: 7858135452110561513}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2903261967385376242
@@ -3966,6 +3968,37 @@ MonoBehaviour:
   m_labelHash: 0.00012883151
   m_SpriteKey: 0
   m_SpriteHash: 213695301
+--- !u!1 &3755045763471292097
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4472617161953577426}
+  m_Layer: 10
+  m_Name: Container
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4472617161953577426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3755045763471292097}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7009553605540506696}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3770285089048016330
 GameObject:
   m_ObjectHideFlags: 0
@@ -4290,6 +4323,7 @@ GameObject:
   - component: {fileID: 1349809383416984721}
   - component: {fileID: 3261546339960986621}
   - component: {fileID: 7658497994850347261}
+  - component: {fileID: 8913672702520600005}
   m_Layer: 10
   m_Name: AI
   m_TagString: Player
@@ -4417,6 +4451,21 @@ MonoBehaviour:
     m_Bits: 513
   _landingCheckOffset: {x: 0, y: -0.3, z: 0}
   _disableCheckTime: 0.2
+  _State: 
+  _move:
+    _isStopInExit: 0
+    _accel: 20
+    _friction: 1
+  _dash:
+    _isStopInExit: 0
+    _accel: 40
+    _friction: 5
+  _moveAir:
+    _isStopInExit: 0
+    _accel: 20
+    _friction: 1
+  _shootBlockTime: 0.6
+  _coyoteTime: 0.2
   _canChargeCount: 0
   _horizontalDecel: 20
   _normalMode:
@@ -4436,6 +4485,18 @@ MonoBehaviour:
     _halfShootTrig: toShot
     _fullShootTrig: toShot
     _walkTrig: toRan
+    _shootSE:
+      SEName: "\u30D3\u30FC\u30E0\u30E9\u30A4\u30D5\u30EB"
+      Volume: 0.7
+    _halfshootSE:
+      SEName: "\u30D3\u30FC\u30E0\u7832"
+      Volume: 0.7
+    _fullshootSE:
+      SEName: "\u30D3\u30FC\u30E0\u7832"
+      Volume: 0.7
+    _skillSE:
+      SEName: "\u30EF\u30FC\u30D7\u79FB\u52D5"
+      Volume: 0.8
     _warpRange: 6
     _warpDemoDelta: {x: 0, y: 0.5, z: 0}
     _skillCT: 4
@@ -4467,6 +4528,18 @@ MonoBehaviour:
     _halfShootTrig: toMultiShot
     _fullShootTrig: toMultiShot
     _walkTrig: toRan
+    _shootSE:
+      SEName: "\u30D3\u30FC\u30E0\u30E9\u30A4\u30D5\u30EB"
+      Volume: 0.6
+    _halfshootSE:
+      SEName: "\u62E1\u6563"
+      Volume: 0.4
+    _fullshootSE:
+      SEName: "\u62E1\u6563"
+      Volume: 0.56
+    _skillSE:
+      SEName: "\u5927\u78321"
+      Volume: 0.6
     _shoot:
       _data: {fileID: 11400000, guid: 003bd5d23b9ab1c4cab3f5419fb9355b, type: 2}
       _createPos: 0.21
@@ -4500,6 +4573,18 @@ MonoBehaviour:
     _halfShootTrig: toShot
     _fullShootTrig: toGigaLaser
     _walkTrig: toHeavyWalk
+    _shootSE:
+      SEName: "\u30D3\u30FC\u30E0\u7832"
+      Volume: 0.5
+    _halfshootSE:
+      SEName: "\u30B7\u30E7\u30C3\u30AF\u30A6\u30A7\u30FC\u30D6"
+      Volume: 0.4
+    _fullshootSE:
+      SEName: "\u30EC\u30FC\u30B6\u30FC"
+      Volume: 0.6
+    _skillSE:
+      SEName: 
+      Volume: 0
     _frontWalk: toHeavyWalk
     _backwardWalk: toHeavyWalkBack
     _shoot:
@@ -4514,24 +4599,10 @@ MonoBehaviour:
       _createPos: 2.5
       _maxScale: 18
       _duration: 2
-  _State: 
-  _move:
-    _isStopInExit: 0
-    _accel: 20
-    _friction: 1
-  _dash:
-    _isStopInExit: 0
-    _accel: 40
-    _friction: 5
-  _moveAir:
-    _isStopInExit: 0
-    _accel: 20
-    _friction: 1
-  _shootBlockTime: 0.6
-  _coyoteTime: 0.2
   _preWarp: {fileID: 8671857076312126648}
   _reflectMono: {fileID: 3299031850762170690}
   _trailRenderer: {fileID: 5107292353073044002}
+  _helper: {fileID: 4245013506411490707}
 --- !u!114 &4394514904676714525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4750,6 +4821,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _enable: 1
+--- !u!114 &8913672702520600005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4339143411383458475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe916fe3310d7084fa3b072acd183df1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _chargeEffect: {fileID: 1141330259687333425, guid: 6718dc24203da53468af9ada8fef7d6d, type: 3}
+  _container: {fileID: 4472617161953577426}
 --- !u!1 &4410835854670034471
 GameObject:
   m_ObjectHideFlags: 0
@@ -5330,7 +5415,7 @@ GameObject:
   - component: {fileID: 7378625400275014740}
   - component: {fileID: 7905055650727972235}
   - component: {fileID: 1207257548768419744}
-  - component: {fileID: 7821380899191886322}
+  - component: {fileID: 3404310299748627215}
   m_Layer: 10
   m_Name: AI Animation Variant 1
   m_TagString: Untagged
@@ -5457,7 +5542,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e8f75cb91a1dfa4894b0f6f96de6b66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7821380899191886322
+--- !u!114 &3404310299748627215
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5466,10 +5551,56 @@ MonoBehaviour:
   m_GameObject: {fileID: 5219873648681605034}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7dcb140e8f1e1c840a0882a59170803d, type: 3}
+  m_Script: {fileID: 11500000, guid: a8efbc00bc39e4742915a94c0f627ca3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _target: {fileID: 4047717348341845496}
   _normalShoot:
+    SEName: 
+    Volume: 0
+  _idleSE:
+    SEName: 
+    Volume: 0
+  _shootIntervalSE:
+    SEName: 
+    Volume: 0
+  _moveSE:
+    SEName: "\u7740\u5730"
+    Volume: 0.4
+  _jumpSE:
+    SEName: "\u30C0\u30C3\u30B7\u30E5\u958B\u59CB"
+    Volume: 0.4
+  _shootSE:
+    SEName: 
+    Volume: 0
+  _halfSE:
+    SEName: 
+    Volume: 0
+  _fullSE:
+    SEName: 
+    Volume: 0
+  _dashSE:
+    SEName: 
+    Volume: 0
+  _fallingSE:
+    SEName: 
+    Volume: 0
+  _landingSE:
+    SEName: "\u7740\u5730"
+    Volume: 0.7
+  _skillSE:
+    SEName: 
+    Volume: 0
+  _specialAttackSE:
+    SEName: 
+    Volume: 0
+  _other1SE:
+    SEName: 
+    Volume: 0
+  _other2SE:
+    SEName: 
+    Volume: 0
+  _other3SE:
     SEName: 
     Volume: 0
 --- !u!1 &5306080987112582308
@@ -7273,7 +7404,7 @@ GameObject:
   - component: {fileID: 1338961176703290263}
   - component: {fileID: 3299031850762170690}
   - component: {fileID: 779615886127795898}
-  m_Layer: 10
+  m_Layer: 14
   m_Name: Reflects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7290,7 +7421,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 1}
+  m_LocalScale: {x: 7.347247, y: 7.4227734, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7009553605540506696}
@@ -7359,6 +7490,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b7d0cd94caedaa44b5deb49860e7282, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _onRefrectSE:
+    SEName: "\u9632\u5FA1"
+    Volume: 0.6
 --- !u!58 &779615886127795898
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -9929,3 +10063,49 @@ MonoBehaviour:
   m_labelHash: 1.47244e-15
   m_SpriteKey: 0
   m_SpriteHash: 827814737
+--- !u!1 &9122798305216094464
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4304816066064801180}
+  - component: {fileID: 4245013506411490707}
+  m_Layer: 10
+  m_Name: Particle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4304816066064801180
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9122798305216094464}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7009553605540506696}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4245013506411490707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9122798305216094464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe916fe3310d7084fa3b072acd183df1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _chargeEffect: {fileID: 1141330259687333425, guid: 6718dc24203da53468af9ada8fef7d6d, type: 3}
+  _container: {fileID: 4304816066064801180}

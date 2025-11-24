@@ -147,7 +147,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (OnDestoryHandle != null)
                 OnDestoryHandle(this);
-            else
+            else if (gameObject != null)
                 Destroy(gameObject);
         }
 

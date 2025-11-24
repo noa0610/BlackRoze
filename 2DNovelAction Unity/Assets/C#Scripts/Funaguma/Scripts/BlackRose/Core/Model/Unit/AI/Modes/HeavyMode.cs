@@ -30,11 +30,19 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "");
 
             var hook = _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
-            hook.OnEnter.Subscribe(_ => _parent.AutoFlipper.Enable = false);
+            hook.OnEnter.Subscribe(_ =>
+            {
+                _parent.AutoFlipper.Enable = false;
+                _parent.PlaySE(_shootSE.SEName, _shootSE.Volume);
+            });
             hook.OnExit.Subscribe(_ => _parent.AutoFlipper.Enable = true);
 
             hook = _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
-            hook.OnEnter.Subscribe(_ => _parent.AutoFlipper.Enable = false);
+            hook.OnEnter.Subscribe(_ =>
+            {
+                _parent.AutoFlipper.Enable = false;
+                _parent.PlaySE(_halfshootSE.SEName, _halfshootSE.Volume);
+            });
             hook.OnExit.Subscribe(_ => _parent.AutoFlipper.Enable = true);
 
             hook = _stateMachine.RegisterState(SubState.Full, _laser, "Shoot");
@@ -43,6 +51,7 @@ namespace BlackRose.Core.Models.Units
                 _parent.AutoFlipper.Enable = false;
                 _parent.Rigidbody2D.simulated = false;
                 _parent.Rigidbody2D.velocity = Vector3.zero;
+                _parent.PlaySE(_fullshootSE.SEName, _fullshootSE.Volume);
             });
             hook.OnExit.Subscribe(_ =>
             {

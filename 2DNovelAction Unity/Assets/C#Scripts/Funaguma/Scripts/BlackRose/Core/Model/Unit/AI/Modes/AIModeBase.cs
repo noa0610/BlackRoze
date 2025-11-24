@@ -54,6 +54,14 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private string _fullShootTrig = "toShot";
         [SerializeField] private string _walkTrig = "toRan";
 
+        [Header("Visuals")]
+        [SerializeField] protected VisualInfo _shootSE;
+        [SerializeField] protected VisualInfo _halfshootSE;
+        [SerializeField] protected VisualInfo _fullshootSE;
+        [SerializeField] protected VisualInfo _skillSE;
+        protected bool _halfEffectPlayed = false;
+        protected bool _fullEffectPlayed = false;
+
         protected AIController _parent;
         protected StateMachine<AIController, Triggers, SubState> _stateMachine;
         public UnitStatusData StatusData => _status;
@@ -66,9 +74,9 @@ namespace BlackRose.Core.Models.Units
         {
             Debug.Log(GetType().Name + ":登録処理");
             var op = new StateMachineOption<AIController, AITriggers, SubState>(_parent);
-            op.Logger = _parent.logger;
+            //op.Logger = _parent.logger;
             op.QueueMode = HighElixir.StateMachine.QueueMode.DoEverything;
-            op.LogLevel = RequiredLoggerLevel.ALL;
+            //op.LogLevel = RequiredLoggerLevel.ALL;
             op.EnableOverriding = true;
 
             _stateMachine = new(op);
@@ -103,13 +111,13 @@ namespace BlackRose.Core.Models.Units
             {
                 _currentState = x.ToState.ToString();
                 var t = Time.frameCount;
-                Debug.Log($"[{last}->{t}]{x.ToString()}");
+                //Debug.Log($"[{last}->{t}]{x.ToString()}");
                 last = t;
             });
 #endif
             _stateMachine.RegisterState(SubState.Idle, new Idle<AIController>(), "Cancelable");
-            var hook = _stateMachine.RegisterState(SubState.Landing, new Idle<AIController>(), "Cancelable");
-            hook.OnEnter.Subscribe(x =>
+            _stateMachine.RegisterState(SubState.Landing, new Idle<AIController>(), "Cancelable")
+            .OnEnter.Subscribe(x =>
             {
                 //Debug.Log("Landed");
                 _stateMachine.LazySend(Triggers.landed);
@@ -117,10 +125,11 @@ namespace BlackRose.Core.Models.Units
 
             _stateMachine.RegisterState(SubState.Jump, _jump, "OnAir", "Cancelable");
             _stateMachine.RegisterState(SubState.Move, _parent.MoveOnGround, "Cancelable", "Move");
-            hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable", "Move", "Dash");
+            var hook = _stateMachine.RegisterState(SubState.Dash, _parent.Dash, "Cancelable", "Move", "Dash");
             hook.OnEnter.Subscribe(x =>
             {
                 _parent.TrailRenderer.emitting = true;
+                _parent.PlaySE("ダッシュ開始");
             });
             hook.OnExit.Subscribe(x =>
             {
@@ -131,11 +140,12 @@ namespace BlackRose.Core.Models.Units
                 }
             });
             _stateMachine.RegisterState(SubState.ShootInterval, new Idle<AIController>(), "Cancelable");
-            hook = _stateMachine.RegisterState(SubState.Falling, _parent.MoveAir, "OnAir", "Cancelable");
-            hook.OnEnter.Subscribe(_ =>
+            _stateMachine.RegisterState(SubState.Falling, _parent.MoveAir, "OnAir", "Cancelable")
+            .OnEnter.Subscribe(_ =>
             {
                 _parent.GroundCheckDirectory(GroundState.Falling);
             }).AddTo(_parent);
+
             RegisterStates();
 
             //_stateMachine.RegisterAnyTransition(Triggers.pause, SubState.Idle, "toIdle");
@@ -205,6 +215,8 @@ namespace BlackRose.Core.Models.Units
             {
                 InvokeHalfShoot();
             }
+            _halfEffectPlayed = false;
+            _fullEffectPlayed = false;
         }
 
         public abstract void InvokeShoot();
@@ -241,6 +253,19 @@ namespace BlackRose.Core.Models.Units
         public void Bind(AIController parent)
         {
             _parent = parent;
+            Timer.GetReactiveProperty(_parent.ChargeTime).Subscribe(t =>
+            {
+                if (!_halfEffectPlayed && t.Current >= _chargeTime[0])
+                {
+                    _halfEffectPlayed = true;
+                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position);
+                }
+                else if (!_fullEffectPlayed && t.Current >= _chargeTime[1])
+                {
+                    _fullEffectPlayed = true;
+                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position);
+                }
+            }).AddTo(_parent);
         }
     }
 }

@@ -7,6 +7,7 @@ namespace BlackRose.Core.Models.Objects
     [Serializable]
     public class ReflectMono : MonoBehaviour
     {
+        [SerializeField] private VisualInfo _onRefrectSE;
         private void OnTriggerEnter2D(Collider2D collision)
         {
             // 弾に当たったら反射させる
@@ -17,6 +18,7 @@ namespace BlackRose.Core.Models.Objects
                 // 反射処理
                 bullet.TargetLayer = 1 << LayerMask.NameToLayer("Enemy");
                 bullet.Reflect();
+                SoundManager.instance.PlaySE(_onRefrectSE.SEName, _onRefrectSE.Volume);
             }
         }
     }

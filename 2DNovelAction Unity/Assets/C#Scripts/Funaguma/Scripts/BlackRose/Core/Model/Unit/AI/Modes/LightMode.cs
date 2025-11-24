@@ -23,12 +23,17 @@ namespace BlackRose.Core.Models.Units
 
         protected override void RegisterStates()
         {
-            _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
-            _stateMachine.RegisterState(SubState.Half, _half, "Shoot");
-            _stateMachine.RegisterState(SubState.Full, _full, "Shoot");
-            var hook = _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "");
-            hook.OnEnter.Subscribe(_ =>
+            _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_shootSE.SEName, _shootSE.Volume));
+            _stateMachine.RegisterState(SubState.Half, _half, "Shoot")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_halfshootSE.SEName, _halfshootSE.Volume));
+            _stateMachine.RegisterState(SubState.Full, _full, "Shoot")
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_fullshootSE.SEName, _fullshootSE.Volume));
+            _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "")
+            .OnEnter.Subscribe(_ =>
             {
+                Debug.Log("LightMode: Launching Missile");       
+                _parent.PlaySE(_skillSE.SEName, _skillSE.Volume);
                 _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackLayer);
                 _stateMachine.LazySend(AITriggers.shootCompleted);
             });

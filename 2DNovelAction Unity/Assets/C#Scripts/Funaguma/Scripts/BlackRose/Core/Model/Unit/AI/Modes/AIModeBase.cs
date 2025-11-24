@@ -72,7 +72,7 @@ namespace BlackRose.Core.Models.Units
             op.EnableOverriding = true;
 
             _stateMachine = new(op);
-            _stateMachine.OnTransitionLogging();
+            // _stateMachine.OnTransitionLogging();
             _stateMachine.RegisterProcessor = new StateProcessor<AIController, AITriggers, SubState>((x, y) =>
             {
                 if (y.State.HasTag("Shoot"))

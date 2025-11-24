@@ -13,6 +13,8 @@ namespace HighElixir.StateMachine.Extention
                 if (s.Logger == null) return;
                 s.Logger.Info(x.ToString());
             });
+            #else
+            return null;
 #endif
         }
     }

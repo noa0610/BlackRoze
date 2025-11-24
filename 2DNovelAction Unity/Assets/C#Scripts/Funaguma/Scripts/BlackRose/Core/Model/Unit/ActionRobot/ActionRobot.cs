@@ -165,6 +165,9 @@ namespace BlackRose.Core.Models.Units
                     else
                         _fms.Send(Triggers.halfChargeInAir);
                 }
+                _chargeSEPlayed = false;
+                _halfEffectPlayed = false;
+                _fullEffectPlayed = false;
             }
         }
         #endregion

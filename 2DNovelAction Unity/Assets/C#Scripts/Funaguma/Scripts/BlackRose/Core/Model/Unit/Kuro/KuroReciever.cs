@@ -1,6 +1,5 @@
-﻿using BlackRose.Core.Models.Units;
-using UnityEngine;
-namespace BlackRose.Core.Model.Unit
+﻿using UnityEngine;
+namespace BlackRose.Core.Models.Units
 {
     public class KuroReciever : VisualReciever
     {

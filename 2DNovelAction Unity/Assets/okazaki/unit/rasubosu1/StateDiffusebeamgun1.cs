@@ -56,20 +56,17 @@ namespace BlackRose.Core.Models.Units
             // 待機 
             var idle = new Idle_LazyChange(Triggers.FoundPlayer.ToString(), 2, true);
             _stateMachine.AddState(States.idle, idle);
+
             // 分裂
             _multiShoot.onShootComplete.AddListener(() =>
             {
-                PlaySE(_SpreadSEName, _SpreadSEVolume);
-                UnitManager.instance.RemoveUnit(this);
-                Destroy(gameObject);
-                _stateMachine.LazyChange(Triggers.SplitEnd);
+                _stateMachine.ChangeState(Triggers.SplitEnd);
             });
-
             _stateMachine.AddState(States.split, _multiShoot);
 
 
             // 分裂待機
-            var splitidle = new Idle_LazyChange(Triggers.Split.ToString(), 5, true);
+            var splitidle = new Idle_LazyChange(Triggers.Dead.ToString(), 0.2f, true);
             _stateMachine.AddState(States.splitidle, splitidle);
             // 死亡
             _stateMachine.AddState(States.dead, new Idle());

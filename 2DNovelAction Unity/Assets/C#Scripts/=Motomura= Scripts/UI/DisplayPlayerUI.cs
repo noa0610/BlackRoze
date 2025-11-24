@@ -23,7 +23,6 @@ public class DisplayPlayerUI : MonoBehaviour, IPlayerFollower
 
     void Update()
     {
-        // if (_statusManager  == null) return;
         var status = _player.StatusManager;
         var _hp = status.ReadValue(Status.HP);
         var _maxhp = status.ReadValue(Status.MaxHP);

@@ -37,6 +37,12 @@ namespace BlackRose
         {
             Timer.Start(_ticket, true, true);
         }
+
+        public void GroundCheckDirectory(GroundState overrideState = GroundState.None)
+        {
+            _groundState.Value = overrideState;
+            GroundCheck();
+        }
         private void GroundCheck()
         {
             if (!Timer.IsFinished(_ticket)) return;

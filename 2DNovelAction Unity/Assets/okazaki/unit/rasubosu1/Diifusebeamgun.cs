@@ -21,6 +21,11 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("同時に発射する弾数")]
         [SerializeField, Min(1)] private int _shootCount;
         [SerializeField] private MultiShoot _multiShoot;
+
+        [Header("SE")]
+        [SerializeField] private string _SpreadSEName = "拡散";
+        [SerializeField] private float _SpreadSEVolume = 0.5f;
+
         private SearchAssistanceMono _searchAssistance;
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();

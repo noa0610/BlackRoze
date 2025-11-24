@@ -67,15 +67,27 @@ namespace BlackRose.Core.Models.Units
         public bool Shoot(Vector2 spawnPos, BulletData data, LayerMask targetLayer)
         {
             if (_targets.Count == 0) return false;
+            if (_missilePool == null) return false;
 
             foreach (var t in _targets)
             {
                 if (t == null) continue;
 
-                var m = _missilePool.Get();
+                // Get a missile from the pool
+                TrackingMissile m = _missilePool.Get();
+                if (m == null)
+                {
+                    // pool empty or unavailable
+                    continue;
+                }
+
                 var tr = m.transform;
+                // Parent and set spawn position BEFORE resetting internal state so ResetForPool captures correct initialY
                 tr.SetParent(_container, worldPositionStays: true);
                 tr.position = spawnPos;
+
+                // Reset missile internal state for reuse
+                m.ResetForPool();
 
                 // 弾の基本セット
                 m.SetBulletStatus(data, targetLayer);
@@ -135,6 +147,7 @@ namespace BlackRose.Core.Models.Units
                 if (t == null || _markerPair.ContainsKey(t)) continue;
 
                 var sr = _markerPool.Get();
+                if (sr == null) continue;
                 sr.transform.SetParent(_markerContainer, worldPositionStays: true);
                 sr.gameObject.SetActive(true);
                 _markerPair.Add(t, sr);

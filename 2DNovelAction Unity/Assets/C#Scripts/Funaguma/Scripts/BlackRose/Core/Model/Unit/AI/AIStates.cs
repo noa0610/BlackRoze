@@ -1,35 +1,49 @@
 ﻿using BlackRose.Core.Models.Units.State;
 using HighElixir.StateMachine;
+using HighElixir.StateMachine.Extention;
 using UniRx;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
+    // Animator メモ
+    // LaserDir => 0:まっすぐ, 1:地上↓, 2:地上↑, 3:空中まっすぐ, 4;空中↓, 5:空中↑
+    // Mode => 0: Normal, 1: Heavy, 2:Light, 3:Dead
     // ステート、モード管理
     public partial class AIController
     {
-        public enum Mode
-        {
-            Normal,
-            Light,
-            Heavy
-        }
-
         public enum AIStates : int
         {
-            Dead,
             Normal,
+            Heavy,
             Light,
-            Heavy
+            Dead,
+            Paused
         }
         public enum AITriggers : int
         {
-            moveInput, cancelMove, dashInput, shootInput, halfCharge, fullCharge, jumpInput,
-            shootCompleted, watingTimeHasElapsed, skillInput, skillFinished,
-            landing, falling, stun, recoverFromStun,
+            // 移動
+            moveInput, cancelMove,
+            dashInput, cancelDash,
+            jumpInput,
+            landing, landed,
+            falling,
+
+            // 射撃
+            shootInput, halfCharge, fullCharge,
+            shootCompleted, watingTimeHasElapsed,
+
+            // スキル
+            skillInput, skillFinished,
+
+            // スタン
+            stun, recoverFromStun,
 
             // モードチェンジ
-            mC_l, mC_h, mC_n, dead
+            mC_l, mC_h, mC_n, dead,
+
+            // その他
+            pause, resume
         }
 
         // 外部
@@ -73,6 +87,7 @@ namespace BlackRose.Core.Models.Units
         public void SwitchModeLight()
         {
             _spriteResolver.Change_L();
+
             ChangeMode(AIStates.Light);
         }
         public void SwitchModeHeavy()
@@ -102,6 +117,7 @@ namespace BlackRose.Core.Models.Units
 
             _currentEnumMode = mode;
 
+            Animator.SetInteger("Mode", (int)mode);
             _fms.Send(ModeChange);
 
             Debug.Log("ModeChanged");
@@ -117,6 +133,14 @@ namespace BlackRose.Core.Models.Units
         protected override void AfterAwake()
         {
             base.AfterAwake();
+
+            CurrentGroundState.Subscribe(state =>
+            {
+                if (state == GroundState.Falling || state == GroundState.Rising)
+                    _animator.SetBool("InAir", true);
+                else
+                    _animator.SetBool("InAir", false);
+            }).AddTo(this);
             ChangeMode(AIStates.Normal);
         }
 
@@ -137,11 +161,13 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterState(AIStates.Light, new Idle<AIController>());
             _fms.RegisterState(AIStates.Heavy, new Idle<AIController>());
             _fms.RegisterState(AIStates.Dead, new Idle<AIController>());
+            _fms.RegisterState(AIStates.Paused, new Idle<AIController>());
             // 任意遷移
-            _fms.RegisterAnyTransition(AITriggers.mC_h, AIStates.Heavy);
-            _fms.RegisterAnyTransition(AITriggers.mC_l, AIStates.Light);
-            _fms.RegisterAnyTransition(AITriggers.mC_n, AIStates.Normal);
-            _fms.RegisterAnyTransition(AITriggers.dead, AIStates.Dead);
+            _fms.RegisterAnyTransition(AITriggers.pause, AIStates.Paused, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.mC_h, AIStates.Heavy, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.mC_l, AIStates.Light, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.mC_n, AIStates.Normal, "Reset");
+            _fms.RegisterAnyTransition(AITriggers.dead, AIStates.Dead, "toDead");
 
             _normalMode.Register();
             _lightMode.Register();

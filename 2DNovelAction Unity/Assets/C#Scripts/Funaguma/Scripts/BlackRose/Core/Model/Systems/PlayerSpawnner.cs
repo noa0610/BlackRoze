@@ -41,7 +41,14 @@ namespace BlackRose.Core.Models.Objects
             }
             //Player.Refresh();
         }
-
+        public static void ShowRespawnMenu()
+        {
+            var respawnMenu = UnityEngine.Object.FindObjectOfType<UI.RespawnMenu>();
+            if (respawnMenu != null)
+            {
+                respawnMenu.Show();
+            }
+        }
 
         public void InitialSpawn()
         {

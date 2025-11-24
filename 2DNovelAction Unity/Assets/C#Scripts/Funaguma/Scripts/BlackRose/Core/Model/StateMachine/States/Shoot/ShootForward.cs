@@ -23,6 +23,8 @@ namespace BlackRose.Core.Models.States
             Vector3 spawnPos = _muzzle.transform.position + new Vector3(unit.Direction.x * _createPos, 0, 0);
             // 弾を生成
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
+            float angle = Mathf.Atan2(unit.Direction.y, unit.Direction.x) * Mathf.Rad2Deg;
+            instantiatedBullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
             InitBullet(instantiatedBullet, _direction);
             await base.Shoot(unit);
         }

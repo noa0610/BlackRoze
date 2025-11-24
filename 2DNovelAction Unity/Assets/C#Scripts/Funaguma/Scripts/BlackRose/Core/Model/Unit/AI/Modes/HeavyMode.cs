@@ -1,9 +1,5 @@
-﻿using BlackRose.Core.Models.Helper;
-using BlackRose.Core.Models.Objects;
-using BlackRose.Core.Models.Units.State;
-using HighElixir.StateMachine.Extensions;
+﻿using BlackRose.Core.Models.Units.State;
 using HighElixir.StateMachine.Extention;
-using HighElixir.Timers;
 using System;
 using UniRx;
 using UnityEngine;
@@ -16,8 +12,10 @@ namespace BlackRose.Core.Models.Units
     [Serializable]
     public class HeavyMode : AIModeBase
     {
+        [Header("Anim")]
+        [SerializeField] private string _frontWalk;
+        [SerializeField] private string _backwardWalk;
         [Header("Heavy Shoot")]
-        [Header("")]
         [SerializeField] private ShootWithMove<AIController> _shoot;
         [SerializeField] private ShootForward<AIController> _half;
         [SerializeField] private LaserState<AIController> _laser;
@@ -55,6 +53,17 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Skill, _reflect, "Skill");
         }
 
+        public override void OnGrounded() { }
+        public override void OnInputMove(Vector2 dir)
+        {
+            base.OnInputMove(dir);
+            if (!_parent.AutoFlipper.Enable && !NonEquableDir(dir.x))
+            {
+                _parent.Animator.SetTrigger(_backwardWalk);
+            }
+            else if (!_stateMachine.Current.info.HasTagOnChild("Dash"))
+                _parent.Animator.SetTrigger(_frontWalk);
+        }
         public override void OnSkill(InputValue value)
         {
             if (value.isPressed)
@@ -82,9 +91,14 @@ namespace BlackRose.Core.Models.Units
 
         public override void InvokeFullShoot()
         {
+            int dir = 0;
+            if (_parent.ShootDir.y > 0) dir = 2;
+            if (_parent.ShootDir.y < 0) dir = 1;
+            Debug.Log(dir);
+            _parent.Animator.SetInteger("LaserDir", dir);
             _ = _stateMachine.SendEventAndLockExitAsync(
                 Triggers.fullCharge,
-                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(1.6),
                 onUnlock: () => _stateMachine.LazySend(Triggers.shootCompleted));
         }
 
@@ -96,6 +110,12 @@ namespace BlackRose.Core.Models.Units
         public override void ModeChange_V()
         {
             _parent.SwitchModeLight();
+        }
+
+        private bool NonEquableDir(float x)
+        {
+            var movedirx = _parent.MoveDirection.x;
+            return Mathf.Sign(x) == Mathf.Sign(movedirx);
         }
     }
 }

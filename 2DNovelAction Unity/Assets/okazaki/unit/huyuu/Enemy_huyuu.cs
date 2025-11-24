@@ -5,16 +5,36 @@ using HighElixir;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
     public partial class Enemy_huyuu : UnitBase
     {
+        [Header("自爆状態")]
         [SerializeField] private SuicideBombing _suicideBombing;
+        [SerializeField] private GameObject _ExplosionPartecl; // 爆発のエフェクト
+        [SerializeField] private float _ExplosionParteclTime = 4f;  // エフェクト発生時間
+
         private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
 
+        [Header("死亡状態")]
+        [SerializeField] private float _DeadEndwaitTime = 0.2f;
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
+
+
+        [Header("SE")]
+        [SerializeField] private string _ExplosionSEName = "大砲1";
+        [SerializeField] private float _ExplosionSEVolume = 0.1f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "敵ダメージ2";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
+
+        
         // 実装
         private SearchAssistanceMono _searchAssistance;
 
@@ -24,6 +44,13 @@ namespace BlackRose.Core.Models.Units
             var list = UnitManager.instance.GetUnitList();
             if (IsMatchingState(States.move) && _searchAssistance.Execute("red", list, out _))
             {
+                PlaySE(_ExplosionSEName, _ExplosionSEVolume);
+                if (_ExplosionPartecl != null)
+                {
+                    Destroy(
+                        Instantiate(_ExplosionPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y), Quaternion.identity, null),
+                        _ExplosionParteclTime);
+                }
                 _stateMachine.ChangeState(Triggers.AttackRange);
             }
             if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
@@ -32,13 +59,60 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.FoundPlayer);
             }
             else if (!_searchAssistance.Execute("green", list, out _))
+            {
                 _stateMachine.ChangeState(Triggers.MissingPlayer);
+            }
 
         }
         protected override void BeforeAwake()
         {
             _searchAssistance = GetComponent<SearchAssistanceMono>();
         }
+
+        /// <summary>
+        /// 外部から呼び出されるダメージ処理
+        /// </summary>
+        protected override void OnTakeDamage(IUnit from, float damage)
+        {
+            PlaySE(_DamageSEName, _DamageSEVolume);
+            if (statusManager.ReadValue(Status.HP) <= 0)
+            {
+                _stateMachine.ChangeState(Triggers.Died);
+            }
+        }
+        private async void Dead()
+        {
+            if (_DeadPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 1), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+
+            PlaySE(_DeadSEName, _DeadSEVolume);
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            UnitManager.instance.RemoveUnit(this);
+            Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
+
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
+        }
+
         protected override void AfterFixedUpdate()
         {
             SearchPlayer();

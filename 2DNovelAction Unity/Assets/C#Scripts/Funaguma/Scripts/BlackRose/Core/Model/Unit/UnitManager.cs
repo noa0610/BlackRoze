@@ -27,6 +27,7 @@ namespace BlackRose.Core.Models.Units
 
         public void AddDamage(UnitBase target, IUnit from, float damage)
         {
+            Debug.Log($"{target.name} : Take Damage {damage}");
             target.TakeDamage(from, damage);
         }
 

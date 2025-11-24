@@ -18,7 +18,7 @@ public class ModeChange : MonoBehaviour
 
     void Update()
     {
-        if (_InputAction.GFF.ChangeMode.triggered)
+        if (_InputAction.GFF.ChangeMode.triggered)//[W] key
         {
             switch (targetImage.sprite.name)
             {

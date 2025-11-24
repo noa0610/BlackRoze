@@ -32,9 +32,6 @@ namespace BlackRose.Core.Models.Units.State
     {
         protected override Status Status => Status.DashSpeed;
 
-        // Exit→着地までの購読を保持しておく（破棄時に保険で解除）
-        private Action _onLandingHandler;
-
         public DashOnGround(bool isStopInExit = false)
             : base(isStopInExit)
         {

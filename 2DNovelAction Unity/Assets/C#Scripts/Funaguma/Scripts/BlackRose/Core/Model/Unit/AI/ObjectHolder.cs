@@ -9,17 +9,14 @@ namespace BlackRose.Core.Models.Units
         // 各モードで使用するオブジェクト群
         [Header("Objects")]
         [SerializeField] private GameObject _preWarp;
-        [SerializeField] private LayerMask _attackTarget;
         [SerializeField] private ReflectMono _reflectMono;
+        [SerializeField] private TrailRenderer _trailRenderer;
 
-        // GetComponent
-        private DynamicAfterImageEffect2DPlayer _dPlayer;
         private AutoFlipHelper _flippingUnit;
 
-        public DynamicAfterImageEffect2DPlayer DynamicAfterImageEffect2D { get { return _dPlayer; } }
-        public LayerMask AttackTarget => _attackTarget;
         public GameObject PreWarp => _preWarp;
         public ReflectMono ReflectMono => _reflectMono;
         public AutoFlipHelper AutoFlipper => _flippingUnit;
+        public TrailRenderer TrailRenderer => _trailRenderer;
     }
 }

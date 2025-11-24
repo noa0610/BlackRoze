@@ -76,19 +76,33 @@ namespace BlackRose.Core.Models.Units
 
             // 発射
             _shoot.onShootComplete.AsObservable().Subscribe(_ => OnShootComplete()).AddTo(this);
+            _shoot.onShootComplete.AddListener(() =>
+            {
+                PlaySE(_ShotSEName, _ShotSEVolume);
+            });
             _shoot.SetBullet(_bulletData);
             _stateMachine.AddState(States.shoot, _shoot);
 
             // インターバル
             var interval = new Idle_LazyChange(Triggers.ShootReady.ToString(), _trishootInterval);
+            interval.OnAnimationCompleted.AddListener(() =>
+            {
+                PlaySE(_EncountSEName, _EncountSEVolume);
+            });
             _stateMachine .AddState(States.shootInterval, interval);
+
             // 警戒
             //_looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);
             _looking = new Idle_Looking(_turret);
             _stateMachine.AddState(States.inVigilance, _looking);
 
             // 死亡
-            _stateMachine.AddState(States.dead, new Idle());
+            var dead = new Idle_LazyEvent(_DeadEndwaitTime);
+            dead.OnAnimationCompleted.AddListener(() =>
+            {
+                Dead();
+            });
+            _stateMachine.AddState(States.dead, dead);
         }
     }
 }

@@ -40,17 +40,24 @@ namespace BlackRose.Core.Models.Units.State
             // 一度だけ上方向にインパルス
             Rigidbody2D.AddForce(Vector2.up * amount, ForceMode2D.Impulse);
             var x = Rigidbody2D.velocity.x;
-            if (GetDirection().x != 0 && Mathf.Abs(x) > 0.005)
+            var dirX = GetDirection().x;
+
+            if (dirX != 0 && Mathf.Abs(x) > 0.005f)
             {
-                // ジャンプ直後に進行方向に対して逆向きに入力していた場合、
-                // 横方向のブレーキをかける
-                float pow = 0;
-                if (x > 0 && GetDirection().x < 0) pow = -1;
-                if (x < 0 && GetDirection().x > 0) pow = 1;
-                pow *= _accel;
-                if (pow > x) pow = -x;
-                Rigidbody2D.velocity = new Vector2(x + pow, Rigidbody2D.velocity.y);
+                // 進行方向と逆向き入力のときだけブレーキ
+                if (x > 0 && dirX < 0 || x < 0 && dirX > 0)
+                {
+                    float pow = Mathf.Sign(dirX) * _accel; // 入力方向に対する加速度
+
+                    // pow と x は必ず逆向きになる状況なので、
+                    // 「ブレーキが効きすぎて0を通り越すなら、ちょうど0で止める」
+                    if (Mathf.Abs(pow) > Mathf.Abs(x))
+                        pow = -x;
+
+                    Rigidbody2D.velocity = new Vector2(x + pow, Rigidbody2D.velocity.y);
+                }
             }
+
 
             if (_enableJumped != -1 && _jumpCount >= _enableJumped)
                 _hasLeapt = true;

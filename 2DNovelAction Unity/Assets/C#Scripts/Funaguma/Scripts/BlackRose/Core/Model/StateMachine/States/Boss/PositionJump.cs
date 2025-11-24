@@ -17,6 +17,9 @@ namespace BlackRose.Core.Models.States
         private Vector2 _startPos;
         private float _savedGravity;
 
+        private string _randSEName;
+        private float _randSEVolume;
+
         public Vector2 TargetPosition { get; private set; }
 
         // 既存APIのため、OnCompletedにアタッチする形で実装
@@ -59,7 +62,7 @@ namespace BlackRose.Core.Models.States
             base.Stay(parent, deltaTime);
             if (Rigidbody2D == null) return;
             // 目標位置に到達したかチェック
-            if (Vector2.Distance(parent.transform.position, TargetPosition) < 0.2f)
+            if (Vector2.Distance(parent.transform.position, TargetPosition) < 1.0f)
             {
                 Rigidbody2D.velocity = Vector2.zero; // 到達時の速度をゼロにする
                 Debug.Log("PositionJump: Arrived at target position.");
@@ -71,6 +74,8 @@ namespace BlackRose.Core.Models.States
             base.Exit(nextIState, parent);
             if (Rigidbody2D != null)
                 Rigidbody2D.gravityScale = _savedGravity;
+            if(_randSEName != null)
+                parent.PlaySE(_randSEName, _randSEVolume);
         }
 
         public void SetTarget(int index)
@@ -92,6 +97,12 @@ namespace BlackRose.Core.Models.States
         public void SetRB2(Rigidbody2D rb)
         {
             Rigidbody2D = rb;
+        }
+
+        public void SetRandSE(string bgmName, float volume = 1f)
+        {
+            _randSEName = bgmName;
+            _randSEVolume = volume;
         }
     }
 }

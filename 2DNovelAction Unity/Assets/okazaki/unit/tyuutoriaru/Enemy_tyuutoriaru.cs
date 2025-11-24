@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.Helper;
@@ -7,181 +8,169 @@ using HighElixir;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
+using BlackRose.Core.Models.Systems;
+
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
-    public partial class Enemy_tyuutoriaru : UnitBase
+    public partial class Enemy_tyuutoriaru : GroundedUnit
     {
+        private enum StartDirection
+        {
+            Left,
+            Right
+        }
+        [Header("最初の向き")]
+        [SerializeField] private StartDirection _StartDirection = StartDirection.Left;
 
-        [SerializeField] private List<GameObject> _junpPositions;
-        [SerializeField] private GameObject _centerPositions;
-        [SerializeField] private GameObject _YPositions;
-        [SerializeField] private Animator _anim;
-        [SerializeField] private float closeRangeDistance = 5f; // 近距離判定の距離
-        private int currentAttack = 1; // 初期値は1（アタック1）
-        private int nowstate = 2;
-        private UnitBase _player;
-        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
+        [Header("デバッグ")]
+        [Tooltip("攻撃選択の固定化(１，レーザーショット ２，ビームソード)")]
+        [SerializeField] private int FixedAttackSelect = 0;
+
+        [Tooltip("登場演出の省略")]
+        [SerializeField] private bool cutEntry = false;
+
+
+        [Header("固有設定")]
+        [SerializeField] private float _AttackIntervalTime = 2f;
+
+
+        [Header("登場演出")]
+        [SerializeField] private float _EntryEndwaitTime = 4.5f;    // 登場アニメーション終了時間（手動必須になる）
+
+
+        [Header("ジャンプ")]
+        [SerializeField] private float _JumpSpeed = 7f;
+        [SerializeField] private float _wallDistanse = 3f;          // 壁との距離
+        [SerializeField] private float _wallChackRenge = 15f;       // 壁チェックの距離
+        [SerializeField] private LayerMask _wallLayer;
+
+        // TODO 後でSerializeFieldを消す
+        [SerializeField] private List<Vector3> _junpPositions;
+        [SerializeField] private Vector3 _centerPositions;
+
+
+        [Header("接近ビームソード")]
+        [SerializeField] private GameObject _beamswordmuzzle;
+        [SerializeField] private BulletData _beamswordBulletData;
+        [SerializeField] private float _Moveaccel = 20f;
+        [SerializeField] private float _Movefriction = 1.0f;
+        [SerializeField] private float _beamswordDistance = 5f;
+        [SerializeField] private GameObject WallChackPoint;
+        [SerializeField] private LayerMask _WallLayer;
+
+        [Tooltip("プレイヤー感知 → セイバー攻撃まで")]
+        [SerializeField] private float _beamswordwaitTime = 0.1f;
+        private bool _wallChack;
+
+
+        [Header("レーザーショット")]
         [SerializeField] private GameObject _Lasershotmuzzle;
         [SerializeField] private BulletData _LasershotbulletData;
-        [SerializeField] private LayerMask _LasershotTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private Rigidbody2D _RB2;
-        [SerializeField] private FreeMove _freeMove;
-        [SerializeField] private BulletData _beamswordBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _beamswordTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private BulletData _shockwaveBulletData; // 必要ならInspectorでセット
-        [SerializeField] private LayerMask _shockwaveTargetLayer; // 必要ならInspectorでセット
-        [SerializeField] private PositionJump _positionJump;
-        private bool _waitingForAttack1 = false;
-        // アニメ再生中フラグ（AnimaSelect の重複実行防止）
-        private bool _isAnimating = false;
-        #region 
+        [SerializeField] private int _LaserShotCount = 6;
 
-        // protected override void RegisterStats()
-        // {
-        //     // トランスミッショングループを作成
-        //     var idleTrigger = new[]                                // 待機ステートのトリガー
-        //     {
-        //         (Triggers.FoundPlayer, States.attackidle),              // イベント1発生で攻撃待機へ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ
-        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-        //     };
-        //     var attackidleTrigger = new[]                          // 攻撃待機ステートのトリガー  
-        //     {
-        //         (Triggers.Attack1, States.fixedpositionjump),              // 攻撃１でレーザー攻撃へ
-        //         (Triggers.Attack2, States.beamswordattackmove),   // 攻撃２でビームソード接近へ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ
-        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-        //     };
-        //     var lasershotTrigger = new[]                           // レーザー攻撃ステートのトリガー
-        //     {
-        //         (Triggers.Attack1end, States.attackidle),                // 攻撃１終了で攻撃待機へ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ
-        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-        //     };
-        //     var beamswordattackmoveTrigger = new[]                     // ビームソード攻撃ステートのトリガー
-        //     {
-        //         (Triggers.moveend, States.beamswordattack),                // 移動終了で攻撃２へ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ
-        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-        //     };
-        //     var beamswordattackTrigger = new[]                     // ビームソード攻撃ステートのトリガー
-        //     {
-        //         (Triggers.Attack2end, States.fixedpositionjump),                // 攻撃２終了でジャンプへ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ
-        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-        //     };
-        //     var fixedpositionjumpTrigger = new[]                                // ジャンプステートのトリガー
-        //     {
-        //         (Triggers.Landing, States.attackidle),             // 着地で攻撃待機へ
-        //         (Triggers.Died, States
-        //         (Triggers.HalfHP, States.stun)                // HPが半分以下でショックウェーブへ
-        //     };
-        //     var stunTrigger = new[]                                // スタンステートのトリガー
-        //     {
-        //         (Triggers.Event2, States.shockwave),               // イベント2発生でショックウェーブへ
-        //         (Triggers.Died, States.dead),                      // 死亡で死へ 
-        //     };
-        //     var shockwaveTrigger = new[]                           // ショックウェーブステートのトリガー
-        //     {
-        //         (Triggers.Shockwaveend, States.idle),              // ショックウェーブ終了で待機へ
-        //         (Triggers.Died, States.dead)                       // 死亡で死へ
-        //     };
+        [Tooltip("レーザーショット開始 → 発射直前待機")]
+        [SerializeField] private float _LaserShotStartTime = 1f;
 
-        //     // ステートマシンにStatesの移動先の追加
-        //     _stateMachine
-        //         .AddTransitions(States.idle, idleTrigger)
-        //         .AddTransitions(States.attackidle, attackidleTrigger)
-        //         .AddTransitions(States.lasershot, lasershotTrigger)
-        //         .AddTransitions(States.beamswordattackmove, beamswordattackmoveTrigger)
-        //         .AddTransitions(States.beamswordattack, beamswordattackTrigger)
-        //         .AddTransitions(States.fixedpositionjump, fixedpositionjumpTrigger)
-        //         .AddTransitions(States.stun, stunTrigger)
-        //         .AddTransitions(States.shockwave, shockwaveTrigger);
+        [Tooltip("発射直前待機 → 発射")]
+        [SerializeField] private float _LaserShotbeforeTime = 0.5f;
 
-        //     // 死んだときに何もしないならDeadの設定はいらない
+        [Tooltip("発射 → 発射後の後隙")]
+        [SerializeField] private float _LaserShotTime = 1f;
 
-        //     // 待機
-        //     var idle = new Idle().SetAnimeTrigger("idle").SetCancelableProgress(0);
-        //     _stateMachine.AddState(States.idle, idle);
-        //     // 死亡
-        //     var died = new Idle().SetAnimeTrigger("died").SetCancelableProgress(0);
-        //     died.OnAnimationCompleted.AddListener(() =>
-        //     {
-        //         UnitManager.instance.RemoveUnit(this);
-        //         Destroy(gameObject);
-        //     });
-        //     _stateMachine.AddState(States.dead, died);
-        //     // ジャンプ
-        // var jumpPositions = _junpPositions.ConvertAll(pos => (Vector2)pos.transform.position);
-        // var fixedpositionjump = new PositionJump(jumpPositions, 10f)
-        //     .SetAnimeTrigger("fixedpositionjump")
-        //     .SetCancelableProgress(0);
-        //     fixedpositionjump.OnArrived += () =>
-        //     {
-        //        _stateMachine.ChangeState(Triggers.Landing); // 例：Landingトリガーで遷移
-        //     };
-        // _stateMachine.AddState(States.fixedpositionjump, fixedpositionjump);
-        //     // 攻撃待機
-        //     var attackIdle = new Idle_LazyEvent(5f).SetAnimeTrigger("attackidle").SetCancelableProgress(0);
-        //     attackIdle.LazyEvent.AddListener(Attackselect);
-        //     _stateMachine.AddState(States.attackidle, attackIdle);
-        //     // レーザー攻撃
-        //     var lasershot = new LaserShot(_RB2, _firePoints, _bulletPrefab).SetAnimeTrigger("lasershot").SetCancelableProgress(0);
-        //     _stateMachine.AddState(States.lasershot, lasershot);
-        //     // ビームソード攻撃移動
-        //     var beamswordattackmove = _freeMove.SetAnimeTrigger("move").SetCancelableProgress(0);
-        //     _stateMachine.AddState(States.beamswordattackmove, beamswordattackmove);
-        //     // ビームソード攻撃
-        //     var beamswordattack = new ShootForward(_beamswordBulletData, _beamswordTargetLayer)
-        //     .SetDirection(Vector2.down) // プレイヤー方向など、必要に応じてセット
-        //     .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
-        //     .SetAnimeTrigger("beamswordattack")
-        //     .SetCancelableProgress(0);
-        //     beamswordattack.onShootComplete.AddListener(() =>
-        //     {
-        //         _stateMachine.LazyChange(Triggers.Attack2end);
-        //     });
-        //     _stateMachine.AddState(States.beamswordattack, beamswordattack);
-        //     // スタン
-        //     var stun = new Idle_LazyChange(Triggers.Event2.ToString(), 5, true);
-        //     _stateMachine.AddState(States.stun, stun);
-        //     // ショックウェーブ
-        //     var shockwave = new ShootForward(_shockwaveBulletData, _shockwaveTargetLayer)
-        //     .SetDirection(Vector2.left)
-        //     .SetMuzzle(_swordfirePoints.Length > 0 ? _swordfirePoints[0].gameObject : gameObject)
-        //     .SetAnimeTrigger("beamswordattack")
-        //     .SetCancelableProgress(0);
-        //     // 弾発射完了時にショックウェーブ終了トリガーを発火
-        //     shockwave.onShootComplete.AddListener(() =>
-        //     {
-        //         _stateMachine.LazyChange(Triggers.Shockwaveend);
-        //     });
-        //     _stateMachine.AddState(States.shockwave, shockwave);
-        // }
-        #endregion
+        [Tooltip("発射後の後隙 → 次の発射")]
+        [SerializeField] private float _LaserShotIntervalTime = 1f;
+        private int _shotCount;
+
+
+        [Header("衝撃波")]
+        [SerializeField] private GameObject _shockwaveshotmuzzle;
+        [SerializeField] private BulletData _shockwaveBulletData;
+
+
+        [Header("死亡状態")]
+        [SerializeField] private bool _wontDie = false;                   // 死亡状態に移行しない
+        [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
+        [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
+        [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
+
+
+        [Header("SE")]
+        [SerializeField] private string _MoveSEName = "ロボットの足音";
+        [SerializeField] private float _MoveSEVolume = 0.5f;
+        [SerializeField] private float _MoveSEInterval = 1f;
+        [SerializeField] private string _RandSEName = "ドスン"; // 着地
+        [SerializeField] private float _RandSEVolume = 0.5f;
+        [SerializeField] private string _ShotSEName = "ビームライフル";
+        [SerializeField] private float _ShotSEVolume = 0.5f;
+        [SerializeField] private string _SwordSmallSEName = "ブンッ 斬撃音 弱";
+        [SerializeField] private float _SwordSmallSEVolume = 0.5f;
+        [SerializeField] private string _SwordSEName = "ブンッ 斬撃音";
+        [SerializeField] private float _SwordSEVolume = 0.5f;
+        [SerializeField] private string _StanSEName = "防御破壊";
+        [SerializeField] private float _StanSEVolume = 0.5f;
+        [SerializeField] private string _ChargeSEName = "敵チャージ";
+        [SerializeField] private float _ChargeSEVolume = 0.5f;
+        [SerializeField] private string _ShockWaveSEName = "ショックウェーブ";
+        [SerializeField] private float _ShockWaveSEVolume = 0.5f;
+        [SerializeField] private string _DamageSEName = "敵ダメージ1";
+        [SerializeField] private float _DamageSEVolume = 0.2f;
+        [SerializeField] private string _DeadSEName = "撃破";
+        [SerializeField] private float _DeadSEVolume = 0.4f;
+        private float _moveSETimer = 0;
+
+
+        private Rigidbody2D _RB2;
+        private Animator _anim;
+        private int currentAttack = 1; // 初期値は1（レーザーショットから発動）
+        private UnitBase _player;
+        private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
+
+
+        private bool _waitingForAttack2 = false;
         private SearchAssistanceMono _searchAssistance;
-        private void SearchPlayer()
-        {
-            var list = UnitManager.instance.GetUnitList();
-            if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
-            {
-                _player = units.GetUnitNearest(transform.position);
-                _stateMachine.ChangeState(Triggers.FoundPlayer);
-            }
-        }
+        private CancellationTokenSource _cancellation;
 
+        #region === Unit ===
         protected override void BeforeAwake()
         {
+            InitJumpPosition();
             _searchAssistance = GetComponent<SearchAssistanceMono>();
         }
+        protected override void AfterAwake()
+        {
+            if (cutEntry)
+            {
+                _stateMachine.Awake("attackidle", false);
+                _animator.SetTrigger("toIdle");
+                IsInvincible = false;
+            }
+            else
+            {
+                _stateMachine.Awake("entry", false);
+                IsInvincible = true;
+            }
+        }
+        protected override void Start()
+        {
+            base.Start();
+            _RB2 = GetComponent<Rigidbody2D>();
+            _anim = GetComponent<Animator>();
+            _cancellation = new CancellationTokenSource();
+            InitDirection();
+        }
+
+        private void EntryEnd()
+        {
+            IsInvincible = false;
+        }
+
         private bool _halfHpTriggered = false;
 
-        protected override void AfterFixedUpdate()
+        protected override void OnTakeDamage(IUnit from, float damage)
         {
-            SearchPlayer();
-
-            // HPが半分以下になったら一度だけトリガー発火
+            PlaySE(_DamageSEName, _DamageSEVolume);
             if (!_halfHpTriggered)
             {
                 var hpStatus = statusManager.GetStatus(Status.HP);
@@ -195,34 +184,111 @@ namespace BlackRose.Core.Models.Units
                     if (hp <= maxHp / 2f)
                     {
                         _halfHpTriggered = true;
+                        PlaySE(_StanSEName, _StanSEVolume);
                         Debug.Log("HPが半分以下になりました");
                         _stateMachine.ChangeState(Triggers.HalfHP);
+                        IsInvincible = true;
                     }
                 }
             }
+        }
 
-            // beamswordattackステート中のみ判定
-            if (IsMatchingState(States.beamswordattackmove) && _player != null && _YPositions != null)
+        private async void Dead()
+        {
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel(); // UniTask停止
+
+            IsInvincible = true; // 攻撃不可
+
+            _cancellation.Cancel();  // UniTask停止
+            _cancellation.Dispose(); // リソース解放
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+
+            GetComponent<FlowchartFirer>().Fire();
+
+            await UniTask.Delay(TimeSpan.FromSeconds(0.1));
+
+            UnitManager.instance.RemoveUnit(this); // UnitManagerの自データ削除
+
+            Destroy(gameObject);
+
+            // UniTaskエラー対策
+            try
             {
-                // プレイヤーが_YPositionsのy座標を通過したら止める
-                float targetX = _YPositions.transform.position.x;
-                float playerX = _player.Transform.position.x;
+                await UniTask.Delay(TimeSpan.FromSeconds(_DeadEndwaitTime));
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら何もしない
+                return;
+            }
+            // オブジェクトが既に破棄されていたら続行しない
+            if (this == null) return;
 
-                // 例えば「近い」判定（±0.5以内など）
-                if (Mathf.Abs(playerX - targetX) < 0.5f)
+            UnitManager.instance.RemoveUnit(this);
+            if (this != null) Destroy(gameObject);
+        }
+
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            if (_wontDie) return;
+            PlaySE(_DeadSEName, _DeadSEVolume);
+            if (_DeadPartecl != null)
+            {
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
+            }
+            _stateMachine.ChangeState(Triggers.Died);
+        }
+        #endregion
+
+
+        private void SearchPlayer()
+        {
+            var list = UnitManager.instance.GetUnitList();
+            if (_searchAssistance.Execute("yellow", list, out var units))
+            {
+                _player = units.GetUnitNearest(transform.position);
+                _stateMachine.ChangeState(Triggers.FoundPlayer);
+            }
+        }
+
+        protected override void AfterFixedUpdate()
+        {
+            SearchPlayer();
+
+            if (IsMatchingState(States.attackidle))
+            {
+                TurnAround();
+
+                if (_player == null)
                 {
-                    Debug.Log("プレイヤーがY座標を通過しました");
-                    // ステート遷移（例：ジャンプや攻撃待機など）
-                    _stateMachine.ChangeState(Triggers.moveend);
+                    _stateMachine.ChangeState(Triggers.Playerdead);
                 }
             }
 
+            if (IsMatchingState(States.beamsword_move) && _player != null)
+            {
+                WallChack();
+                BeamSwordMoveStay();
+            }
+        }
+
+        private void TurnAround()
+        {
             // 見た目の向き変更など既存処理
             if (_player != null)
             {
                 Direction = (_player.Transform.position - transform.position).normalized;
+                Direction = (Direction.x > 0) ? Vector2.right : Vector2.left;
                 if (Direction.x != 0)
                 {
+                    Debug.Log("振り向き");
                     var scale = transform.localScale;
                     scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
                     transform.localScale = scale;
@@ -230,134 +296,291 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
+        private void InitDirection()
+        {
+            switch (_StartDirection)
+            {
+                case StartDirection.Left:
+                    MoveDirection = Vector2.left;
+                    Direction = Vector2.left;
+
+                    break;
+                case StartDirection.Right:
+                    MoveDirection = Vector2.right;
+                    Direction = Vector2.right;
+                    break;
+            }
+
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (Direction.x >= 0f ? 1f : -1f);
+            transform.localScale = scale;
+        }
+
+        private void WallChack()
+        {
+            if (WallChackPoint == null) return;
+            Ray2D ray = new Ray2D(WallChackPoint.transform.position, MoveDirection);
+            RaycastHit2D rayhit = Physics2D.Raycast(ray.origin, ray.direction, 1f, _WallLayer);
+            _wallChack = rayhit.collider ? true : false;
+            Debug.DrawRay(WallChackPoint.transform.position, MoveDirection, Color.red);
+        }
+
+
+
+        #region === Jump ===
+
+        // 左右から壁を探してジャンプ位置をセット
+        private void InitJumpPosition()
+        {
+            // リスト初期化
+            if (_junpPositions == null)
+                _junpPositions = new List<Vector3> { Vector3.zero, Vector3.zero };
+            else
+            {
+                if (_junpPositions.Count < 2)
+                {
+                    _junpPositions.Clear();
+                    _junpPositions.Add(Vector3.zero);
+                    _junpPositions.Add(Vector3.zero);
+                }
+            }
+
+            // 左右方向（最初に左方向から）
+            Vector2[] directions = new Vector2[]
+            {
+                Vector2.left,
+                Vector2.right
+            };
+            int mask = _wallLayer.value;
+
+            for (int i = 0; i < 2; i++)
+            {
+                Vector2 dir = directions[i];
+                RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, _wallChackRenge, mask);
+
+                Vector2 candidate;
+                if (hit.collider != null)
+                {
+                    Debug.Log("Hit Wall");
+                    candidate = hit.point - hit.normal * _wallDistanse * Vector2.left;
+                }
+                else
+                {
+                    Debug.Log("Not Wall");
+                    // 壁が見つからない場合は索敵範囲をジャンプ位置に
+                    candidate = (Vector2)transform.position + dir * (_wallChackRenge - _wallDistanse);
+                }
+
+                // Y軸は現在位置
+                candidate.y = transform.position.y;
+
+                // 左右位置をセット
+                _junpPositions[i] = (Vector3)candidate;
+            }
+
+            // 中央位置をセット
+            _centerPositions = (_junpPositions[0] + _junpPositions[1]) / 2;
+        }
+
+        // 中央から遠い位置をジャンプ位置として設定 (1 = 右, 0 = 左)
+        private int JumpSelect()
+        {
+            // 中心とこのオブジェクトのx座標差を取得
+            float distance = transform.position.x - _centerPositions.x;
+
+            Debug.Log("距離差: " + distance);
+            // 差がプラスなら1、マイナスなら0を返す
+            return distance >= 0 ? 0 : 1;
+        }
+        #endregion
+
+        #region === Attack Select ===
         private void Attackselect()
         {
+            if (FixedAttackSelect != 0)
+            {
+                switch (FixedAttackSelect)
+                {
+                    case 1:
+                        Attack1();
+                        break;
+                    case 2:
+                        Attack2();
+                        break;
+                }
+                return;
+            }
+
             if (currentAttack == 1)
             {
+                TurnAround();
                 Attack1();
                 currentAttack = 2;
                 return;
             }
             else if (currentAttack == 2)
             {
+                TurnAround();
                 Attack2();
                 currentAttack = 1;
             }
         }
-        private bool IsMatchingState(States state)
-        {
-            return _stateMachine.CurrentState.key == _stateNames[state];
-        }
+
         void Attack1()
         {
-            Debug.Log("レーザー攻撃");
-            _stateMachine.ChangeState(Triggers.Attack1);
+            Debug.Log("レーザー攻撃開始");
+            _stateMachine.ChangeState(Triggers.Attack1start);
         }
 
         void Attack2()
         {
-            Debug.Log("ビームソード接近");
-            _stateMachine.ChangeState(Triggers.Attack2);
+            Debug.Log("ビームソード開始");
+            _stateMachine.ChangeState(Triggers.Attack2start);
         }
+        #endregion
 
-        private int JumpSelect()
+        #region === LaserShot ===
+        private void LaserShotStart()
         {
-            // 中心とこのオブジェクトのx座標差を取得
-            float distance = transform.position.x - _centerPositions.transform.position.x;
-            Debug.Log("距離差: " + distance);
-            // 差がプラスなら1、マイナスなら0を返す
-            return distance >= 0 ? 0 : 1;
+            _shotCount = 0;
+            _lasershotState?.SetDirection(Direction);
+        }
+
+        private void LaserShotBefore()
+        {
 
         }
+
+        private async void LaserShotExit()
+        {
+            PlaySE(_ShotSEName, _ShotSEVolume);
+            _shotCount++;
+            await UniTask.Delay(TimeSpan.FromSeconds(_LaserShotTime), cancellationToken: _cancellation.Token);
+
+            if (_shotCount >= _LaserShotCount)
+            {
+                _stateMachine.ChangeState(Triggers.Attack1end);
+            }
+            else
+            {
+                _stateMachine.ChangeState(Triggers.Attack1loop);
+            }
+        }
+
         private void AnimaSelect()
         {
-
-            Debug.Log("Enemy_tyuutoriaru: AnimaSelect 呼び出し nowstate=" + nowstate);
-            if (!_isAnimating) _isAnimating = true;
-
-            if (nowstate == 2)
+            if (_shotCount % 3 == 1)
             {
-                Debug.Log("Enemy_tyuutoriaru: アニメーション状態2からの遷移");
                 _anim.SetTrigger("toShot_Up");
-                nowstate = 3;
                 return;
             }
-            else if (nowstate == 3)
+            else if (_shotCount % 3 == 2)
             {
-                Debug.Log("Enemy_tyuutoriaru: アニメーション状態3からの遷移");
                 _anim.SetTrigger("toShot_Down");
-                nowstate = 4;
                 return;
             }
-            else if (nowstate == 4)
+            else if (_shotCount % 3 == 0)
             {
-                Debug.Log("Enemy_tyuutoriaru: アニメーション状態4からの遷移");
-                _anim.SetTrigger("toShot_Up");
-                nowstate = 5;
-                return;
-            }
-            else if (nowstate == 5)
-            {
-                Debug.Log("Enemy_tyuutoriaru: アニメーション状態5からの遷移");
                 _anim.SetTrigger("toShot_Medium");
-                nowstate = 6;
-                return;
-            }
-            else if (nowstate == 6)
-            {
-                Debug.Log("Enemy_tyuutoriaru: アニメーション状態6からの遷移");
-                _anim.SetTrigger("toShot_Down");
-                nowstate = 7;
                 return;
             }
         }
-        // アニメ遷移→進行度監視して一度だけ Attack1 を呼ぶ
-        private async UniTaskVoid WaitAndCallAttack1()
-        {
-            // 二重起動防止
-            if (_waitingForAttack1) return;
-            _waitingForAttack1 = true;
 
+        private IEnumerator WaitForBeamswordAnimationThenFire()
+        {
+            if (_waitingForAttack2) yield break;
+            _waitingForAttack2 = true;
+            PlaySE(_SwordSEName, _SwordSEVolume);
             try
             {
-                // Animator が無ければ即呼ぶ
                 if (_anim == null)
                 {
-                    Attack1();
-                    return;
+                    _stateMachine.LazyChange(Triggers.Attack2end);
+                    yield break;
                 }
-                // 1フレーム待って Animator の遷移を反映させる
-                await UniTask.Yield(PlayerLoopTiming.Update);
 
-                // 現在のステートハッシュを取得して、ステートが変わるのを待つ
+                // 1フレーム待ってアニメ遷移を反映+                yield return null;
+                // 目標ステートの変化を待つ（短タイムアウト）
                 int startHash = _anim.GetCurrentAnimatorStateInfo(0).shortNameHash;
-                int attempts = 0;
-                const int maxTransitionFrames = 300; // 約5秒（60FPS想定）
-                while (_anim.GetCurrentAnimatorStateInfo(0).shortNameHash == startHash && attempts++ < maxTransitionFrames)
+                float waitTime = 0f;
+                const float maxWait = 5f;
+                while (_anim.GetCurrentAnimatorStateInfo(0).shortNameHash == startHash && waitTime < maxWait)
                 {
-                    await UniTask.Yield(PlayerLoopTiming.Update);                }
-                // 新しいステートの進行度が 0.5 以上になるまで待つ（タイムアウト付き）
-                attempts = 0;
-                const int maxProgressFrames = 600; // 約10秒                
-                while (_anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.5f && attempts++ < maxProgressFrames)
-                {                    await UniTask.Yield(PlayerLoopTiming.Update);
+                    waitTime += Time.deltaTime;
+                    yield return null;
+                }
+                // 新しいステートの進行度が 1.0 に達するまで待つ（ループの可能性を考慮）
+                waitTime = 0f;
+                while (_anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.8f && waitTime < maxWait)
+                {
+                    waitTime += Time.deltaTime;
+                    yield return null;
                 }
 
-                // 進行度到達後に一度だけ Attack1 を呼ぶ
-                Attack1();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
-                // 問題があっても攻撃継続
-                Attack1();
+                // アニメ完了後にステート遷移
+                _stateMachine.LazyChange(Triggers.Attack2end);
+                GetComponent<BoxCollider2D>().isTrigger = true;
+                _positionJump?.SetTarget(JumpSelect());
             }
             finally
             {
-                _waitingForAttack1 = false;
-                _isAnimating = false;
+                _waitingForAttack2 = false;
             }
         }
+        #endregion
+
+        #region === BeamSword ===
+        private void BeamSwordStart()
+        {
+            TurnAround();
+            PlaySE(_SwordSmallSEName, _SwordSmallSEVolume);
+            MoveDirection = Direction;
+        }
+
+        private async void BeamSwordMoveStay()
+        {
+            float playerdictance = _player.Transform.position.x - transform.position.x;
+
+            MoveSE(_MoveSEInterval);
+
+            // プレイヤーの近くまで接近したら
+            if (Mathf.Abs(playerdictance) <= _beamswordDistance)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_beamswordwaitTime), cancellationToken: _cancellation.Token);
+                _stateMachine.ChangeState(Triggers.Attack2);
+            }
+            else if (_wallChack)
+            {
+                _stateMachine.ChangeState(Triggers.Attack2);
+            }
+        }
+        #endregion
+
+        private void EntryMoveSE()
+        {
+            PlaySE(_MoveSEName, _MoveSEVolume);
+        }
+
+        private void EntrySwordSmallSE()
+        {
+            PlaySE(_SwordSmallSEName, _SwordSmallSEVolume);
+        }
+
+        private void MoveSE(float interval)
+        {
+            _moveSETimer += Time.deltaTime;
+            if (_moveSETimer >= interval)
+            {
+                PlaySE(_MoveSEName, _MoveSEVolume);
+                _moveSETimer = 0;
+            }
+        }
+
+        private bool IsMatchingState(States state)
+        {
+            return _stateMachine.CurrentState.key == _stateNames[state];
+        }
+
     }
 }
 

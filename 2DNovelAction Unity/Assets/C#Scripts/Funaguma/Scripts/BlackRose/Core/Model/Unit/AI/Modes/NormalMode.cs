@@ -17,7 +17,6 @@ namespace BlackRose.Core.Models.Units
     {
         [Header("Warp")]
         [SerializeField] private float _warpRange;
-        [SerializeField] private GameObject _preWarpDemo;
 
         // プレイヤーの中央になるように調整
         [SerializeField] private Vector3 _warpDemoDelta = new(0, 1, 0);
@@ -37,7 +36,7 @@ namespace BlackRose.Core.Models.Units
         private TimerTicket _elapsedTicket;
 
         public Vector2 WarpPreDir { get; private set; }
-
+        public GameObject WarpPre => _parent.PreWarp;
         public override AIStates Attach => AIStates.Normal;
 
         protected override void RegisterStates()
@@ -60,9 +59,9 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Skill, _warpState, "Skill");
 
             // Skill
-            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "");
+            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "toIdle");
             // event
-            _stateMachine.OnTransition.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ToState != SubState.ShootInterval).Subscribe(x => Timer.Stop(_intervalTicket));
+            //_stateMachine.OnTransition.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ToState != SubState.ShootInterval).Subscribe(x => Timer.Stop(_intervalTicket));
 
             _stateMachine.OnCompletion.SkipWhile(_ => !_stateMachine.Awaked).Where(x => x.ID == SubState.Skill).Subscribe(_ =>
             {
@@ -84,12 +83,12 @@ namespace BlackRose.Core.Models.Units
 
             if (value.isPressed)
             {
-                _preWarpDemo.SetActive(true);
+                WarpPre.SetActive(true);
             }
             else
             {
                 // TODO : ワープ実行
-                _preWarpDemo.SetActive(false);
+                WarpPre.SetActive(false);
                 _stateMachine.Send(Triggers.skillInput);
                 Timer.Start(_skillTicket);
             }
@@ -104,7 +103,7 @@ namespace BlackRose.Core.Models.Units
 
         public override void FixedUpdate(float deltaTime)
         {
-            _preWarpDemo.transform.position = _parent.transform.position + _warpDemoDelta + (Vector3)WarpPreDir * _warpRange;
+            WarpPre.transform.position = _parent.transform.position + _warpDemoDelta + (Vector3)WarpPreDir * _warpRange;
         }
 
         public override void InvokeShoot()
@@ -112,7 +111,7 @@ namespace BlackRose.Core.Models.Units
             if (_shootCount > 4)
             {
                 Debug.Log("うああああああ");
-                if (Timer.IsFinished(_elapsedTicket))
+                if (Timer.IsRunning(_elapsedTicket))
                     Timer.Start(_elapsedTicket, init: true, isLazy: true);
                 return;
             }

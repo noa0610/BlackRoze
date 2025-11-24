@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 155562837136290860}
   - component: {fileID: 4726167575312166255}
   - component: {fileID: 6070914565028812241}
-  - component: {fileID: 5361990617590762041}
   m_Layer: 0
   m_Name: RasuBoss1_SpreadShot
   m_TagString: Untagged
@@ -268,41 +267,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   _direction: {x: 0, y: 0}
---- !u!114 &5361990617590762041
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8342458952166535793}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f7c4a7d0490642438b3fb877e41b2e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _profiles:
-  - profileName: yellow
-    comps:
-    - id: 0
-      Comp:
-        rid: 3754870817123467266
-      Priority: 0
-    - id: 1
-      Comp:
-        rid: 3754870817123467268
-      Priority: 0
-  references:
-    version: 2
-    RefIds:
-    - rid: 3754870817123467266
-      type: {class: FilterByRange, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
-      data:
-        _center: {fileID: 8412770758354423909}
-        _range: 10
-    - rid: 3754870817123467268
-      type: {class: FilterByTag, ns: BlackRose.Core.Models.SearchSystems, asm: Assembly-CSharp}
-      data:
-        _tag: 1
 --- !u!1001 &8961367389560155436
 PrefabInstance:
   m_ObjectHideFlags: 0

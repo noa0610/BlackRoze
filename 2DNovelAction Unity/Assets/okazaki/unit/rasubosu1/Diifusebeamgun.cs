@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using BlackRose.Datas.Definitions;
 using BlackRose.Core.Models.Objects;
 using System.Collections;
-
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using System;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -26,36 +28,42 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private string _SpreadSEName = "拡散";
         [SerializeField] private float _SpreadSEVolume = 0.5f;
 
-        private SearchAssistanceMono _searchAssistance;
-        private UnitBase _player;
+        // private SearchAssistanceMono _searchAssistance;
+        // private UnitBase _player;
         private static readonly Dictionary<States, string> _stateNames = EnumWrapper.GetValueNameMap<States>();
         protected override void AfterFixedUpdate()
         {
-            SearchPlayer();
+            // SearchPlayer();
             // beamswordattackステート中のみ判定
-
-        }
-        private void SearchPlayer()
-        {
-            var list = UnitManager.instance.GetUnitList();
-            if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
+            if(IsMatchingState(States.dead))
             {
-                _player = units.GetUnitNearest(transform.position);
-                _stateMachine.ChangeState(Triggers.FoundPlayer);
+                OnDeath();
             }
         }
+        // private void SearchPlayer()
+        // {
+        //     // var list = UnitManager.instance.GetUnitList();
+        //     // if (IsMatchingState(States.idle) && _searchAssistance.Execute("yellow", list, out var units))
+        //     // {
+        //     //     _player = units.GetUnitNearest(transform.position);
+        //     //     _stateMachine.ChangeState(Triggers.FoundPlayer);
+        //     // }
+        // }
         private bool IsMatchingState(States state)
         {
             return _stateMachine.CurrentState.key == _stateNames[state];
         }
-        protected override void BeforeAwake()
-        {
-            _searchAssistance = GetComponent<SearchAssistanceMono>();
-        }
+        // protected override void BeforeAwake()
+        // {
+        //     _searchAssistance = GetComponent<SearchAssistanceMono>();
+        // }
 
-        protected override void OnDeath()
+        protected override async void OnDeath()
         {
+            base.OnDeath();
             UnitManager.instance.RemoveUnit(this);
+            // await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+            Debug.Log($"{gameObject.name} : RemoveUnit");
             Destroy(gameObject);
         }
 

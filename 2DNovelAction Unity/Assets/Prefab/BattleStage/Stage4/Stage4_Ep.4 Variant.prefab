@@ -9,9 +9,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1202309194711625589, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
-      propertyPath: selectedCommands.Array.size
+      propertyPath: selectedBlocks.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1202309194711625589, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
+      propertyPath: selectedCommands.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1202309194711625589, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
+      propertyPath: selectedBlocks.Array.data[0]
+      value: 
+      objectReference: {fileID: 9144771051021325127}
     - target: {fileID: 1202309194711625589, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
       propertyPath: selectedCommands.Array.data[0]
       value: 
@@ -58,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5019257920785435869, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
       propertyPath: nodeRect.width
-      value: 70.36362
+      value: 69.2
       objectReference: {fileID: 0}
     - target: {fileID: 5019257920785435869, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
       propertyPath: commandList.Array.size
@@ -324,7 +332,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Stage4_Ep.4 Variant
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7281650593106792115, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
+    - {fileID: 3492029821969172570, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -548,7 +558,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemId: 6
+  itemId: 66
   indentLevel: 0
   storyText: "\u300C\u305D\u3046\u304B\u3002\u300D"
   description: 
@@ -575,7 +585,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemId: 7
+  itemId: 67
   indentLevel: 0
   storyText: "\u300C\u3044\u308D\u3093\u306A\u3053\u3068\u3001\u77E5\u308A\u305F\u304B\u3063\u305F\u2026\u2026\u3002\u300D"
   description: 
@@ -2197,3 +2207,14 @@ MonoBehaviour:
   stopVoiceover: 1
   waitForVO: 0
   setSayDialog: {fileID: 0}
+--- !u!114 &9144771051021325127 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5019257920785435869, guid: 1b2254c567a2c1446817bfc9872d75d0, type: 3}
+  m_PrefabInstance: {fileID: 4273701288280956826}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6326142987670178910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3d73aef2cfc4f51abf34ac00241f60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

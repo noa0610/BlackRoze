@@ -259,6 +259,8 @@ PrefabInstance:
     - {fileID: 515661290777370556, guid: 5d02e4e5da2c0ed4bbd2c06b490ad006, type: 3}
     - {fileID: 967382762368712899, guid: 5d02e4e5da2c0ed4bbd2c06b490ad006, type: 3}
     - {fileID: 634199066653556507, guid: 5d02e4e5da2c0ed4bbd2c06b490ad006, type: 3}
+    - {fileID: 7159147073326092613, guid: 5d02e4e5da2c0ed4bbd2c06b490ad006, type: 3}
+    - {fileID: 3900634496446142380, guid: 5d02e4e5da2c0ed4bbd2c06b490ad006, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -699,6 +701,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ca345e1e342160d45816b98933485ba7, type: 3}
+--- !u!1 &214503694 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4007853854742447169, guid: ca345e1e342160d45816b98933485ba7, type: 3}
+  m_PrefabInstance: {fileID: 214503693}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &237035241 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8311475991075180422, guid: ca345e1e342160d45816b98933485ba7, type: 3}
@@ -1451,6 +1458,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1006163744}
     - target: {fileID: 2239905456906056483, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
+      propertyPath: methodName
+      value: PlayerEnable
+      objectReference: {fileID: 0}
+    - target: {fileID: 2239905456906056483, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 1006163744}
@@ -1493,6 +1504,18 @@ PrefabInstance:
     - target: {fileID: 2349639917204548150, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5204747011665588393, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
+      propertyPath: itemId
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 5383299884866649467, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
+      propertyPath: targetObject
+      value: 
+      objectReference: {fileID: 214503694}
+    - target: {fileID: 5594864975720984274, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
+      propertyPath: itemId
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 5875350133548523723, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
       propertyPath: eventHandler
@@ -1576,6 +1599,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1924246411827612923, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
+    - {fileID: 8152374110189249189, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
+    - {fileID: 2619051206009709644, guid: 62285b834a62c7a448a4afed6637f6d4, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -1958,7 +1983,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'RastBoss1_Spawn '
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9211412187004344329, guid: dd351f2141b005240805da8d8143d9ae, type: 3}
+    - {fileID: 3075451297394499296, guid: dd351f2141b005240805da8d8143d9ae, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -15188,7 +15215,6 @@ SceneRoots:
   - {fileID: 1418342751}
   - {fileID: 981923864}
   - {fileID: 1006163745}
-  - {fileID: 915254060}
   - {fileID: 961195731}
   - {fileID: 1318353672}
   - {fileID: 22601521}

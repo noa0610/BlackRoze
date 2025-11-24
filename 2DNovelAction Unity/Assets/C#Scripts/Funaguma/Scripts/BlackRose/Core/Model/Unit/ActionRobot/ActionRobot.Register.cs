@@ -87,6 +87,8 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private ObservableStateMachineTrigger _landing;
         #endregion
 
+        public StateMachine<UnitBase, Triggers, StateKey> FMS => _fms;
+
         #region 非同期、時間管理系
         private CancellationTokenSource _cancellableActionToken;
 
@@ -104,13 +106,13 @@ namespace BlackRose.Core.Models.Units
             option.LogLevel = RequiredLoggerLevel.ERROR;
             _fms = new(option);
             _fms.OnTransition.Subscribe(info => _currentState_fms = info.ToState.ToString()).AddTo(this);
-            var last = 0;
-            _fms.OnTransition.Subscribe(info =>
-            {
-                var t = Time.frameCount;
-                Debug.Log($"[{last}->{t}]{info.ToString()}");
-                last = t;
-            }).AddTo(this);
+            //var last = 0;
+            //_fms.OnTransition.Subscribe(info =>
+            //{
+            //    var t = Time.frameCount;
+            //    //Debug.Log($"[{last}->{t}]{info.ToString()}");
+            //    last = t;
+            //}).AddTo(this);
 #else
             option.LogLevel = RequiredLoggerLevel.Fatal;
             _fms = new(option);
@@ -184,14 +186,14 @@ namespace BlackRose.Core.Models.Units
             // idle
             _fms.RegisterState(StateKey.idle, new Idle<UnitBase>(), "Cancelable");
 
-            var hook = _fms.RegisterState(StateKey.landing, new Idle<UnitBase>(), "Cancelable", "Tokened");
-            hook.OnEnter.Subscribe(_ =>
+            _fms.RegisterState(StateKey.landing, new Idle<UnitBase>(), "Cancelable", "Tokened")
+            .OnEnter.Subscribe(_ =>
             {
                 _fms.LazySend(Triggers.landed);
             });
 
-            hook = _fms.RegisterState(StateKey.shootInterval, new Idle<UnitBase>(), "Cancelable", "Tokened");
-            hook.OnEnter.Subscribe(info =>
+            _fms.RegisterState(StateKey.shootInterval, new Idle<UnitBase>(), "Cancelable", "Tokened")
+            .OnEnter.Subscribe(info =>
             {
                 var token = Take();
                 UniTask.Create(async () =>
@@ -206,9 +208,12 @@ namespace BlackRose.Core.Models.Units
             });
 
             // shoot
-            _fms.RegisterState(StateKey.shoot, _normal, "Shoot");
-            _fms.RegisterState(StateKey.halfChargeShoot, _halfCharge, "Shoot");
-            _fms.RegisterState(StateKey.fullChargeShoot, _fullCharge, "Shoot");
+            _fms.RegisterState(StateKey.shoot, _normal, "Shoot")
+            .OnEnter.Subscribe(_ => PlaySE("ビームライフル", 0.7f)).AddTo(this);
+            _fms.RegisterState(StateKey.halfChargeShoot, _halfCharge, "Shoot")
+            .OnEnter.Subscribe(_ => PlaySE("ビーム砲", 0.7f)).AddTo(this);
+            _fms.RegisterState(StateKey.fullChargeShoot, _fullCharge, "Shoot")
+            .OnEnter.Subscribe(_ => PlaySE("ビーム砲", 0.7f)).AddTo(this);
             _fms.OnCompletion.Where(x => x.HasTagOnChild("Shoot")).Subscribe(_ =>
             {
                 _fms.LazySend(Triggers.shootComplete);
@@ -217,10 +222,11 @@ namespace BlackRose.Core.Models.Units
             // move
             _fms.RegisterState(StateKey.move, _moveOnGround, "Cancelable");
             _fms.RegisterState(StateKey.fall, _air, "Cancelable", "InAir");
-            hook = _fms.RegisterState(StateKey.dash, _dash, "Cancelable");
-            hook.OnEnter.Subscribe(_ =>
+            _fms.RegisterState(StateKey.dash, _dash, "Cancelable")
+            .OnEnter.Subscribe(_ =>
             {
                 _trailRenderer.emitting = true;
+                PlaySE("バックブースター", 0.4f);
             }).AddTo(this);
             _fms.OnTransition.Where(res => res.FromState == StateKey.dash && res.ToState != StateKey.jump).Subscribe(res =>
             {
@@ -231,8 +237,8 @@ namespace BlackRose.Core.Models.Units
             _fms.RegisterState(StateKey.jump, _jump, "InAir", "Cancelable");
 
             // stun
-            hook = _fms.RegisterState(StateKey.stun, _stun, "Tokened");
-            hook.OnEnter.Subscribe(res =>
+            _fms.RegisterState(StateKey.stun, _stun, "Tokened")
+            .OnEnter.Subscribe(res =>
             {
                 _fms.SendEventWithDelayAsync(TimeSpan.FromSeconds(1.2f), Triggers.finishedStun, Take()).AsUniTask().Forget();
             });

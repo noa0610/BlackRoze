@@ -128,6 +128,7 @@ namespace BlackRose.Core.Models.Objects
             if (_isStart)
             {
                 SetStart();
+                if (Application.isPlaying) return;
                 // Ensure this object is marked dirty so the flag is serialized
                 EditorUtility.SetDirty(this);
                 EditorSceneManager.MarkSceneDirty(gameObject.scene);

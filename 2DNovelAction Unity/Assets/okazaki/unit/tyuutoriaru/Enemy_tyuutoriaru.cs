@@ -92,7 +92,6 @@ namespace BlackRose.Core.Models.Units
         [Header("死亡状態")]
         [SerializeField] private bool _wontDie = false;                   // 死亡状態に移行しない
         [SerializeField] private float _DeadEndwaitTime = 6.5f;           // 死亡アニメーション終了時間（手動必須になる）
-
         [SerializeField] private GameObject _DeadPartecl; // 死亡時のエフェクト
         [SerializeField] private float _DeadParteclTime = 4f;  // エフェクト発生時間
 

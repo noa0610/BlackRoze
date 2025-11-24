@@ -16,12 +16,24 @@ namespace BlackRose.Core.Models.Units
     [RequireComponent(typeof(SearchAssistanceMono))]
     public partial class Enemy_rasubosu2 : GroundedUnit
     {
+
+        private enum StartDirection
+        {
+            Left,
+            Right
+        }
+        [Header("最初の向き")]
+        [SerializeField] private StartDirection _StartDirection = StartDirection.Left;
+
         [Header("デバッグ")]
         [Tooltip("攻撃選択の固定化(１，ポインタミサイル ２，クロスウェーブ ３，連続ワープショット ４，一閃ビームソード)")]
         [SerializeField] private int FixedAttackSelect = 0;                // 攻撃選択の固定化
 
         [Tooltip("登場演出の省略")]
         [SerializeField] private bool cutEntry = false;
+
+        [Tooltip("攻撃遷移の停止")]
+        [SerializeField] private bool attackStop = false;
 
 
         [Header("固有設定")]
@@ -191,6 +203,16 @@ namespace BlackRose.Core.Models.Units
             _prevStateKey = _stateMachine.CurrentState.key;
         }
 
+        public override void Pause()
+        {
+            attackStop = true;
+        }
+
+        public override void Play()
+        {
+            attackStop = false;
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -199,6 +221,7 @@ namespace BlackRose.Core.Models.Units
             gravity = _rb2d.gravityScale;
             _startTransform = transform;
             _cancellation = new CancellationTokenSource();
+            InitDirection();
         }
 
         private void EntryEnd()
@@ -215,11 +238,53 @@ namespace BlackRose.Core.Models.Units
                 _stateMachine.ChangeState(Triggers.Event1);
                 Debug.Log($"{_player.name}");
             }
+            else if (IsMatchingState(States.attackidle) && _searchAssistance.Execute("ShortDistance", list, out var units2))
+            {
+                _player = units2.GetUnitNearest(transform.position);
+                Debug.Log($"{_player.name}");
+            }
         }
 
         protected override void OnGrounded()
         {
             Debug.Log($"IsGrounded : {IsGrounded}");
+        }
+
+
+        private void TurnAround()
+        {
+            // 見た目の向き変更など既存処理
+            if (_player != null)
+            {
+                Direction = (_player.Transform.position - transform.position).normalized;
+                Direction = (Direction.x > 0) ? Vector2.right : Vector2.left;
+                if (Direction.x != 0)
+                {
+                    var scale = transform.localScale;
+                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
+                    transform.localScale = scale;
+                }
+            }
+        }
+
+        private void InitDirection()
+        {
+            switch (_StartDirection)
+            {
+                case StartDirection.Left:
+                    MoveDirection = Vector2.left;
+                    Direction = Vector2.left;
+
+                    break;
+                case StartDirection.Right:
+                    MoveDirection = Vector2.right;
+                    Direction = Vector2.right;
+                    break;
+            }
+
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (Direction.x >= 0f ? 1f : -1f);
+            transform.localScale = scale;
         }
 
         protected override void AfterFixedUpdate()
@@ -274,17 +339,19 @@ namespace BlackRose.Core.Models.Units
         protected override void OnTakeDamage(IUnit from, float damage)
         {
             PlaySE(_DamageSEName, _DamageSEVolume);
-            if (statusManager.ReadValue(Status.HP) <= 0)
+        }
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+            PlaySE(_DeadSEName, _DeadSEVolume);
+            if (_DeadPartecl != null)
             {
-                PlaySE(_DeadSEName, _DeadSEVolume);
-                if (_DeadPartecl != null)
-                {
-                    Destroy(
-                        Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
-                        _DeadParteclTime);
-                }
-                _stateMachine.ChangeState(Triggers.Died);
+                Destroy(
+                    Instantiate(_DeadPartecl, new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y + 2), Quaternion.identity, null),
+                    _DeadParteclTime);
             }
+            _stateMachine.ChangeState(Triggers.Died);
         }
 
         private async void Dead()
@@ -706,21 +773,6 @@ namespace BlackRose.Core.Models.Units
         //     IsInvincible = false;
         // }
 
-        private void TurnAround()
-        {
-            // 見た目の向き変更など既存処理
-            if (_player != null)
-            {
-                Direction = (_player.Transform.position - transform.position).normalized;
-                Direction = (Direction.x > 0) ? Vector2.right : Vector2.left;
-                if (Direction.x != 0)
-                {
-                    var scale = transform.localScale;
-                    scale.x = Mathf.Abs(scale.x) * (Direction.x > 0 ? 1 : -1);
-                    transform.localScale = scale;
-                }
-            }
-        }
 
         #region === Attack ===
         private void AttackSelect()

@@ -4326,10 +4326,10 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 100
   m_LinearDrag: 0.02
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 2.5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -4425,7 +4425,7 @@ MonoBehaviour:
     _jump:
       _isStopInExit: 0
       _accel: 20
-      _friction: 1
+      _friction: 5
       _enableJumped: -1
       _cutMultiplier: 0.5
     _chargeTime:
@@ -4734,8 +4734,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.04086411, y: -0.07754433}
-  m_Size: {x: 0.61751103, y: 2.6349142}
+  m_Offset: {x: 0.11, y: -0.51}
+  m_Size: {x: 1, y: 4.22}
   m_Direction: 0
 --- !u!114 &7658497994850347261
 MonoBehaviour:
@@ -5348,8 +5348,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 752855964641622591}
   - {fileID: 199293032536552219}
@@ -9439,7 +9439,7 @@ Transform:
   m_GameObject: {fileID: 8612394181621621358}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.024999775, y: -2.29, z: 0}
+  m_LocalPosition: {x: -0.024999775, y: -4.51, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

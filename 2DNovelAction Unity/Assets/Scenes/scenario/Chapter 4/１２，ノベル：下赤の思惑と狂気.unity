@@ -2491,6 +2491,13 @@ GameObject:
   - component: {fileID: 2016307282}
   - component: {fileID: 2016307284}
   - component: {fileID: 2016307285}
+  - component: {fileID: 2016307287}
+  - component: {fileID: 2016307286}
+  - component: {fileID: 2016307289}
+  - component: {fileID: 2016307288}
+  - component: {fileID: 2016307291}
+  - component: {fileID: 2016307290}
+  - component: {fileID: 2016307292}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -5607,6 +5614,7 @@ MonoBehaviour:
   - {fileID: 2016307239}
   - {fileID: 2016307238}
   - {fileID: 2016307245}
+  - {fileID: 2016307289}
   - {fileID: 2016307178}
   - {fileID: 2016307237}
   - {fileID: 2016307235}
@@ -5620,8 +5628,10 @@ MonoBehaviour:
   - {fileID: 2016307185}
   - {fileID: 2016307186}
   - {fileID: 2016307187}
+  - {fileID: 2016307288}
   - {fileID: 2016307188}
   - {fileID: 2016307233}
+  - {fileID: 2016307287}
   - {fileID: 2016307189}
   - {fileID: 2016307190}
   - {fileID: 2016307191}
@@ -5655,6 +5665,7 @@ MonoBehaviour:
   - {fileID: 2016307138}
   - {fileID: 2016307139}
   - {fileID: 2016307225}
+  - {fileID: 2016307291}
   - {fileID: 2016307140}
   - {fileID: 2016307282}
   - {fileID: 2016307283}
@@ -5664,13 +5675,13 @@ MonoBehaviour:
   - {fileID: 2016307221}
   - {fileID: 2016307285}
   - {fileID: 2016307142}
+  - {fileID: 2016307290}
   - {fileID: 2016307143}
   - {fileID: 2016307284}
   - {fileID: 2016307220}
   - {fileID: 2016307144}
   - {fileID: 2016307219}
   - {fileID: 2016307145}
-  - {fileID: 2016307218}
   - {fileID: 2016307146}
   - {fileID: 2016307217}
   - {fileID: 2016307147}
@@ -5733,6 +5744,7 @@ MonoBehaviour:
   - {fileID: 2016307110}
   - {fileID: 2016307111}
   - {fileID: 2016307112}
+  - {fileID: 2016307218}
   - {fileID: 2016307113}
   - {fileID: 2016307266}
   - {fileID: 2016307114}
@@ -5740,6 +5752,7 @@ MonoBehaviour:
   - {fileID: 2016307116}
   - {fileID: 2016307265}
   - {fileID: 2016307117}
+  - {fileID: 2016307286}
   - {fileID: 2016307264}
   - {fileID: 2016307118}
   - {fileID: 2016307119}
@@ -5780,6 +5793,7 @@ MonoBehaviour:
   - {fileID: 2016307275}
   - {fileID: 2016307131}
   - {fileID: 2016307132}
+  - {fileID: 2016307292}
   - {fileID: 2016307095}
   suppressAllAutoSelections: 0
 --- !u!114 &2016307211
@@ -5808,7 +5822,8 @@ MonoBehaviour:
     height: 859
   selectedBlocks:
   - {fileID: 2016307210}
-  selectedCommands: []
+  selectedCommands:
+  - {fileID: 2016307291}
   variables: []
   description: 
   stepPause: 0
@@ -6673,7 +6688,7 @@ MonoBehaviour:
   stage: {fileID: 0}
   character: {fileID: 877625871}
   replacedCharacter: {fileID: 0}
-  portrait: {fileID: 21300000, guid: d43f41d214e280a41b2ba9523321f8b7, type: 3}
+  portrait: {fileID: 21300000, guid: b056f3456f7649649af5f77e4d1bd654, type: 3}
   offset: 0
   fromPosition: {fileID: 1808308410}
   toPosition: {fileID: 1400147196}
@@ -7819,6 +7834,116 @@ MonoBehaviour:
   soundClip: {fileID: 8300000, guid: 405acb0ea115b3f4788ab3dc905fd33f, type: 3}
   volume: 1
   waitUntilFinished: 0
+--- !u!114 &2016307286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b359b09a7ba2e4af981f07c07f8af85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 264
+  indentLevel: 0
+--- !u!114 &2016307287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1902400ccc99b45d69ad01cb86b57d0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 263
+  indentLevel: 0
+  musicClip: {fileID: 8300000, guid: 1f391b8988ca7ba41b8ae480ac202090, type: 3}
+  atTime: 0
+  loop: 1
+  fadeDuration: 1
+--- !u!114 &2016307288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b359b09a7ba2e4af981f07c07f8af85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 266
+  indentLevel: 0
+--- !u!114 &2016307289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1902400ccc99b45d69ad01cb86b57d0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 265
+  indentLevel: 0
+  musicClip: {fileID: 8300000, guid: 54dde46bf27245940af8edf493a18c84, type: 3}
+  atTime: 0
+  loop: 1
+  fadeDuration: 1
+--- !u!114 &2016307290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1902400ccc99b45d69ad01cb86b57d0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 268
+  indentLevel: 0
+  musicClip: {fileID: 8300000, guid: 1f391b8988ca7ba41b8ae480ac202090, type: 3}
+  atTime: 0
+  loop: 1
+  fadeDuration: 1
+--- !u!114 &2016307291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b359b09a7ba2e4af981f07c07f8af85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 267
+  indentLevel: 0
+--- !u!114 &2016307292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016307093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b359b09a7ba2e4af981f07c07f8af85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 269
+  indentLevel: 0
 --- !u!224 &2050609692 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3447524305846907200, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}

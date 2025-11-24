@@ -2421,6 +2421,11 @@ GameObject:
   - component: {fileID: 2104732864}
   - component: {fileID: 2104732863}
   - component: {fileID: 2104732870}
+  - component: {fileID: 2104732871}
+  - component: {fileID: 2104732872}
+  - component: {fileID: 2104732874}
+  - component: {fileID: 2104732873}
+  - component: {fileID: 2104732875}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -3339,6 +3344,7 @@ MonoBehaviour:
   eventHandler: {fileID: 2104732856}
   commandList:
   - {fileID: 2104732862}
+  - {fileID: 2104732874}
   - {fileID: 2104732861}
   - {fileID: 2104732855}
   - {fileID: 2104732826}
@@ -3346,6 +3352,7 @@ MonoBehaviour:
   - {fileID: 2104732828}
   - {fileID: 2104732829}
   - {fileID: 2104732869}
+  - {fileID: 2104732875}
   - {fileID: 2104732859}
   - {fileID: 2104732830}
   - {fileID: 2104732831}
@@ -3353,6 +3360,7 @@ MonoBehaviour:
   - {fileID: 2104732833}
   - {fileID: 2104732834}
   - {fileID: 2104732870}
+  - {fileID: 2104732873}
   - {fileID: 2104732867}
   - {fileID: 2104732835}
   - {fileID: 2104732836}
@@ -3368,6 +3376,7 @@ MonoBehaviour:
   - {fileID: 2104732844}
   - {fileID: 2104732845}
   - {fileID: 2104732864}
+  - {fileID: 2104732871}
   - {fileID: 2104732846}
   - {fileID: 2104732847}
   - {fileID: 2104732848}
@@ -3378,6 +3387,7 @@ MonoBehaviour:
   - {fileID: 2104732852}
   - {fileID: 2104732853}
   - {fileID: 2104732854}
+  - {fileID: 2104732872}
   - {fileID: 2104732825}
   suppressAllAutoSelections: 0
 --- !u!114 &2104732858
@@ -3407,7 +3417,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 2104732857}
   selectedCommands:
-  - {fileID: 2104732832}
+  - {fileID: 2104732875}
   variables: []
   description: 
   stepPause: 0
@@ -3691,6 +3701,87 @@ MonoBehaviour:
     floatRef: {fileID: 0}
     floatVal: 2
   durationOLD: 0
+--- !u!114 &2104732871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1902400ccc99b45d69ad01cb86b57d0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 102
+  indentLevel: 0
+  musicClip: {fileID: 8300000, guid: a9ef09d46640c6a48b2cdbc718310af4, type: 3}
+  atTime: 0
+  loop: 1
+  fadeDuration: 1
+--- !u!114 &2104732872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b359b09a7ba2e4af981f07c07f8af85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 103
+  indentLevel: 0
+--- !u!114 &2104732873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b359b09a7ba2e4af981f07c07f8af85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 105
+  indentLevel: 0
+--- !u!114 &2104732874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1902400ccc99b45d69ad01cb86b57d0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 104
+  indentLevel: 0
+  musicClip: {fileID: 8300000, guid: c72349f4003b3714c9dcc1ae8ef55629, type: 3}
+  atTime: 0
+  loop: 1
+  fadeDuration: 1
+--- !u!114 &2104732875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd2f6be51b3d7490ba5633ee095d0391, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 106
+  indentLevel: 0
+  soundClip: {fileID: 8300000, guid: 809af00d3c5472e49bd840a0e758f7d4, type: 3}
+  volume: 1
+  waitUntilFinished: 0
 --- !u!1001 &4911735666183362933
 PrefabInstance:
   m_ObjectHideFlags: 0

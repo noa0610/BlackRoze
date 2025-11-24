@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 public class SaveSystem
@@ -11,7 +11,7 @@ public class SaveSystem
     private SaveSystem() { LoadGame(); }
 
     public string Path => Application.dataPath + "/AudioData.json";
-    
+
     public AudioData AudioData { get; private set; }
 
     public void SaveGame()

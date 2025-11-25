@@ -1,5 +1,4 @@
-﻿using HighElixir;
-using HighElixir.StateMachine;
+﻿using HighElixir.StateMachine;
 using HighElixir.Unity;
 
 namespace BlackRose.Core.Models.Units.State

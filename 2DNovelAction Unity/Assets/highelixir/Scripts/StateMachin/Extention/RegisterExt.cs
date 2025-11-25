@@ -2,7 +2,6 @@
 using HighElixir.Implements.Observables;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace HighElixir.StateMachine.Extention
 {
@@ -16,12 +15,13 @@ namespace HighElixir.StateMachine.Extention
         /// </summary>
         public static IObservable<StateMachine<TCont, TEvt, TState>.TransitionResult>
             OnTransWhere<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TState from, TEvt evt, TState to)
-            
+
         {
-            return s.OnTransition.Where(x => {
+            return s.OnTransition.Where(x =>
+            {
                 bool flg1 = x.FromState.Equals(from);
                 bool flg2 = x.Event.Equals(evt);
-                bool flg3 =  x.ToState.Equals(to);
+                bool flg3 = x.ToState.Equals(to);
                 return flg1 && flg2 && flg3;
             });
         }
@@ -31,7 +31,7 @@ namespace HighElixir.StateMachine.Extention
         /// </summary>
         public static IObservable<StateMachine<TCont, TEvt, TState>.TransitionResult>
             OnTransWhere<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TEvt evt, TState to)
-            
+
         {
             return s.OnTransition.Where(x =>
                     x.Event.Equals(evt) &&
@@ -53,7 +53,7 @@ namespace HighElixir.StateMachine.Extention
             params (TEvt evt, TState to,
                     Action<StateMachine<TCont, TEvt, TState>.TransitionResult> action,
                     Func<StateMachine<TCont, TEvt, TState>.TransitionResult, bool> predicate)[] transes)
-            
+
         {
             var dis = new List<IDisposable>();
             foreach (var t in transes)
@@ -73,7 +73,7 @@ namespace HighElixir.StateMachine.Extention
             this StateMachine<TCont, TEvt, TState> s,
             TState from,
             params (TEvt evt, TState to)[] transes)
-            
+
         {
             foreach (var t in transes)
                 s.RegisterTransition(from, t.evt, t.to);
@@ -85,7 +85,7 @@ namespace HighElixir.StateMachine.Extention
         public static void RegisterAnyTransitions<TCont, TEvt, TState>(
             this StateMachine<TCont, TEvt, TState> s,
             params (TEvt evt, TState toState)[] transes)
-            
+
         {
             foreach (var t in transes)
                 s.RegisterAnyTransition(t.evt, t.toState);
@@ -99,7 +99,7 @@ namespace HighElixir.StateMachine.Extention
             params (TEvt evt, TState to,
                     Action<StateMachine<TCont, TEvt, TState>.TransitionResult> action,
                     Func<StateMachine<TCont, TEvt, TState>.TransitionResult, bool> predicate)[] transes)
-            
+
         {
             var dis = new List<IDisposable>();
             foreach (var t in transes)

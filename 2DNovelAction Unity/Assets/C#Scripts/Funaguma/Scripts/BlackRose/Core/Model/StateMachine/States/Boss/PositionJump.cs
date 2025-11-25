@@ -23,7 +23,7 @@ namespace BlackRose.Core.Models.States
         public Vector2 TargetPosition { get; private set; }
 
         // 既存APIのため、OnCompletedにアタッチする形で実装
-        public event Action OnArrived { add=> OnCompleted += value; remove => OnCompleted -= value; }
+        public event Action OnArrived { add => OnCompleted += value; remove => OnCompleted -= value; }
         public event Action OnCompleted;
 
         public Rigidbody2D Rigidbody2D { get; private set; }
@@ -74,7 +74,7 @@ namespace BlackRose.Core.Models.States
             base.Exit(nextIState, parent);
             if (Rigidbody2D != null)
                 Rigidbody2D.gravityScale = _savedGravity;
-            if(_randSEName != null)
+            if (_randSEName != null)
                 parent.PlaySE(_randSEName, _randSEVolume);
         }
 

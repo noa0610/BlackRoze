@@ -1,7 +1,5 @@
-﻿using System.Collections;
+﻿using HighElixir;
 using System.Collections.Generic;
-using System.Linq;
-using HighElixir;
 using UnityEngine;
 
 public class SoundManager : SingletonBehavior<SoundManager>
@@ -100,7 +98,8 @@ public class SoundManager : SingletonBehavior<SoundManager>
         if (_seData.ContainsKey(seName))
         {
             //Debug.Log($"SoundManager: Playing SE '{seName}'");
-            if (Time.realtimeSinceStartup - _seData[seName].playedTime > INTERVAL) {
+            if (Time.realtimeSinceStartup - _seData[seName].playedTime > INTERVAL)
+            {
                 var audioSource = GetUnusedSourceSE();
 
                 if (audioSource)
@@ -151,10 +150,10 @@ public class SoundManager : SingletonBehavior<SoundManager>
     {
         foreach (var bgmSource in _bgmSources)
         {
-            if(bgmSource.clip && bgmSource.clip.name == bgmName)
+            if (bgmSource.clip && bgmSource.clip.name == bgmName)
             {
                 bgmSource.Stop();
             }
-        }       
+        }
     }
 }

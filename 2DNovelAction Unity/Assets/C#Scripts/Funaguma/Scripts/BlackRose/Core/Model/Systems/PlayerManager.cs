@@ -1,6 +1,6 @@
-﻿﻿using System.Linq;
-using BlackRose.Core.Models.Objects;
+﻿using BlackRose.Core.Models.Objects;
 using BlackRose.Core.Models.Units;
+using System.Linq;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Systems

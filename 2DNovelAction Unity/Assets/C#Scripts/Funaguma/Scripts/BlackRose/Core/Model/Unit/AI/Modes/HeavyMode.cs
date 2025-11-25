@@ -61,7 +61,7 @@ namespace BlackRose.Core.Models.Units
 
             _stateMachine.RegisterState(SubState.Skill, _reflect, "Skill");
 
-            if(_stateMachine.TryGetStateInfo(SubState.Dash, out hook))
+            if (_stateMachine.TryGetStateInfo(SubState.Dash, out hook))
             {
                 hook.OnEnter.Subscribe(_ => _parent.AutoFlipper.Enable = true).AddTo(_parent);
             }

@@ -216,7 +216,7 @@ namespace BlackRose.Core.Models.Units
             attackIdle.OnCompleted += Attackselect;
             _stateMachine.AddState(States.attackidle, attackIdle);
             #endregion
-            
+
             #region === LaserShot States ===
 
             /* レーザーショット開始 */
@@ -269,7 +269,7 @@ namespace BlackRose.Core.Models.Units
             });
             _stateMachine.AddState(States.beamsword, beamswordattack);
             #endregion
-   
+
             #region === Jump States ===
 
             /* ジャンプ */
@@ -285,7 +285,7 @@ namespace BlackRose.Core.Models.Units
             };
             _stateMachine.AddState(States.fixedpositionjump, _positionJump);
             #endregion
-           
+
             #region === ShockWave States ===
 
             /* スタン */
@@ -303,7 +303,7 @@ namespace BlackRose.Core.Models.Units
             /* ショックウェーブアニメ待機 */
             var shockwaveanimaidle = new Idle_LazyChange(Triggers.shockwaveanimaidleend.ToString(), 1.8f, true);
             _stateMachine.AddState(States.shockwaveanimaidle, shockwaveanimaidle);
-            
+
             /* ショックウェーブ */
             var shockwave = new ShootForward(_shockwaveBulletData, AttackLayer)
             .SetDirection(Vector2.left);

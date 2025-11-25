@@ -9,10 +9,10 @@ namespace HighElixir.StateMachine
         bool Binded { get; } // ステートが紐づけ済みかどうか
         #region イベント
         /// <summary>Enter発火時の通知（Reactive）</summary>
-        public IObservable<IStateInfo<TCont>> OnEnter { get; }
+        IObservable<IStateInfo<TCont>> OnEnter { get; }
 
         /// <summary>Exit発火時の通知（Reactive）</summary>
-        public IObservable<IStateInfo<TCont>> OnExit { get; }
+        IObservable<IStateInfo<TCont>> OnExit { get; }
 
         #endregion
 
@@ -21,12 +21,12 @@ namespace HighElixir.StateMachine
         /// ステート自身の<see cref="AllowEnter"/>よりも先に呼ばれる
         /// <br/>TState => Preview State
         /// </summary>
-        public event Func<IStateInfo<TCont>, bool> AllowEnterFunc;
+        event Func<IStateInfo<TCont>, bool> AllowEnterFunc;
         /// <summary>
         /// ステート自身の<see cref="AllowExit"/>よりも先に呼ばれる
         /// <br/>TState => Next State
         /// </summary>
-        public event Func<IStateInfo<TCont>, bool> AllowExitFunc;
+        event Func<IStateInfo<TCont>, bool> AllowExitFunc;
 
         #endregion
     }

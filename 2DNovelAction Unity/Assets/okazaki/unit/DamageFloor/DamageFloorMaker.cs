@@ -1,6 +1,4 @@
-﻿using HighElixir;
-using HighElixir.Pools;
-using HighElixir.Timers;
+﻿using HighElixir.Timers;
 using HighElixir.Unity.Pools;
 using System.Collections.Generic;
 using UnityEngine;

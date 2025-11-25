@@ -1,8 +1,5 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using Fungus;
-using Unity.VisualScripting;
-using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     public partial class Enemy_rasubosu2
@@ -104,9 +101,9 @@ namespace BlackRose.Core.Models.Units
                 (Triggers.Attack2start, States.crosswave_beforewarp, "WaveStart"),     // クロスウェーブ開始ワープ直前へ
                 (Triggers.Attack3start, States.warpShot_beforewarp, "ShotStart"),      // ワープショット開始ワープ直前へ
                 (Triggers.Attack4start, States.flashBeamSword_before, "SwordStart"),   // フラッシュビームソード直前へ
-            }; 
+            };
             #endregion
-            
+
             #region === PointerMissile Triggers ===
             var beforepointermissileTrigger = new[]                    /** ポインターミサイル直前ステートのトリガー **/
             {
@@ -219,7 +216,7 @@ namespace BlackRose.Core.Models.Units
             var entry = new Idle_LazyChange(Triggers.EntryEnd.ToString(), _EntryEndwaitTime);
             entry.OnCompleted += EntryEnd;
             _stateMachine.AddState(States.entry, entry);
-            
+
             /* 待機 */
             _stateMachine.AddState(States.idle, new Idle());
 
@@ -303,7 +300,7 @@ namespace BlackRose.Core.Models.Units
 
             /* ショット */
             warpShot = new ShootForward(_ShotBulletDate, AttackLayer);
-            warpShot.SetGameObject(_ShotPoint); 
+            warpShot.SetGameObject(_ShotPoint);
             warpShot.onShootComplete.AddListener(WarpShotEnter);
             _stateMachine.AddState(States.warpShot, warpShot);
 
@@ -313,7 +310,7 @@ namespace BlackRose.Core.Models.Units
             #endregion
 
             #region === FlashBeamSword States ===
-            
+
             /* フラッシュビームソード開始 */
             var flashBeamSwordbefore = new Idle_LazyChange(Triggers.Attack4dash.ToString(), _FlashBeamSwordStartDashTime);
             flashBeamSwordbefore.OnCompleted += FlashBeamSwordBeforeStay;

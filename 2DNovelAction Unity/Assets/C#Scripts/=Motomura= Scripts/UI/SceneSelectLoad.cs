@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,12 +19,12 @@ public class SceneSelectLoad : MonoBehaviour
     {
         if (TargetObject == null)//nullの場合はアニメーションなしでロードシーンへ
         {
-            Debug.Log("ターゲットオブジェクトがNullのためアニメーションなしで実行します。");
+            //Debug.Log("ターゲットオブジェクトがNullのためアニメーションなしで実行します。");
             Load();
         }
         else//アタッチされてる場合スライドアニメーションを実行したのちロードシーンへ
         {
-            Debug.Log("アニメーションが終わり次第シーン遷移します。");
+            //Debug.Log("アニメーションが終わり次第シーン遷移します。");
             TargetObject.DOAnchorPos(ENDPosition, AnimationTime).OnComplete(() =>//現在は座標指定式スライドアニメーション
             {
                 Load();

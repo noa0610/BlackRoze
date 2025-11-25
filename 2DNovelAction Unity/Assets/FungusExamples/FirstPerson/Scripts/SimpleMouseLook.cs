@@ -1,8 +1,6 @@
 ﻿// This code is part of the Fungus library (https://github.com/snozbot/fungus)
 // It is released for free under the MIT open source license (https://github.com/snozbot/fungus/blob/master/LICENSE)
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -23,7 +21,7 @@ namespace Fungus.Examples
         private float pitch = 0;
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
             var curEuler = target.localRotation.eulerAngles;
             curEuler = new Vector3(pitch - Input.GetAxis("Mouse Y"), curEuler.y + Input.GetAxis("Mouse X"), 0);

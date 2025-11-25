@@ -1,9 +1,8 @@
-﻿using System;
+﻿using BlackRose.Datas.Definitions;
+using HighElixir.Timers;
+using System;
 using UniRx;
 using UnityEngine;
-using Fungus;
-using HighElixir.Timers;
-using BlackRose.Datas.Definitions;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -99,7 +98,13 @@ namespace BlackRose.Core.Models.Units
         protected virtual void HitCheck(Collider2D collision)
         {
             int layerBit = 1 << collision.gameObject.layer;
-
+            if (collision.TryGetComponent<PlatformEffector2D>(out var effector) && effector.useOneWay)
+            {
+                // 一方通行のプラットフォームは下からの衝突を無視
+                Vector2 contactPoint = collision.ClosestPoint(transform.position);
+                if (contactPoint.y < transform.position.y)
+                    return;
+            }
             // 常に衝突可能なレイヤー
             if ((_canHitLayer.value & layerBit) != 0)
             {
@@ -134,7 +139,7 @@ namespace BlackRose.Core.Models.Units
 
             if (target != null)
             {
-                Debug.Log($"Hit Target: {target.UnitStatusData.unitName}");
+                //Debug.Log($"Hit Target: {target.UnitStatusData.unitName}");
                 if (target.IsInvincible)
                     return;
 

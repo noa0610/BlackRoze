@@ -1,6 +1,5 @@
 ﻿using HighElixir.StateMachine;
 using System;
-using UnityEngine;
 
 namespace BlackRose.Core.Models.Units.State
 {

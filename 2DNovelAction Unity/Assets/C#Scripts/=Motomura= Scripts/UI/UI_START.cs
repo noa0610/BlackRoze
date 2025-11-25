@@ -1,27 +1,28 @@
+﻿using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 
 public class UI_START : MonoBehaviour
 {
-    [HideInInspector] public enum EffectProperty
+    [HideInInspector]
+    public enum EffectProperty
     {
-        [InspectorName("演出なし")] 
+        [InspectorName("演出なし")]
         Pop,
 
-        [InspectorName("スライド")] 
+        [InspectorName("スライド")]
         slide,
 
-        [InspectorName("フェード（開発中）")] 
+        [InspectorName("フェード（開発中）")]
         fade
     }
 
     [System.Serializable]
     public class TargetObject
     {
-        public EffectProperty Effect_Property;  
-        
-        [InspectorName("ターゲット")] 
+        public EffectProperty Effect_Property;
+
+        [InspectorName("ターゲット")]
         public GameObject target;
 
         [Header("スタートポジション")]
@@ -31,9 +32,9 @@ public class UI_START : MonoBehaviour
         public Vector2 E_Position;
 
         [Header("表示にかかる時間")]
-        public float _Time = 1.0f; 
+        public float _Time = 1.0f;
 
-        [Header("遅延")] 
+        [Header("遅延")]
         public float delayTime;
     }
 
@@ -53,7 +54,7 @@ public class UI_START : MonoBehaviour
                 case EffectProperty.fade:
                     Fade_UI(obj);
                     break;
-                
+
                 case EffectProperty.Pop:
                     SetActive_UI(obj);
                     break;

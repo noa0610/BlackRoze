@@ -68,7 +68,7 @@ namespace BlackRose.Core.Models.States
             base.Stay(parent, deltaTime);
             if (Timer.IsFinished(_ticket))
             {
-                Debug.Log("Invoked Lazy Event");
+                //Debug.Log("Invoked Lazy Event");
                 _blocked = false;
                 _lazyEvent?.Invoke();
                 OnCompleted?.Invoke();

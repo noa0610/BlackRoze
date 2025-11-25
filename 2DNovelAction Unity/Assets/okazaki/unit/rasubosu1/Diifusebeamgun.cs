@@ -1,15 +1,8 @@
-using BlackRose.Core.Models.Helper;
-using BlackRose.Core.Models.SearchSystems;
+﻿using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
-using UnityEngine;
 using HighElixir;
 using System.Collections.Generic;
-using BlackRose.Datas.Definitions;
-using BlackRose.Core.Models.Objects;
-using System.Collections;
-using System.Threading;
-using Cysharp.Threading.Tasks;
-using System;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -35,7 +28,7 @@ namespace BlackRose.Core.Models.Units
         {
             // SearchPlayer();
             // beamswordattackステート中のみ判定
-            if(IsMatchingState(States.dead))
+            if (IsMatchingState(States.dead))
             {
                 OnDeath();
             }

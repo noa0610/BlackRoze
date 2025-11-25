@@ -1,7 +1,7 @@
+﻿using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 //＝＝＝＝Audioを管理し保存する機構＝＝＝＝
 
@@ -10,12 +10,17 @@ public class AudioManager : MonoBehaviour
     [SerializeField, Header("BGM")] private AudioMixer BGMMixer;
     [SerializeField] private TextMeshProUGUI _BGMVolumeText;
     [SerializeField] private Slider _BGMSlider;
+    [SerializeField, Range(0, 1.5f)] private float _bgmMultiplier = 1.0f;
 
-    [SerializeField,Header("Voice")] private AudioMixer VoiceMixer;
+    [SerializeField, Header("Voice")] private AudioMixer VoiceMixer;
     [SerializeField] private TextMeshProUGUI _VoiceVolumeText;
     [SerializeField] private Slider _VoiceSlider;
+    [SerializeField, Range(0, 1.5f)] private float _seMultiplier = 1.0f;
 
-    void Start()
+    public float BGMVolume => SaveSystem.Instance.AudioData.BGMVolume / 100f * _bgmMultiplier;
+    public float Voice => SaveSystem.Instance.AudioData.VoiceVolume / 100f * _seMultiplier;
+
+    private void Start()
     {
         try
         {
@@ -25,19 +30,19 @@ public class AudioManager : MonoBehaviour
             _BGMVolumeText.text = SaveSystem.Instance.AudioData.BGMVolume.ToString();
             _VoiceVolumeText.text = SaveSystem.Instance.AudioData.VoiceVolume.ToString();
 
-        _BGMSlider.value = SaveSystem.Instance.AudioData.BGMVolume;
-        _VoiceSlider.value = SaveSystem.Instance.AudioData.VoiceVolume;
+            _BGMSlider.value = SaveSystem.Instance.AudioData.BGMVolume;
+            _VoiceSlider.value = SaveSystem.Instance.AudioData.VoiceVolume;
         }
         catch
         {
             Debug.LogWarning("[オーディオ]書き込みは機能しません。");
         }
 
-            BGMMixer.SetFloat("BGM", MapValue(SaveSystem.Instance.AudioData.BGMVolume));
-            VoiceMixer.SetFloat("Voice", MapValue(SaveSystem.Instance.AudioData.VoiceVolume));
+        BGMMixer.SetFloat("BGM", MapValue(SaveSystem.Instance.AudioData.BGMVolume));
+        VoiceMixer.SetFloat("Voice", MapValue(SaveSystem.Instance.AudioData.VoiceVolume));
 
 
-        }
+    }
 
     public void SetBGMVolume(float value)
     {
@@ -46,6 +51,7 @@ public class AudioManager : MonoBehaviour
         _BGMVolumeText.text = SaveSystem.Instance.AudioData.BGMVolume.ToString();
         Debug.Log($"値が変更されました<color=green>{SaveSystem.Instance.AudioData.BGMVolume}</color>");
         SaveSystem.Instance.SaveGame();
+        SetBGMVolume();
     }
 
     public void SetVoiceVolume(float value)
@@ -55,6 +61,7 @@ public class AudioManager : MonoBehaviour
         _VoiceVolumeText.text = SaveSystem.Instance.AudioData.VoiceVolume.ToString();
         Debug.Log($"値が変更されました<color=green>{SaveSystem.Instance.AudioData.VoiceVolume}</color>");
         SaveSystem.Instance.SaveGame();
+        SetSEVolume();
     }
 
     private float MapValue(float value)
@@ -65,4 +72,27 @@ public class AudioManager : MonoBehaviour
         return dB;
     }
 
+    private void SetBGMVolume()
+    {
+        // 全探索してBGMタグのAudioSourceを探し音量を変更
+        foreach (var source in FindObjectsOfType<AudioSource>())
+        {
+            if (source.CompareTag("BGM"))
+            {
+                source.volume = BGMVolume;
+            }
+        }
+    }
+
+    private void SetSEVolume()
+    {
+        // 全探索してSEタグのAudioSourceを探し音量を変更
+        foreach (var source in FindObjectsOfType<AudioSource>())
+        {
+            if (source.CompareTag("SE"))
+            {
+                source.volume = Voice;
+            }
+        }
+    }
 }

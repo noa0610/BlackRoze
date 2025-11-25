@@ -140,6 +140,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3667594212004321477, guid: d10160bbd8ef7c040abb1a01cf829aad, type: 3}
+      propertyPath: m_Volume
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 3667594212004321477, guid: d10160bbd8ef7c040abb1a01cf829aad, type: 3}
       propertyPath: OutputAudioMixerGroup
       value: 
       objectReference: {fileID: 24300002, guid: b0c45c850a5c823428952026f5f7346b, type: 2}
@@ -1651,6 +1655,7 @@ GameObject:
   - component: {fileID: 1110648555}
   - component: {fileID: 1110648558}
   - component: {fileID: 1110648559}
+  - component: {fileID: 1110648560}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -3020,7 +3025,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 68.77558
     y: 72.439026
-    width: 142.23528
+    width: 140.4
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 1
@@ -3030,6 +3035,7 @@ MonoBehaviour:
   eventHandler: {fileID: 1110648510}
   commandList:
   - {fileID: 1110648526}
+  - {fileID: 1110648560}
   - {fileID: 1110648463}
   - {fileID: 1110648509}
   - {fileID: 1110648508}
@@ -3135,11 +3141,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 86.47641, y: 155.51506}
+  scrollPos: {x: 53.424423, y: 15.460976}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
   blockViewHeight: 400
-  zoom: 0.85000014
+  zoom: 1
   scrollViewRect:
     serializedVersion: 2
     x: -343
@@ -3149,7 +3155,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 1110648511}
   selectedCommands:
-  - {fileID: 1110648559}
+  - {fileID: 1110648560}
   variables: []
   description: 
   stepPause: 0
@@ -4270,7 +4276,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &1110648558
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4284,7 +4290,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &1110648559
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4296,6 +4302,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 103
   indentLevel: 0
+--- !u!114 &1110648560
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1110648460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 104
+  indentLevel: 0
+  volume: 0.05
+  fadeDuration: 1
+  waitUntilFinished: 1
 --- !u!1 &1115594331
 GameObject:
   m_ObjectHideFlags: 0
@@ -5150,7 +5173,7 @@ PrefabInstance:
       objectReference: {fileID: 680521763}
     - target: {fileID: 6173174167495302744, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: "\uFF12\uFF0C\u30D0\u30C8\u30EB\uFF1A\uFF11\u30B9\u30C6\u30FC\u30B8"
+      value: 1Stage
       objectReference: {fileID: 0}
     - target: {fileID: 8411626237843014275, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
       propertyPath: m_Name

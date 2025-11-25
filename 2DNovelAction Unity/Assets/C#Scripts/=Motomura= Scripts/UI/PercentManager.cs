@@ -1,10 +1,10 @@
+﻿using DG.Tweening;
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using DG.Tweening;
 using UnityEngine.SceneManagement;
-using System;
+using UnityEngine.UI;
 
 public class PercentManager : MonoBehaviour
 {
@@ -13,23 +13,23 @@ public class PercentManager : MonoBehaviour
     [SerializeField] private Image _LOADbarImage;
     [SerializeField] private Image _FadeImage; // フェード用のImageコンポーネント
     [SerializeField] public static string NextSceneName; // 次のシーン名を指定
-    [SerializeField] private float _fadeDuration = 1f; // フェード時間
-    [SerializeField] private float StockTime = 2f; // フェードイン時間
+    [SerializeField] private float _fadeDuration = 0.7f; // フェード時間
+    [SerializeField] private float StockTime = 1.2f; // フェードイン時間
 
     private float timer = 0f;
-    private bool IsIE = false; 
-    private float updateInterval = 0.05f; // パーセントを増やす間隔（秒）
+    private bool IsIE = false;
+    private float updateInterval = 0.015f; // パーセントを増やす間隔（秒）
 
-    void Start()
+    private void Start()
     {//初期化
-        Debug.Log("次の遷移先" + $"「{ NextSceneName}」");
+        Debug.Log("次の遷移先" + $"「{NextSceneName}」");
         _percent = 0;
         _LOADbarImage.fillAmount = 0f;
         _ActiveText.text = "0%";
-         _FadeImage.DOFade(0f, 0f); // 初期状態は透明
+        _FadeImage.DOFade(0f, 0f); // 初期状態は透明
     }
 
-    void Update()
+    private void Update()
     {
         timer += Time.deltaTime;
 
@@ -39,10 +39,10 @@ public class PercentManager : MonoBehaviour
             timer = 0f;
         }
         else if (_percent == 100)
-        {            
+        {
             _FadeImage.DOFade(1f, _fadeDuration).OnComplete(() =>
             {
-                if(!IsIE)
+                if (!IsIE)
                 {
                     Debug.Log("Loading Complete!");
                     StartCoroutine(IE());
@@ -50,10 +50,10 @@ public class PercentManager : MonoBehaviour
             });
         }
         // fillAmountとTextを更新
-            _LOADbarImage.fillAmount = _percent / 100f;
-            _ActiveText.text = _percent.ToString() + "%";        
+        _LOADbarImage.fillAmount = _percent / 100f;
+        _ActiveText.text = _percent.ToString() + "%";
     }
-    IEnumerator IE()
+    private IEnumerator IE()
     {
         IsIE = true;
         Debug.Log("IE");
@@ -62,6 +62,6 @@ public class PercentManager : MonoBehaviour
         SceneManager.LoadScene(NextSceneName);
         // NextSceneName = null; // 次のシーン名をリセット
         Debug.Log("complete!!");
-        
+
     }
 }

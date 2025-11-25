@@ -10,7 +10,7 @@ namespace BlackRose.Core.Models.States
     public class ShootForward : ShootStateBase
     {
         public ShootForward(BulletData data, LayerMask targetLayer) : base(data, targetLayer) { }
-        public ShootForward() :base() { }
+        public ShootForward() : base() { }
 
         protected override async UniTask Shoot(UnitBase unit)
         {

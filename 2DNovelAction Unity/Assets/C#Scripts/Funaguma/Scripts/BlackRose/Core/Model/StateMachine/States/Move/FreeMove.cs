@@ -21,7 +21,7 @@ namespace BlackRose.Core.Models.States
 
         [Obsolete]
         public FreeMove(Rigidbody2D rigidbody2D, bool isStopInExit = false)
-            :base()
+            : base()
         {
             _isStopInExit = isStopInExit;
         }

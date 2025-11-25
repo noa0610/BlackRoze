@@ -1,13 +1,13 @@
 ﻿using BlackRose.Core.Models.Units.State;
+using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
 using HighElixir.StateMachine;
 using HighElixir.StateMachine.Extention;
 using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UniRx;
 using static BlackRose.Core.Models.Units.AIController;
-using BlackRose.Datas.Definitions;
-using Cysharp.Threading.Tasks;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -40,7 +40,8 @@ namespace BlackRose.Core.Models.Units
             }).AddTo(_parent);
 
             var hook = _stateMachine.RegisterState(SubState.Skill, _locked, "");
-            hook.OnEnter.Subscribe(_ => {
+            hook.OnEnter.Subscribe(_ =>
+            {
                 var go = _parent.SearchEffects.gameObject;
                 go.SetActive(true);
                 go.transform.localScale = go.transform.localScale * _parent.ShootDir.x;

@@ -47,6 +47,7 @@ namespace BlackRose.Core.Models.Objects
                 {
                     point._isStart = false;
 #if UNITY_EDITOR
+if (Application.isPlaying)return;
                     EditorUtility.SetDirty(point);
                     EditorSceneManager.MarkSceneDirty(point.gameObject.scene);
 #endif

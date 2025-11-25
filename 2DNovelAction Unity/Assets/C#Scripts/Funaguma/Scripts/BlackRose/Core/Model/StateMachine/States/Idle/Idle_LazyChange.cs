@@ -1,6 +1,5 @@
 ﻿using BlackRose.Core.Models.Units;
 using System;
-using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {

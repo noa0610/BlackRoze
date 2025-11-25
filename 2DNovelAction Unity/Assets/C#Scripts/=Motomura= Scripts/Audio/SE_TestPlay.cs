@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 //＝＝＝＝任意キーを押したらSEを流す機構＝＝＝＝
 
@@ -6,10 +6,10 @@ public class SE_TestPlay : MonoBehaviour
 {
     [SerializeField] private AudioClip _SoundSource;//再生するSE
     [SerializeField] private AudioSource _AudioSource;//再生するSEのコンポーネント
-    [SerializeField] KeyCode _Input;//任意のキー
+    [SerializeField] private KeyCode _Input;//任意のキー
 
 
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(_Input)) //指定したキーが押されたら
         {

@@ -2002,6 +2002,7 @@ GameObject:
   - component: {fileID: 1709595673}
   - component: {fileID: 1709595674}
   - component: {fileID: 1709595675}
+  - component: {fileID: 1709595676}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -3235,7 +3236,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 55.076042
     y: 100.82886
-    width: 104.46808
+    width: 105.2
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -3245,6 +3246,7 @@ MonoBehaviour:
   eventHandler: {fileID: 1709595636}
   commandList:
   - {fileID: 1709595642}
+  - {fileID: 1709595676}
   - {fileID: 1709595674}
   - {fileID: 1709595635}
   - {fileID: 1709595644}
@@ -3337,11 +3339,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 126.325424, y: 83.5661}
+  scrollPos: {x: 85.08993, y: -12.928856}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
-  blockViewHeight: 206
-  zoom: 0.94000006
+  blockViewHeight: 395.2
+  zoom: 1
   scrollViewRect:
     serializedVersion: 2
     x: -343
@@ -3351,7 +3353,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 1709595637}
   selectedCommands:
-  - {fileID: 1709595675}
+  - {fileID: 1709595676}
   variables: []
   description: 
   stepPause: 0
@@ -4144,7 +4146,7 @@ MonoBehaviour:
   waitUntilFinished: 0
 --- !u!114 &1709595669
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4162,7 +4164,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &1709595670
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4180,7 +4182,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &1709595671
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4198,7 +4200,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &1709595672
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4216,7 +4218,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &1709595673
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4230,7 +4232,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &1709595674
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4248,7 +4250,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &1709595675
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4260,6 +4262,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 126
   indentLevel: 0
+--- !u!114 &1709595676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709595591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 127
+  indentLevel: 0
+  volume: 0.05
+  fadeDuration: 1
+  waitUntilFinished: 1
 --- !u!1 &1761584094
 GameObject:
   m_ObjectHideFlags: 0

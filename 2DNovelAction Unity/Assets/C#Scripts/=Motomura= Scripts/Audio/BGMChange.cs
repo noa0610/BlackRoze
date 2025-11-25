@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class BGMChange : MonoBehaviour
@@ -8,7 +7,7 @@ public class BGMChange : MonoBehaviour
     private AudioSource _BGMSource;
     private int _i = 0;
 
-    void Start()
+    private void Start()
     {
         _BGMSource = this.GetComponent<AudioSource>();
     }

@@ -12,7 +12,7 @@ namespace BlackRose.Core.Models.States
         public float StunTimer => _eventTime; // Expose the stun timer for external checks
 
         public float KnockbackForce { get; set; } = 15f; // Fixed knockback force
-        public Rigidbody2D Rigidbody2D {  get; private set; }
+        public Rigidbody2D Rigidbody2D { get; private set; }
 
         // ノックバックは親の向きを基準に力を加えます
         public Stun(Rigidbody2D rigidbody2D, float delay, bool isBlock)

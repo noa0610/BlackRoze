@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
 {
@@ -134,15 +132,15 @@ public class PlayerMove : MonoBehaviour
         var rayStart = new Vector3(transform.position.x, rayStartHeight, transform.position.z);
         var ray = new Ray(rayStart, Vector3.down);
         var layerMask = LayerMask.GetMask("Ground");
-        
+
 
         // プレイヤーの下方向にSphereCastを行い、地面との接触を判定
         if (!Physics2D.Raycast(rayStart, Vector2.down * 0.1f, 0.1f, layerMask))
         {
-            Debug.DrawRay(rayStart, Vector2.down * 0.1f ,Color.green, 0.1f);
+            Debug.DrawRay(rayStart, Vector2.down * 0.1f, Color.green, 0.1f);
             return true; // 地面に接触していない（空中）
         }
-        Debug.DrawRay(rayStart, Vector2.down * 0.1f ,Color.red, 0.1f);
+        Debug.DrawRay(rayStart, Vector2.down * 0.1f, Color.red, 0.1f);
         return false; // 地面に接触している
     }
 

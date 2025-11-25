@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // ファイアウォールをアームに追従させる用
 public class ParentObjectController : MonoBehaviour
@@ -7,7 +7,7 @@ public class ParentObjectController : MonoBehaviour
     private Transform parentTransform;
     private Vector3 initialLocalPosition;
 
-    void Start()
+    private void Start()
     {
         // 親オブジェクトを探す
         GameObject parent = GameObject.Find(parentName);
@@ -27,7 +27,7 @@ public class ParentObjectController : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (parentTransform == null) return;
 

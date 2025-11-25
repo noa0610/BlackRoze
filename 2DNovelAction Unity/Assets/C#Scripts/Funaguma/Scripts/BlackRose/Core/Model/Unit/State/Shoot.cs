@@ -49,7 +49,7 @@ namespace BlackRose.Core.Models.Units.State
             Bullet instantiatedBullet = GameObject.Instantiate(b, spawnPos, Quaternion.identity);
             InitBullet(instantiatedBullet, Cont.ShootDir);
             var time = 0f;
-            while  (time < _duration)
+            while (time < _duration)
             {
                 var t = Time.deltaTime;
                 if (Cont.MoveDirection.x != 0)

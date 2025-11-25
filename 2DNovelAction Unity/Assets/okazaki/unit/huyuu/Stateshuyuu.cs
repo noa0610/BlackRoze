@@ -51,7 +51,7 @@ namespace BlackRose.Core.Models.Units
 
             // 待機
             _stateMachine.AddState(States.idle, new Idle());
-            
+
 
             // 移動
             var move = new FreeMove(true);

@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using AIE2D;
-using System;
+﻿using AIE2D;
 using BlackRose.Core.Models.Units;
+using System;
 using UniRx;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {

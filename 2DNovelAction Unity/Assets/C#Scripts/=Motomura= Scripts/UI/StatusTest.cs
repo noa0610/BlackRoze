@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class StatusTest : MonoBehaviour
@@ -19,7 +16,7 @@ public class StatusTest : MonoBehaviour
     [SerializeField]
     private Image _SPBar;
 
-    void Update()
+    private void Update()
     {
         _HPBar.fillAmount = _HP;
         _SLBar.fillAmount = _SL;

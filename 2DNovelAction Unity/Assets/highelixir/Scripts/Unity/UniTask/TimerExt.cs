@@ -31,7 +31,7 @@ namespace HighElixir.Async.Timers
         /// </remarks>
         public static UniTask<TimerAsyncResult> WaitUntilFinishedAsync(this HighElixir.Timers.Timer timer, float duration, out TimerTicket used, bool isLazy = true, CancellationToken ct = default)
         {
-            used = timer.CountDownRegister(duration, "[TimerExt]Awaiter", andStart:true);
+            used = timer.CountDownRegister(duration, "[TimerExt]Awaiter", andStart: true);
             return timer.WaitUntilFinishedAsync(used, isLazy, ct);
         }
 

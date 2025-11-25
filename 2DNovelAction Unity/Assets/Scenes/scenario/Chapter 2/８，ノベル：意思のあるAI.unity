@@ -2265,6 +2265,8 @@ GameObject:
   - component: {fileID: 2104732874}
   - component: {fileID: 2104732873}
   - component: {fileID: 2104732875}
+  - component: {fileID: 2104732877}
+  - component: {fileID: 2104732876}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -3171,9 +3173,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeRect:
     serializedVersion: 2
-    x: 66.633484
+    x: 67.484535
     y: 97.475655
-    width: 114.68085
+    width: 116.4
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -3183,6 +3185,7 @@ MonoBehaviour:
   eventHandler: {fileID: 2104732856}
   commandList:
   - {fileID: 2104732862}
+  - {fileID: 2104732877}
   - {fileID: 2104732874}
   - {fileID: 2104732861}
   - {fileID: 2104732855}
@@ -3215,6 +3218,7 @@ MonoBehaviour:
   - {fileID: 2104732844}
   - {fileID: 2104732845}
   - {fileID: 2104732864}
+  - {fileID: 2104732876}
   - {fileID: 2104732871}
   - {fileID: 2104732846}
   - {fileID: 2104732847}
@@ -3242,11 +3246,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 127.62768, y: 82.27307}
+  scrollPos: {x: 66.72398, y: -9.575653}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
   blockViewHeight: 200
-  zoom: 0.94000006
+  zoom: 1
   scrollViewRect:
     serializedVersion: 2
     x: -343
@@ -3256,7 +3260,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 2104732857}
   selectedCommands:
-  - {fileID: 2104732875}
+  - {fileID: 2104732854}
   variables: []
   description: 
   stepPause: 0
@@ -3524,7 +3528,7 @@ MonoBehaviour:
   waitUntilFinished: 0
 --- !u!114 &2104732870
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -3542,7 +3546,7 @@ MonoBehaviour:
   durationOLD: 0
 --- !u!114 &2104732871
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -3560,7 +3564,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &2104732872
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -3574,7 +3578,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &2104732873
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -3588,7 +3592,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &2104732874
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -3606,7 +3610,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &2104732875
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -3621,6 +3625,40 @@ MonoBehaviour:
   soundClip: {fileID: 8300000, guid: 809af00d3c5472e49bd840a0e758f7d4, type: 3}
   volume: 1
   waitUntilFinished: 0
+--- !u!114 &2104732876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 108
+  indentLevel: 0
+  volume: 0.05
+  fadeDuration: 1
+  waitUntilFinished: 1
+--- !u!114 &2104732877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104732823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 107
+  indentLevel: 0
+  volume: 0.08
+  fadeDuration: 1
+  waitUntilFinished: 1
 --- !u!1001 &4911735666183362933
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3947,6 +3985,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 680521763}
+    - target: {fileID: 6173174167495302744, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: "\uFF19\uFF0C\u30CE\u30D9\u30EB\uFF1A\u9ED2\u4E0A\u306E\u904E\u53BB\u3001\u8B66\u8996\u5E81\u30CF\u30C3\u30AD\u30F3\u30B0"
+      objectReference: {fileID: 0}
     - target: {fileID: 8411626237843014275, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
       propertyPath: m_Name
       value: ---UI---

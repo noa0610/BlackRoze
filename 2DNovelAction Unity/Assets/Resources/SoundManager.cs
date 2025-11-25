@@ -1,11 +1,10 @@
-﻿using System.Collections;
+﻿using HighElixir;
 using System.Collections.Generic;
-using System.Linq;
-using HighElixir;
 using UnityEngine;
 
 public class SoundManager : SingletonBehavior<SoundManager>
 {
+    [SerializeField] private AudioManager _audioManager;
     [System.Serializable]
     private class SoundData
     {
@@ -32,7 +31,10 @@ public class SoundManager : SingletonBehavior<SoundManager>
     protected override void Awake()
     {
         base.Awake();
-
+        if (_audioManager == null)
+        {
+            _audioManager = FindObjectOfType<AudioManager>();
+        }
         //AudioSourceを自分自身に生成して配列に格納
         for (int i = 0; i < _seSources.Length; i++)
         {
@@ -100,13 +102,14 @@ public class SoundManager : SingletonBehavior<SoundManager>
         if (_seData.ContainsKey(seName))
         {
             //Debug.Log($"SoundManager: Playing SE '{seName}'");
-            if (Time.realtimeSinceStartup - _seData[seName].playedTime > INTERVAL) {
+            if (Time.realtimeSinceStartup - _seData[seName].playedTime > INTERVAL)
+            {
                 var audioSource = GetUnusedSourceSE();
 
                 if (audioSource)
                 {
                     audioSource.clip = _seData[seName].audioClip;
-                    audioSource.volume = Mathf.Clamp01(volume);
+                    audioSource.volume = Mathf.Clamp01(volume * _audioManager.Voice);
                     audioSource.Play();
                     _seData[seName].playedTime = Time.realtimeSinceStartup;
                 }
@@ -136,7 +139,7 @@ public class SoundManager : SingletonBehavior<SoundManager>
                 if (audioSource)
                 {
                     audioSource.clip = _bgmData[bgmName].audioClip;
-                    audioSource.volume = Mathf.Clamp01(volume);
+                    audioSource.volume = Mathf.Clamp01(volume * _audioManager.BGMVolume);
                     audioSource.Play();
                     _bgmData[bgmName].playedTime = Time.realtimeSinceStartup;
                 }
@@ -151,10 +154,10 @@ public class SoundManager : SingletonBehavior<SoundManager>
     {
         foreach (var bgmSource in _bgmSources)
         {
-            if(bgmSource.clip && bgmSource.clip.name == bgmName)
+            if (bgmSource.clip && bgmSource.clip.name == bgmName)
             {
                 bgmSource.Stop();
             }
-        }       
+        }
     }
 }

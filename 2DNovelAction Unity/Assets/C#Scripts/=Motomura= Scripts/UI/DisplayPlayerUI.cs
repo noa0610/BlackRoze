@@ -1,6 +1,6 @@
-using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models;
 using BlackRose.Core.Models.Systems;
-using BlackRose.Core.Models;
+using BlackRose.Core.Models.Units;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +21,7 @@ public class DisplayPlayerUI : MonoBehaviour, IPlayerFollower
         Debug.Log("SET");
     }
 
-    void Update()
+    private void Update()
     {
         var status = _player.StatusManager;
         var _hp = status.ReadValue(Status.HP);
@@ -29,6 +29,6 @@ public class DisplayPlayerUI : MonoBehaviour, IPlayerFollower
 
         _HPCount.text = $"{_hp}/{_maxhp}";
         _HPImage.fillAmount = _hp / _maxhp;
-        Debug.Log($"HPステータス{_hp}/{_maxhp}");
+        //Debug.Log($"HPステータス{_hp}/{_maxhp}");
     }
 }

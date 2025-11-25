@@ -1,13 +1,11 @@
-using UnityEngine;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Datas.Definitions;
-using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using System.Collections.Generic;
+using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
-using HighElixir;
 using System;
-using Unity.VisualScripting;
+using System.Collections.Generic;
+using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(SearchAssistanceMono))]
@@ -213,7 +211,7 @@ namespace BlackRose.Core.Models.Units
         protected override bool BeforeTakeDamage(IUnit from, ref float damage)
         {
             bool isdefense = _shieldDefense.ShieldThrough(damage);
-            if(isdefense == false) PlaySE(_DefenseSEName, _DefenseSEVolume);
+            if (isdefense == false) PlaySE(_DefenseSEName, _DefenseSEVolume);
             return isdefense;
         }
 

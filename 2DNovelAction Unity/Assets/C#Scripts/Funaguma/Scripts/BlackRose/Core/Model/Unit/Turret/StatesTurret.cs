@@ -89,7 +89,7 @@ namespace BlackRose.Core.Models.Units
             {
                 PlaySE(_EncountSEName, _EncountSEVolume);
             });
-            _stateMachine .AddState(States.shootInterval, interval);
+            _stateMachine.AddState(States.shootInterval, interval);
 
             // 警戒
             //_looking = new Idle_Looking(_turret).SetAnimeTrigger("idle").SetCancelableProgress(0);

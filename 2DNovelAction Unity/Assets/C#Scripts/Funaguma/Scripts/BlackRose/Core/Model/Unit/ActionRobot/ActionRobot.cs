@@ -1,16 +1,16 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using BlackRose.Core.Models.Systems;
+using Cysharp.Threading.Tasks;
 using HighElixir;
 using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
 using HighElixir.Unity.UI;
 using System;
 using System.Linq;
+using System.Threading;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Threading;
-using BlackRose.Core.Models.Systems;
 
 namespace BlackRose.Core.Models.Units
 {

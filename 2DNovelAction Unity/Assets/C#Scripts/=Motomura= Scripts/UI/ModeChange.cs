@@ -1,7 +1,11 @@
+﻿using BlackRose.Core.Models.Systems;
+using BlackRose.Core.Models.Units;
+using UniRx;
+using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ModeChange : MonoBehaviour
+public class ModeChange : MonoBehaviour, IPlayerFollower
 {
     [SerializeField] public PlayerControls _InputAction;
     [SerializeField] private Image _targetImage;
@@ -11,12 +15,10 @@ public class ModeChange : MonoBehaviour
     [SerializeField] private Sprite ActionRobot;
     [SerializeField] private bool IsAR;
     [SerializeField] private bool IsStory;
-
-    void Start()
+    private AIController _ai;
+    private void Start()
     {
-        _InputAction = new PlayerControls();//InputActionのインスタンスを生成
-        _InputAction.Enable();
-        if(IsAR)
+        if (IsAR)
         {
             _targetImage.sprite = ActionRobot;
         }
@@ -24,46 +26,33 @@ public class ModeChange : MonoBehaviour
         {
             _targetImage.sprite = NORMAL;
         }
-
     }
 
-    void Update()
-    {
-        if(IsAR || IsStory) return;
-        
-        if (_InputAction.Player.ModeChange1.triggered) // C
-        {
-            switch (_targetImage.sprite.name)//HEAVY
-            {
-                case "NORMAL":
-                    _targetImage.sprite = HEAVY;
-                    break;
-                case "RIGHT":
-                    _targetImage.sprite = HEAVY;
-                    break;
-                case "HEAVY":
-                    _targetImage.sprite = NORMAL;
-                    break;
-            }
-        }
-        if (_InputAction.Player.ModeChange2.triggered)// V
-        {
-            switch (_targetImage.sprite.name)
-            {
-                case "NORMAL":
-                    _targetImage.sprite = RIGHT;
-                    break;
-                case "RIGHT":
-                    _targetImage.sprite = NORMAL;
-                    break;
-                case "HEAVY":
-                    _targetImage.sprite = RIGHT;
-                    break;
-            }
-        }
-    }
     public void Story()
     {
-        IsStory =! IsStory;
+        IsStory = !IsStory;
+    }
+
+    public void SetTarget(UnitBase target)
+    {
+        if (target is AIController ai)
+        {
+            _ai = ai;
+            this.UpdateAsObservable().Subscribe(_ => {
+                if (IsAR || IsStory) return;
+                if (_ai.CurrentMode is NormalMode)
+                {
+                    _targetImage.sprite = NORMAL;
+                }
+                else if (_ai.CurrentMode is LightMode)
+                {
+                    _targetImage.sprite = RIGHT;
+                }
+                else if (_ai.CurrentMode is HeavyMode)
+                {
+                    _targetImage.sprite = HEAVY;
+                }
+            }).AddTo(this);
+        }
     }
 }

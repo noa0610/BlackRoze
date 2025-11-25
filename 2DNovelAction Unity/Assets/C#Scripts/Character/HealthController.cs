@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class HealthController
+﻿public class HealthController
 {
     private int currentHealthPoint; // ヒットポイント
     private int maxHealthPoint; // 最大ヒットポイント
@@ -38,7 +34,7 @@ public class HealthController
             DeadHealth();
         }
     }
-    
+
     /// <summary>
     /// 死亡時の処理
     /// </summary>

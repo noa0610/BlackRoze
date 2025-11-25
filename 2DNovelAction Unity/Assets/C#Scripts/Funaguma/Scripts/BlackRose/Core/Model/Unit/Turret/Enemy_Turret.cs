@@ -1,12 +1,9 @@
-﻿using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Core.UI;
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
+using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
-using BlackRose.Core.Models.Units.Helpers;
-using Cysharp.Threading.Tasks;
-using BlackRose.Core.Models.Units.State;
 
 namespace BlackRose.Core.Models.Units
 {

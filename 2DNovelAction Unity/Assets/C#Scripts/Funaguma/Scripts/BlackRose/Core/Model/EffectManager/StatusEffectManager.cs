@@ -46,7 +46,7 @@ namespace BlackRose.Core.Models.EffectManagers
             while (enumerator.MoveNext())
             {
                 var e = enumerator.Current;
-                if (e.fix != 0) s.GetStatus(e.target).TemporaryChanged -=e.fix;
+                if (e.fix != 0) s.GetStatus(e.target).TemporaryChanged -= e.fix;
                 if (e.scale != 0) s.GetStatus(e.target).TemporaryRatio -= e.scale;
             }
             effects.Remove(effect);

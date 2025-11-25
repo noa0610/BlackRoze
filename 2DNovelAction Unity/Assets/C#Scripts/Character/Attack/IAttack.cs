@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public interface IAttack
 {
-   void PerformAttack(Transform originPos, int attackData, Transform target = null);
+    void PerformAttack(Transform originPos, int attackData, Transform target = null);
 }

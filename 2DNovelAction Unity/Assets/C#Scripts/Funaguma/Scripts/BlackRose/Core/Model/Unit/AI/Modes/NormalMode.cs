@@ -45,7 +45,7 @@ namespace BlackRose.Core.Models.Units
             _intervalTicket = Timer.CountDownRegister(0.7f, "射撃CT", () =>
             {
                 _shootCount = 0;
-                Debug.Log("タイマー完了");
+                //Debug.Log("タイマー完了");
                 _stateMachine.Send(Triggers.watingTimeHasElapsed);
             }, initZero: true);
             _skillTicket = Timer.CountDownRegister(_skillCT, "ワープCT", () =>
@@ -66,7 +66,11 @@ namespace BlackRose.Core.Models.Units
                     _parent.PlaySE(_skillSE.SEName, _skillSE.Volume);
                     WarpEffectAsync(_parent.destroyCancellationToken).Forget();
                 });
-
+            _stateMachine.OnCompletion.Where(x => x.ID == SubState.Skill).Subscribe(_ =>
+            {
+                _stateMachine.Send(Triggers.skillFinished);
+                //Debug.Log("AAAAAAA");
+            });
             // Skill
             _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "toIdle");
             // event

@@ -1,14 +1,13 @@
 ﻿using BlackRose.Core.Models;
 using BlackRose.Core.Models.Units;
-using HighElixir.Pools;
 using HighElixir;
+using HighElixir.Unity.Pools;
 using System;
 using System.Collections.Generic;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.UI;
-using HighElixir.Unity.Pools;
 
 namespace BlackRose.Core.UI
 {

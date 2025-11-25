@@ -32,7 +32,7 @@ namespace BlackRose.Core.Models.States
         public override void Enter(IState previousIState, UnitBase parent)
         {
             base.Enter(previousIState, parent);
-            Debug .Log("Enter of SuicideBombing");
+            Debug.Log("Enter of SuicideBombing");
             _ = Explode(parent);
         }
 
@@ -73,7 +73,7 @@ namespace BlackRose.Core.Models.States
                 }
                 if (hitCollider.TryGetComponent<UnitBase>(out var unit))
                 {
-                    Debug.Log($"Damage dealt to {unit.name}: { _damage}");
+                    Debug.Log($"Damage dealt to {unit.name}: {_damage}");
                     UnitManager.instance.AddDamage(unit, parent, _damage == -5 ? 1 : _damage);
                 }
             }

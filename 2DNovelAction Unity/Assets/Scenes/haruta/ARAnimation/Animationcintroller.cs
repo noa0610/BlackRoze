@@ -1,7 +1,6 @@
-using UnityEngine;
-using BlackRose.Core.Models.States;
+﻿using BlackRose.Core.Models.States.Animators;
 using System.Collections.Generic;
-using BlackRose.Core.Models.States.Animators;
+using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
 public class UnitAnimationController : MonoBehaviour, IAnimationDriver

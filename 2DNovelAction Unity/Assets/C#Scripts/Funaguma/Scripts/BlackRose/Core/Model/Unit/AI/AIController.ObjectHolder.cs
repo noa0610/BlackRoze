@@ -1,10 +1,9 @@
-﻿using AIE2D;
-using BlackRose.Core.Models.Objects;
-using BlackRose.Datas.Definitions;
+﻿using BlackRose.Core.Models.Objects;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
-{    public partial class AIController
+{
+    public partial class AIController
     {
         // 各モードで使用するオブジェクト群
         [Header("Objects")]

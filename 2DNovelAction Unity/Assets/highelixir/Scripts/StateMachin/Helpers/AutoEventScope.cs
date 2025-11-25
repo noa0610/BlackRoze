@@ -4,12 +4,12 @@ namespace HighElixir.StateMachine.Helpers
 {
     public static class AutoEventScope
     {
-        public  static IDisposable SendWith<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TEvt evt, TEvt after, bool isLazy)
+        public static IDisposable SendWith<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TEvt evt, TEvt after, bool isLazy)
         {
             s.Send(evt);
             return new Sender<TCont, TEvt, TState>(s, after, isLazy);
         }
-        public  static IDisposable LazySendWith<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TEvt evt, TEvt after, bool isLazy)
+        public static IDisposable LazySendWith<TCont, TEvt, TState>(this StateMachine<TCont, TEvt, TState> s, TEvt evt, TEvt after, bool isLazy)
         {
             s.LazySend(evt);
             return new Sender<TCont, TEvt, TState>(s, after, isLazy);

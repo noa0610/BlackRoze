@@ -23,7 +23,7 @@ namespace BlackRose.Core.Models
         public void SetTarget(StatusManager manager) { _manager = manager; }
         public void Add(Status status, float delta = 0, float ratio = 0)
         {
-                _status = status;
+            _status = status;
             if (_manager.TryGetStatus(status, out var info))
             {
                 info.TemporaryChanged += delta;

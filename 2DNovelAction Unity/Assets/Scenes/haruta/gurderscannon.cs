@@ -1,5 +1,4 @@
-using UnityEngine;
-using BlackRose.Core.Models.Units;
+﻿using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     [RequireComponent(typeof(Rigidbody2D))]
@@ -40,7 +39,7 @@ namespace BlackRose.Core.Models.Units
                     // ガーダーの角度と向きを取得
                     float angleRad = gurter.AngleDeg * Mathf.Deg2Rad;
                     int facing = gurter.FacingSign;
-                    
+
                     // ガーダーの向きに基づいて弾の方向を設定
                     dir = new Vector2(facing * Mathf.Cos(angleRad), Mathf.Sin(angleRad)).normalized;
                     Debug.Log($"[gurderscannon] ガーダーの向き: {facing}, 角度: {gurter.AngleDeg}度");
@@ -52,7 +51,7 @@ namespace BlackRose.Core.Models.Units
                     Debug.Log("[gurderscannon] ガーダーが見つからないためデフォルトの方向を使用");
                 }
 
-               Debug.Log($"[gurderscannon] Invoke: dir={dir}, initialForce={initialForce}");
+                Debug.Log($"[gurderscannon] Invoke: dir={dir}, initialForce={initialForce}");
                 _rb.AddForce(dir.normalized * initialForce, ForceMode2D.Impulse);
                 // フェールセーフ（必要なら有効化）: インパルスで動かない場合は直接速度をセット
                 // _rb.velocity = dir.normalized * initialForce;
@@ -63,7 +62,7 @@ namespace BlackRose.Core.Models.Units
                 Debug.LogWarning($"[{nameof(gurderscannon)}] Rigidbody2D not found. Unable to apply initial impulse.");
             }
         }
-// ...existing code...
+        // ...existing code...
     }
-// ...existing code...
+    // ...existing code...
 }

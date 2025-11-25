@@ -5,9 +5,11 @@ namespace BlackRose.Core.Models.Units.Helpers
 {
     public sealed class RespawnBehaviour : MonoBehaviour
     {
+        [SerializeField] private string _loadSceneName = "GameScene";
+        [SerializeField] private SceneSelectLoad _loader;
         public void Receive()
         {
-            PlayerSpawnner.ShowRespawnMenu();
+            _loader.OnButtonClick(_loadSceneName);
         }
     }
 }

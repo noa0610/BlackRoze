@@ -11,7 +11,7 @@ namespace BlackRose.Core.Models.States
     public class MoveOnGround : AccelMoveBase
     {
         public MoveOnGround(bool isStopInExit = false)
-            :base(isStopInExit)
+            : base(isStopInExit)
         {
         }
 

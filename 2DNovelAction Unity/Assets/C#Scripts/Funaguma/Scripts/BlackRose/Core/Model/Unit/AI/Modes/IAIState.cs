@@ -1,6 +1,4 @@
-﻿
-using UnityEngine;
-using UnityEngine.InputSystem;
+﻿using UnityEngine.InputSystem;
 
 namespace BlackRose.Core.Models.Units
 {

@@ -6,7 +6,7 @@ namespace BlackRose.Core.Inputs
     [RequireComponent(typeof(UnityEngine.InputSystem.PlayerInput))]
     public class PlayerInputReceiver : MonoBehaviour
     {
-        [SerializeField] GameObject _pauseMenu;
+        [SerializeField] private GameObject _pauseMenu;
         private bool _isPaused = false;
         public void OnPause()
         {

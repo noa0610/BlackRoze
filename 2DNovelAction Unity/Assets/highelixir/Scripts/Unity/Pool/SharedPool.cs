@@ -1,5 +1,4 @@
-﻿using HighElixir.Pools;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace HighElixir.Unity.Pools
 {

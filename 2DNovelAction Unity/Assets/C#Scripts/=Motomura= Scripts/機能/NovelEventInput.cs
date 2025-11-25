@@ -1,14 +1,16 @@
+﻿using BlackRose.Core.Models.Systems;
+using BlackRose.Core.Models.Units;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class NovelEventInput : MonoBehaviour
+public class NovelEventInput : MonoBehaviour, IPlayerFollower
 {
-[SerializeField]
-private InputActionAsset _inputActions;
-[SerializeField]
-private GameObject _Player;
-private Rigidbody2D _rb2d;
-    void Start()
+    [SerializeField]
+    private InputActionAsset _inputActions;
+    [SerializeField]
+    private GameObject _Player;
+    private Rigidbody2D _rb2d;
+    private void Start()
     {
         try
         {
@@ -31,5 +33,10 @@ private Rigidbody2D _rb2d;
         _inputActions.Disable();//無効化
         _rb2d.constraints = RigidbodyConstraints2D.FreezeAll;
         _rb2d.constraints -= RigidbodyConstraints2D.FreezePositionY;
+    }
+
+    public void SetTarget(UnitBase target)
+    {
+        _Player = target.gameObject;
     }
 }

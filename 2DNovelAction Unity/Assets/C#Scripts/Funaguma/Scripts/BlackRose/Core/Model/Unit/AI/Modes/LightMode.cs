@@ -33,14 +33,18 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "")
             .OnEnter.Subscribe(_ =>
             {
-                Debug.Log("LightMode: Launching Missile");       
+                //Debug.Log("LightMode: Launching Missile");       
                 _parent.PlaySE(_skillSE.SEName, _skillSE.Volume);
                 _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackLayer);
                 _stateMachine.LazySend(AITriggers.shootCompleted);
             }).AddTo(_parent);
 
             var hook = _stateMachine.RegisterState(SubState.Skill, _locked, "");
-            hook.OnEnter.Subscribe(_ => _parent.SearchEffects.gameObject.SetActive(true)).AddTo(_parent);
+            hook.OnEnter.Subscribe(_ => {
+                var go = _parent.SearchEffects.gameObject;
+                go.SetActive(true);
+                go.transform.localScale = go.transform.localScale * _parent.ShootDir.x;
+            }).AddTo(_parent);
             hook.OnExit.Subscribe(_ => _parent.SearchEffects.gameObject.SetActive(false)).AddTo(_parent);
 
             // Skill

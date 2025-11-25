@@ -124,7 +124,7 @@ namespace BlackRose.Core.Models.SearchSystems
             return true;
         }
 
-        private bool TryGetProfile(string key, out SearchProfile profile)
+        public bool TryGetProfile(string key, out SearchProfile profile)
         {
             profile = _profiles.FirstOrDefault(c => c.profileName == key);
             return profile != null;

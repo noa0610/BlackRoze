@@ -27,7 +27,7 @@ namespace BlackRose.Core.Models.Units
         {
 
             // Skill
-            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "");
+            _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "toIdle");
 
             var hook = _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot");
             hook.OnEnter.Subscribe(_ =>
@@ -60,6 +60,11 @@ namespace BlackRose.Core.Models.Units
             });
 
             _stateMachine.RegisterState(SubState.Skill, _reflect, "Skill");
+
+            if(_stateMachine.TryGetStateInfo(SubState.Dash, out hook))
+            {
+                hook.OnEnter.Subscribe(_ => _parent.AutoFlipper.Enable = true).AddTo(_parent);
+            }
         }
 
         public override void OnGrounded() { }
@@ -121,6 +126,11 @@ namespace BlackRose.Core.Models.Units
             _parent.SwitchModeLight();
         }
 
+        public override void OnAirToGround()
+        {
+            base.OnAirToGround();
+            _parent.Animator.SetTrigger("toRand");
+        }
         private bool NonEquableDir(float x)
         {
             var movedirx = _parent.MoveDirection.x;

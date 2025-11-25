@@ -22,8 +22,11 @@ namespace BlackRose.Core.Models.Units
         [Tooltip("TriggerSubjectをアタッチ")]
         [SerializeField] private ParticleSystem _explosion;
         [SerializeField] private AudioSource _sfx;
+        private bool _created = false;
         protected override void Hitted_Target(Collider2D collision)
         {
+            if (_created) return;
+            _created = true;
             var e = Instantiate(_explosion, transform.position, Quaternion.identity);
             Play(e).Forget();
         }
@@ -41,8 +44,9 @@ namespace BlackRose.Core.Models.Units
                     col = particle.gameObject.AddComponent<CircleCollider2D>();
             }
             col.radius = _radius;
+            col.isTrigger = true;
             col.enabled = false;
-            col.gameObject.OnCollisionEnter2DAsObservable().Subscribe(Collision =>
+            col.gameObject.OnCollisionEnter2DAsObservable().Where(col => (1 << col.gameObject.layer) == _targetLayer).Subscribe(Collision =>
             {
                 if (Collision.transform.TryGetComponent<Rigidbody2D>(out var rigidbody))
                 {
@@ -60,7 +64,7 @@ namespace BlackRose.Core.Models.Units
             col.enabled = true;// 有効化
             particle.Play();
             _sfx?.Play();
-            await UniTask.WhenAll(UniTask.Delay(TimeSpan.FromSeconds(_time)), UniTask.WaitWhile(() => particle.IsAlive()));
+            await UniTask.WhenAll(UniTask.Delay(TimeSpan.FromSeconds(_time)));
 
             if (particle != null) particle.Stop();
             if (col != null) col.enabled = false;

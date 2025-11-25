@@ -55,44 +55,62 @@ namespace BlackRose.Core.Models.SearchSystems
 
         public List<UnitBase> Execute(List<UnitBase> pool)
         {
-            var eyePos = _eye.position + _eyeOffset;
+            var eyePos3 = _eye.position + _eyeOffset;
+            // Apply angle offset to the eye rotation so EyeAngleOffset affects forward direction
             var baseRotation = _eye.rotation * Quaternion.Euler(_eyeAngleOffset);
-            var forward = baseRotation * Vector3.forward;
+            var forward3D = baseRotation * Vector3.forward;
             var copy = new List<UnitBase>(pool);
             if (_is2D)
             {
-                // 2Dモード（視野角付き）
-                var hits = Physics2D.CircleCastAll(eyePos, _distance, forward, 0f, _layerMask);
-                FilterTargets2D(eyePos, forward, hits, ref copy);
+                // 2Dモード：計算の基準を Z 回転（eulerAngles.z）にして確実に2D前方を取得
+                var eyePos2 = (Vector2)eyePos3;
+                float rotZ = _eye.eulerAngles.z + _eyeAngleOffset.z;
+                var rad = rotZ * Mathf.Deg2Rad;
+                var forward2D = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+
+                // Get colliders in radius, but final visibility uses angle + raycast
+                var cols = Physics2D.OverlapCircleAll(eyePos2, _distance, _layerMask);
+                FilterTargets2D(eyePos2, forward2D, cols, ref copy);
             }
             else
             {
                 // 3Dモード
-                var hits = Physics.SphereCastAll(eyePos, 0.1f, forward, _distance, _layerMask);
-                FilterTargets3D(eyePos, forward, hits, ref copy);
+                var hits = Physics.SphereCastAll(eyePos3, 0.1f, forward3D, _distance, _layerMask);
+                FilterTargets3D(eyePos3, forward3D, hits, ref copy);
             }
             return copy;
         }
 
-        private void FilterTargets2D(Vector2 eyePos, Vector2 forward, RaycastHit2D[] hits, ref List<UnitBase> targets)
+        private void FilterTargets2D(Vector2 eyePos, Vector2 forward, Collider2D[] cols, ref List<UnitBase> targets)
         {
-            var visibleObjects = hits.Select(h => h.collider.gameObject).ToList();
+            // We no longer rely solely on overlap results; use them only as potential obstacles list.
+            var potentialObstacles = cols.Select(h => h.gameObject).ToList();
 
             targets.RemoveAll(target =>
             {
                 if (target == null) return true;
-                Vector2 dir = ((Vector2)target.transform.position - eyePos).normalized;
+                var targetPos = (Vector2)target.transform.position;
+                Vector2 dir = (targetPos - eyePos).normalized;
+
+                // DeadZoneチェック（先に）
+                if (_deadZone > 0 && Vector2.Distance(eyePos, targetPos) <= _deadZone)
+                    return !_reversing;
 
                 // 視野角チェック
                 float angle = Vector2.Angle(forward, dir);
-                if (angle > _horizontalView * 0.5f) return !_reversing;
-
-                // DeadZoneチェック
-                if (_deadZone > 0 && Vector2.Distance(eyePos, target.transform.position) <= _deadZone)
+                if (angle > _horizontalView * 0.5f)
                     return !_reversing;
 
-                // ヒットチェック
-                bool visible = visibleObjects.Contains(target.gameObject);
+                // Raycastで実際に見えてるかチェック（目からターゲットまでの最短ヒットがターゲット自身であるか）
+                float dist = Vector2.Distance(eyePos, targetPos);
+                var hit = Physics2D.Raycast(eyePos, dir, dist, _layerMask);
+                bool visible = false;
+                if (hit.collider != null)
+                {
+                    var hitRoot = hit.collider.transform.root.gameObject;
+                    visible = (hit.collider.gameObject == target.gameObject) || hit.collider.transform.IsChildOf(target.transform) || hitRoot == target.gameObject || hitRoot.transform.IsChildOf(target.transform);
+                }
+
                 return _reversing ? visible : !visible;
             });
         }
@@ -123,5 +141,10 @@ namespace BlackRose.Core.Models.SearchSystems
             });
         }
 
+    }
+
+    static class VectorExtensions
+    {
+        public static Vector2 ToVector2(this Vector3 v) => new Vector2(v.x, v.y);
     }
 }

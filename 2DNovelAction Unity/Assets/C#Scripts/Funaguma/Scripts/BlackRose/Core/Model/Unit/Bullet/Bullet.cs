@@ -52,10 +52,10 @@ namespace BlackRose.Core.Models.Units
             _targetLayer = targetLayer;
         }
 
-        public void SetDirection(Vector2 dir) => _direction = dir;
+        public void SetDirection(Vector2 dir) { _direction = dir; OrientToDirection(dir); }
         public void SetParent(UnitBase parent) => _parent = parent;
 
-        public void Reflect() => _direction = -_direction;
+        public void Reflect() { _direction = -_direction; OrientToDirection(_direction); }
         #endregion
 
         #region === Core Logic ===
@@ -65,6 +65,9 @@ namespace BlackRose.Core.Models.Units
             _ticket = gt.CountDownRegister(_status.time, $"[{name}] duration", () => NotifyDestoy());
             gt.GetReactiveProperty(_ticket).Subscribe(td => Move(-td.Delta));
             gt.Start(_ticket);
+
+            // Ensure orientation matches direction when invoked
+            OrientToDirection(_direction);
         }
 
         protected virtual void Move(float deltaTime)
@@ -161,5 +164,13 @@ namespace BlackRose.Core.Models.Units
             OnDestoryHandle = null;
         }
         #endregion
+
+        // Orient sprite so that (1,0) is treated as right-facing.
+        private void OrientToDirection(Vector2 dir)
+        {
+            if (dir.sqrMagnitude < 1e-6f) return;
+            // Set transform.right so the object's right points along dir (1,0 is right)
+            transform.right = new Vector3(dir.x, dir.y, 0f);
+        }
     }
 }

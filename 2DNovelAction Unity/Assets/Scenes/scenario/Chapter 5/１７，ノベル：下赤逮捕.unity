@@ -1869,6 +1869,7 @@ GameObject:
   - component: {fileID: 1455495342}
   - component: {fileID: 1455495344}
   - component: {fileID: 1455495345}
+  - component: {fileID: 1455495346}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -4458,7 +4459,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeRect:
     serializedVersion: 2
-    x: 65.78243
+    x: 66.6335
     y: 102.58204
     width: 97.65958
     height: 40
@@ -4470,6 +4471,7 @@ MonoBehaviour:
   eventHandler: {fileID: 1455495292}
   commandList:
   - {fileID: 1455495336}
+  - {fileID: 1455495346}
   - {fileID: 1455495335}
   - {fileID: 1455495291}
   - {fileID: 1455495290}
@@ -4641,8 +4643,7 @@ MonoBehaviour:
     height: 859
   selectedBlocks:
   - {fileID: 1455495293}
-  selectedCommands:
-  - {fileID: 1455495345}
+  selectedCommands: []
   variables: []
   description: 
   stepPause: 0
@@ -5964,6 +5965,23 @@ MonoBehaviour:
   returnValueType: System.Void
   showInherited: 0
   callMode: 0
+--- !u!114 &1455495346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455495195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 147
+  indentLevel: 0
+  volume: 0.05
+  fadeDuration: 1
+  waitUntilFinished: 1
 --- !u!1 &1456202699
 GameObject:
   m_ObjectHideFlags: 0

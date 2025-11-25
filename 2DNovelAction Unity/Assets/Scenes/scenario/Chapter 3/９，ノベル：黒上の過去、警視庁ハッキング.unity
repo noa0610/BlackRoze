@@ -1941,6 +1941,7 @@ GameObject:
   - component: {fileID: 1801581143}
   - component: {fileID: 1801581144}
   - component: {fileID: 1801581145}
+  - component: {fileID: 1801581146}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -3750,6 +3751,7 @@ MonoBehaviour:
   eventHandler: {fileID: 1801581100}
   commandList:
   - {fileID: 1801581105}
+  - {fileID: 1801581146}
   - {fileID: 1801581042}
   - {fileID: 1801581043}
   - {fileID: 1801581044}
@@ -3884,7 +3886,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 1801581101}
   selectedCommands:
-  - {fileID: 1801581036}
+  - {fileID: 1801581146}
   variables: []
   description: 
   stepPause: 0
@@ -4985,6 +4987,23 @@ MonoBehaviour:
   soundClip: {fileID: 8300000, guid: 809af00d3c5472e49bd840a0e758f7d4, type: 3}
   volume: 1
   waitUntilFinished: 0
+--- !u!114 &1801581146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1801581034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 141
+  indentLevel: 0
+  volume: 0.05
+  fadeDuration: 1
+  waitUntilFinished: 1
 --- !u!224 &1846648852 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6321376446975948176, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}

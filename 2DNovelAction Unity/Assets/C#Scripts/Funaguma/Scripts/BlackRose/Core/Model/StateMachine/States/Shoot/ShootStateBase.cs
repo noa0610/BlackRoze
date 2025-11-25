@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using System;
-using UnityEngine.Events;
-using Cysharp.Threading.Tasks;
-using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models.Units;
 using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
+using System;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace BlackRose.Core.Models.States
 {

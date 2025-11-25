@@ -1,11 +1,11 @@
 ﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
 using BlackRose.Core.Models.States;
+using Cysharp.Threading.Tasks;
 using HighElixir;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -34,7 +34,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private string _DeadSEName = "敵ダメージ2";
         [SerializeField] private float _DeadSEVolume = 0.4f;
 
-        
+
         // 実装
         private SearchAssistanceMono _searchAssistance;
 

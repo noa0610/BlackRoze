@@ -1,8 +1,5 @@
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using BlackRose.Core.Models.Helper;
-using HighElixir;
-using System.Collections.Generic;
-using UniRx;
 using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
@@ -220,7 +217,7 @@ namespace BlackRose.Core.Models.Units
             var armpunchendile = new Idle_LazyChange(Triggers.Attack1end.ToString(), _ArmPunchEndTime);
             _stateMachine.AddState(States.armpunch_end, armpunchendile);
             #endregion
-            
+
             #region === SpreadShot States ===
 
             /* 拡散ビーム砲 */

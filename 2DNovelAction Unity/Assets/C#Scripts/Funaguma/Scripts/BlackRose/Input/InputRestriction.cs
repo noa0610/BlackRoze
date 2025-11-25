@@ -1,6 +1,6 @@
-﻿using UniRx;
-using HighElixir;
+﻿using HighElixir;
 using System;
+using UniRx;
 
 namespace BlackRose.Core
 {

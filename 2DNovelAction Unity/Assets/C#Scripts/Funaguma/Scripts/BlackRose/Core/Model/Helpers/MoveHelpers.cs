@@ -1,7 +1,7 @@
 ﻿using BlackRose.Core.Models.Units;
 using UnityEngine;
 
-namespace BlackRose.Core.Models.Helper 
+namespace BlackRose.Core.Models.Helper
 {
     public static class MoveHelpers
     {
@@ -9,7 +9,7 @@ namespace BlackRose.Core.Models.Helper
         {
             if (rigidbody == null) return;
 
-            var input = Normalize(moveDir); 
+            var input = Normalize(moveDir);
             if (input == 0) return;
             float desiredDir = Mathf.Sign(input);
             float absInput = Mathf.Abs(input);

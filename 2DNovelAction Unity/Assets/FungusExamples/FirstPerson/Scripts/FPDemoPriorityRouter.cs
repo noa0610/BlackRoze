@@ -1,8 +1,6 @@
 ﻿// This code is part of the Fungus library (https://github.com/snozbot/fungus)
 // It is released for free under the MIT open source license (https://github.com/snozbot/fungus/blob/master/LICENSE)
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -13,13 +11,13 @@ namespace Fungus.Examples
         public Behaviour[] componentEnabledOutsideFungusPriority;
         public Behaviour[] componentEnabledInsideFungusPriority;
 
-        void OnEnable()
+        private void OnEnable()
         {
             Fungus.FungusPrioritySignals.OnFungusPriorityStart += FungusPrioritySignals_OnFungusPriorityStart;
             Fungus.FungusPrioritySignals.OnFungusPriorityEnd += FungusPrioritySignals_OnFungusPriorityEnd;
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             Fungus.FungusPrioritySignals.OnFungusPriorityStart -= FungusPrioritySignals_OnFungusPriorityStart;
             Fungus.FungusPrioritySignals.OnFungusPriorityEnd -= FungusPrioritySignals_OnFungusPriorityEnd;
@@ -50,7 +48,7 @@ namespace Fungus.Examples
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
 
         }

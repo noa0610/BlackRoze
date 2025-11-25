@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
 using UniRx;
-using System;
+using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
     public class AutoFlipHelper : MonoBehaviour

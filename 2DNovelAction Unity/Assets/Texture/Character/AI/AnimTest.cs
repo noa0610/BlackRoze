@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using Fungus;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AnimTest : MonoBehaviour
 {
@@ -10,15 +7,15 @@ public class AnimTest : MonoBehaviour
     private Animator _animator;
     private Vector2 moveInput;
 
-    void Start()
+    private void Start()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
-        
+
         moveInput = new Vector2(1, 0);
     }
 
-    void Update()
+    private void Update()
     {
         if (Input.GetKey(KeyCode.A))
         {
@@ -46,13 +43,13 @@ public class AnimTest : MonoBehaviour
             _animator.SetTrigger("toWalk");
             transform.localScale = new Vector3(moveInput.x, transform.localScale.y, transform.localScale.z);
         }
-        else if(moveInput.x == 0 && _rigidbody2D.velocity.y <= 0)
+        else if (moveInput.x == 0 && _rigidbody2D.velocity.y <= 0)
         {
             _animator.SetTrigger("toIdle");
         }
-        
 
-        
+
+
     }
 
 

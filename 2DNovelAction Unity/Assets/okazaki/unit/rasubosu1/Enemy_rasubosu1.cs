@@ -1,15 +1,12 @@
-using BlackRose.Core.Models.Helper;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Core.Models.States;
+using BlackRose.Core.Models.Systems;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using HighElixir;
-using System.Collections.Generic;
 using System;
-using BlackRose.Core.Models.Objects;
-using System.Collections;
-using BlackRose.Core.Models.Systems;
+using System.Collections.Generic;
+using UnityEngine;
 
 
 namespace BlackRose.Core.Models.Units
@@ -255,18 +252,18 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        void Attack1()
+        private void Attack1()
         {
             Debug.Log("アームパンチ");
             _stateMachine.ChangeState(Triggers.Attack1);
         }
 
-        void Attack2()
+        private void Attack2()
         {
             Debug.Log("拡散ビーム砲");
             _stateMachine.ChangeState(Triggers.Attack2);
         }
-        void Attack3()
+        private void Attack3()
         {
             Debug.Log("ファイアウォール");
             _stateMachine.ChangeState(Triggers.Attack3);
@@ -288,7 +285,7 @@ namespace BlackRose.Core.Models.Units
         // パンチの落下ポイントを決める
         private void RandomArmPunchFallPoint()
         {
-            if(_player != null)
+            if (_player != null)
             {
                 _armpunchPoint.transform.position = new Vector2(_player.transform.position.x, _ArmHeightOfFall);
             }
@@ -298,7 +295,7 @@ namespace BlackRose.Core.Models.Units
 
         #region === FireWall ===
         // アームを移動
-        void FireWallArmMove()
+        private void FireWallArmMove()
         {
             if (_fireWallArmprefab == null || _ArmInitpoint == null)
             {

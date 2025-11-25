@@ -1,6 +1,5 @@
 ﻿using BlackRose.Core.Models.States;
 using System;
-using System.Collections.Generic;
 
 namespace BlackRose.Core.Models.Helper
 {

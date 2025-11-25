@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraMove : MonoBehaviour
 {
@@ -8,7 +6,7 @@ public class CameraMove : MonoBehaviour
 
     [Header("Player GameObject")]
     [SerializeField] private float SmoothSpeed = 0.125f; // カメラの追従速度を滑らかにするための係数
-    [SerializeField] private Vector3 OFFSET = new Vector3(0,0,-10); // カメラとプレイヤーの相対的な位置を設定するオフセット
+    [SerializeField] private Vector3 OFFSET = new Vector3(0, 0, -10); // カメラとプレイヤーの相対的な位置を設定するオフセット
 
     [Header("Stage ComeraOut")]
     [SerializeField] private float MinX; // ステージの左端
@@ -21,26 +19,26 @@ public class CameraMove : MonoBehaviour
     private GameObject PLAYER; // プレイヤーのGameObjectを取得
     private Vector3 desiredPosition; // プレイヤーの位置
 
-    void Start()
+    private void Start()
     {
         if (PLAYER == null)
         {
             // シーン内のインスタンス化されたプレイヤーを取得
             PLAYER = GameObject.FindGameObjectWithTag("Player");
-            
+
             if (PLAYER == null)
             {
                 Debug.LogError("シーン内に 'Player' タグが付いたオブジェクトが見つかりません。");
             }
         }
-        
+
         if (PLAYER != null)
         {
             transform.position = PLAYER.transform.position + OFFSET;
         }
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         if (PLAYER != null)
         {

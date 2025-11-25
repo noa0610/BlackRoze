@@ -1,12 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models.Units;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UIElements;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace BlackRose.Core.Models.States
 {

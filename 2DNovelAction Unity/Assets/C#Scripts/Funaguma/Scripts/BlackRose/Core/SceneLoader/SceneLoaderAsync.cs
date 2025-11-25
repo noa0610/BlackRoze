@@ -27,7 +27,7 @@ namespace HighElixir
 
         public static IObservable<Phase> PhaseObservable => _phase.AsObservable();
         public static IObservable<float> Progress => _progress.AsObservable();
-        public static bool IsLoading => _isloading; 
+        public static bool IsLoading => _isloading;
 
         // 外部から呼んで「もう遷移OK！」にするメソッド
         public static void AllowSceneTransition()
@@ -107,12 +107,12 @@ namespace HighElixir
         private void LoadById(int id, object data)
         {
             var operation = SceneManager.LoadSceneAsync(id, LoadSceneMode.Additive);
-            LoadSceneAsync(operation, data, id:id).Forget();
+            LoadSceneAsync(operation, data, id: id).Forget();
         }
     }
 
     public interface ICallDataReceiver : IEventSystemHandler
     {
-        public void Enter(object data);
+        void Enter(object data);
     }
 }

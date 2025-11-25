@@ -31,7 +31,7 @@ namespace BlackRose.Test
 
         private void Awake()
         {
-            _ticket = GT.PulseRegister(_interval,"[TestUnit] ShootInterval", () => Shoot());
+            _ticket = GT.PulseRegister(_interval, "[TestUnit] ShootInterval", () => Shoot());
             GT.Start(_ticket);
         }
         private void OnValidate()

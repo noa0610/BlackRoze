@@ -12,7 +12,7 @@ namespace BlackRose.Core.Models.Objects
         {
             // 弾に当たったら反射させる
             if (
-                collision.TryGetComponent<Bullet>(out var bullet) && 
+                collision.TryGetComponent<Bullet>(out var bullet) &&
                 ((int)bullet.TargetLayer & LayerMask.GetMask("Player")) != 0)
             {
                 // 反射処理

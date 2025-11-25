@@ -1,15 +1,11 @@
 ﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Core.Models.States;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
-using Fungus;
 using HighElixir;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
 namespace BlackRose.Core.Models.Units
 {
@@ -838,23 +834,23 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        void Attack1()
+        private void Attack1()
         {
             Debug.Log("ポインターミサイル開始");
             _stateMachine.ChangeState(Triggers.Attack1start);
         }
 
-        void Attack2()
+        private void Attack2()
         {
             Debug.Log("クロスウェーブ開始");
             _stateMachine.ChangeState(Triggers.Attack2start);
         }
-        void Attack3()
+        private void Attack3()
         {
             Debug.Log("ワープショット開始");
             _stateMachine.ChangeState(Triggers.Attack3start);
         }
-        void Attack4()
+        private void Attack4()
         {
             Debug.Log("フラッシュビームソード開始");
             _stateMachine.ChangeState(Triggers.Attack4start);

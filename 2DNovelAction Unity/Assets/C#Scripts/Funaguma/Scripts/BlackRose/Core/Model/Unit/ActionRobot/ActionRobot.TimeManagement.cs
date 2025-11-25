@@ -23,7 +23,7 @@ namespace BlackRose.Core.Models.Units
         [Header("Effect")]
         [SerializeField] private ParticleSystem _chargeEffect; // チャージエフェクト
         [SerializeField] private Transform _container;
-        [SerializeField] private ObjectPool<ParticleSystem> _chargeEffectPool;  
+        [SerializeField] private ObjectPool<ParticleSystem> _chargeEffectPool;
         private bool _halfEffectPlayed = false;
         private bool _fullEffectPlayed = false;
 
@@ -64,7 +64,7 @@ namespace BlackRose.Core.Models.Units
                 else if (!_fullEffectPlayed && time.Current >= _chargeShoot[0])
                 {
                     // 小チャージエフェクト
-                    var effect =  _chargeEffectPool.Pool.Get();
+                    var effect = _chargeEffectPool.Pool.Get();
                     effect.transform.localScale = Vector3.one;
                     _fullEffectPlayed = true;
                 }

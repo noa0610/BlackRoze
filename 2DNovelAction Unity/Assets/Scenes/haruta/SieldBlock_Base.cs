@@ -1,6 +1,6 @@
-using UnityEngine;
+﻿using BlackRose.Core.Models.EffectManager;
 using System;
-using BlackRose.Core.Models.EffectManager;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -193,7 +193,7 @@ namespace BlackRose.Core.Models.Units
             }
 
             // 防御が無効なら何もせず弾を素通りさせる
-            if (!isDefenseEnabled) return;
+            if (!isDefenseEnabled || collision.CompareTag("Laser")) return;
 
             if (collision.gameObject.CompareTag("Playerbullet"))
             {
@@ -205,7 +205,7 @@ namespace BlackRose.Core.Models.Units
                     if (damage <= 3f)
                     {
                         Debug.Log("ダメージが3以下のため、シールドが防御しました");
-                        Destroy(collision.gameObject);
+                        bullet.NotifyDestoy(); // 弾を消す
                     }
                     else
                     {

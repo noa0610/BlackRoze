@@ -1,9 +1,7 @@
-﻿using HighElixir;
+﻿using BlackRose.Core.Models.SearchSystems;
 using HighElixir.Timers;
-using UnityEngine;
 using UniRx;
-using BlackRose.Core.Models.SearchSystems;
-using DG.Tweening;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {

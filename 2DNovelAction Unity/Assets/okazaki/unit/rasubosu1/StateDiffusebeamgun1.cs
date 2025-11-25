@@ -1,10 +1,5 @@
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using BlackRose.Core.Models.Helper;
-using HighElixir;
-using System.Collections.Generic;
-using UniRx;
-using UnityEngine;
-using BlackRose.Datas.Definitions;
 namespace BlackRose.Core.Models.Units
 {
     public partial class Diifusebeamgun

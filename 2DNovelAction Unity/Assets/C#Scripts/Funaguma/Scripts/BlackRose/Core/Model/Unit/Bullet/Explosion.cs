@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using UniRx;
 using UniRx.Triggers;
-using Cysharp.Threading.Tasks;
-using System;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -62,7 +62,7 @@ namespace BlackRose.Core.Models.Units
             }).AddTo(col).AddTo(this);
             await UniTask.Delay(TimeSpan.FromSeconds(_delay));
             col.enabled = true;// 有効化
-            particle.Play();
+            particle?.Play();
             _sfx?.Play();
             await UniTask.WhenAll(UniTask.Delay(TimeSpan.FromSeconds(_time)));
 

@@ -1,4 +1,4 @@
-﻿﻿using BlackRose.Core.Models.Units;
+﻿using BlackRose.Core.Models.Units;
 using HighElixir;
 using UnityEngine;
 

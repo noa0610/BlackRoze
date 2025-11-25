@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ChargeSystem
 {
@@ -15,7 +13,7 @@ public class ChargeSystem
         Charged2,
     }
     private ChargeState _chargeState = ChargeState.None; // 現在のチャージ状態
-    public ChargeState CurrentChargeState { get {return _chargeState;}} // 現在のチャージ状態を取得
+    public ChargeState CurrentChargeState { get { return _chargeState; } } // 現在のチャージ状態を取得
 
     private float currentChargeTime = 0.0f; // 現在のチャージ時間
 

@@ -50,7 +50,7 @@ namespace HighElixir.Implements.Observables
         {
             if (source is UniteDisposable unite)
                 return unite.Add(disposables);
-            else 
+            else
                 return new UniteDisposable(disposables);
         }
         public static IDisposable Join(params IDisposable[] disposables)

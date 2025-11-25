@@ -1,15 +1,13 @@
-﻿using UnityEngine;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Datas.Definitions;
-using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.States;
-using BlackRose.Core.Models.Systems;
-using System.Collections;
-using System.Collections.Generic;
-using HighElixir;
-using System;
+using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
-using BlackRose.Core.UI;
+using HighElixir;
+using HighElixir.Unity;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -80,6 +78,7 @@ namespace BlackRose.Core.Models.Units
         [Header("環境判定")]
         [SerializeField] private Transform groundCheck;            // 足元の前方を確認する位置
         [SerializeField] private float graundCheckDistance = 0.2f; // 地面判定距離
+        [SerializeField] private Vector2 _offset; // 地面判定距離
         [SerializeField] private Transform wallCheck;              // 壁を確認する位置
         [SerializeField] private float wallCheckHeight = 0.6f;     // 壁判定高度
         [SerializeField] private LayerMask groundLayer;            // 地面レイヤー
@@ -347,7 +346,7 @@ namespace BlackRose.Core.Models.Units
                         shoot.SetDirection(Direction).Enter(current.state, this);
                     PlaySE(_ShotSEName, _ShotSEVolume);
                     shootCount++;
-                    Debug.Log($"Shoot 発射! ({shootCount}/{maxShootCount - 1})");
+                    //Debug.Log($"Shoot 発射! ({shootCount}/{maxShootCount - 1})");
 
                     if (shootCount >= maxShootCount - 1)
                     {
@@ -369,32 +368,65 @@ namespace BlackRose.Core.Models.Units
 
         private void CheckEnvironment()
         {
-            // 前方の壁をRayでチェック
-            RaycastHit2D wallHit = Physics2D.Raycast(wallCheck.position, Vector2.up, wallCheckHeight, groundLayer);
+            // 向きに応じた水平方向ベクトル — localScale.x を使って確実に向きを取得
+            var faceSign = Mathf.Sign(transform.localScale.x);
+            var forward = new Vector2(faceSign, 0f);
 
-            // 足元の前方をRayでチェック（崖判定）
-            RaycastHit2D groundHit = Physics2D.Raycast(groundCheck.position, Vector2.down, graundCheckDistance, groundLayer);
+            // 前方の壁をRayでチェック（ユニットの向きに沿って飛ばす）
+            RaycastHit2D[] wallHits = Physics2D.RaycastAll(wallCheck.position, forward, wallCheckHeight, groundLayer);
 
             // 壁に当たった or 足元が無い → 反転
-            if (wallHit.collider != null)
+            foreach (var wallHit in wallHits)
             {
-                Debug.Log("wallhit Flip");
-                Flip();
-                _rb2.velocity = Vector2.zero;
+                if (wallHit.collider != null && wallHit.collider.gameObject != gameObject)
+                {
+                    if (Interval.Check(240))// 240フレームに1回だけDebug.Log
+                        Debug.Log($"[Shooter]{name} is Fliped. because of wall ahead.");
+                    Flip();
+                    _rb2.velocity = Vector2.zero;
+                    break;
+                }
             }
+            // 足元の前方をRayでチェック（崖判定）
+            // groundCheck の位置から前方に少しオフセットして下方向へレイを飛ばすことで、
+            // 前方の地面が存在するかを正しく判定する
+            float forwardOffset = graundCheckDistance; // 前方へどれだけオフセットして落下をチェックするか
+            Vector2 groundOrigin = (Vector2)groundCheck.position + forward * forwardOffset + _offset;
+            RaycastHit2D groundHit = Physics2D.Raycast(groundOrigin, Vector2.down, graundCheckDistance + 0.05f, groundLayer);
 
             if (groundHit.collider == null)
             {
-                Debug.Log("groundlost Flip");
+                if (Interval.Check(240))// 240フレームに1回だけDebug.Log
+                    Debug.Log($"[Shooter]{name} is Fliped. because of no ground ahead.");
                 Flip();
                 _rb2.velocity = Vector2.zero;
             }
 
-            // デバッグ表示
-            Debug.DrawRay(wallCheck.position, Vector2.up * wallCheckHeight, Color.red);
-            Debug.DrawRay(groundCheck.position, Vector2.down * graundCheckDistance, Color.blue);
         }
 
+#if UNITY_EDITOR
+        protected override void OnDrawGizmosSelected()
+        {
+            base.OnDrawGizmosSelected();
+            if (groundCheck != null)
+            {
+                Gizmos.color = Color.blue;
+                var faceSign = Mathf.Sign(transform.localScale.x);
+                var forward = new Vector2(faceSign, 0f);
+                float forwardOffset = graundCheckDistance;
+                Vector3 groundOrigin = groundCheck.position + (Vector3)forward * forwardOffset + (Vector3)_offset;
+                Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * graundCheckDistance);
+                Gizmos.DrawLine(groundOrigin, groundOrigin + Vector3.down * (graundCheckDistance + 0.05f));
+            }
+            if (wallCheck != null)
+            {
+                Gizmos.color = Color.red;
+                var faceSign = Mathf.Sign(transform.localScale.x);
+                var forward = new Vector3(faceSign, 0f, 0f);
+                Gizmos.DrawLine(wallCheck.position, wallCheck.position + forward * wallCheckHeight);
+            }
+        }
+#endif
         private void InitDirection()
         {
             switch (_StartDirection)
@@ -419,10 +451,6 @@ namespace BlackRose.Core.Models.Units
         {
             MoveDirection = new Vector2(-MoveDirection.x, MoveDirection.y);
             Direction = new Vector2(-Direction.x, Direction.y);
-
-            var scale = transform.localScale;
-            scale.x = -scale.x;
-            transform.localScale = scale;
         }
 
         private void PlayerTurnAround()

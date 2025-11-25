@@ -56,7 +56,7 @@ namespace HighElixir.StateMachine
                 }
                 _stateMachine.Log(RequiredLoggerLevel.Info, $"[{_stateMachine.ToString()}] Execute:{success + failed}, Success:{success}, Fail:{failed}");
             }
-            while(_next.Count > 0) 
+            while (_next.Count > 0)
             {
                 _queue.Enqueue(_next.Dequeue());
             }

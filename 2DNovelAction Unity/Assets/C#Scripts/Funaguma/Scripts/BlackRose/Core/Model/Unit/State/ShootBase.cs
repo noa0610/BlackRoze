@@ -1,11 +1,9 @@
-﻿using UnityEngine;
-using System;
-using UnityEngine.Events;
+﻿using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
-using BlackRose.Core.Models.States;
-using BlackRose.Datas.Definitions;
-using HighElixir.StateMachine;
 using HighElixir.Implements.Observables;
+using HighElixir.StateMachine;
+using System;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units.State
 {

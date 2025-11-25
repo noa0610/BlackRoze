@@ -1,7 +1,5 @@
 ﻿using BlackRose.Core.Models.Units;
-using HighElixir;
 using System;
-using UnityEngine;
 
 namespace BlackRose.Core.Models.States
 {

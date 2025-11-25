@@ -1,6 +1,6 @@
 ﻿namespace HighElixir.Loggings
 {
-    public interface ILogger 
+    public interface ILogger
     {
         void Info(object message);
         void Warn(object message);

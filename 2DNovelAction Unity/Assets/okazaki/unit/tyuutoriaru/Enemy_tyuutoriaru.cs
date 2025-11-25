@@ -1,15 +1,14 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using BlackRose.Core.Models.Helper;
 using BlackRose.Core.Models.SearchSystems;
-using BlackRose.Core.Models.Helper;
-using BlackRose.Core.Models.States;
-using HighElixir;
+using BlackRose.Core.Models.Systems;
 using BlackRose.Datas.Definitions;
 using Cysharp.Threading.Tasks;
+using HighElixir;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
-using BlackRose.Core.Models.Systems;
+using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -426,13 +425,13 @@ namespace BlackRose.Core.Models.Units
             }
         }
 
-        void Attack1()
+        private void Attack1()
         {
             Debug.Log("レーザー攻撃開始");
             _stateMachine.ChangeState(Triggers.Attack1start);
         }
 
-        void Attack2()
+        private void Attack2()
         {
             Debug.Log("ビームソード開始");
             _stateMachine.ChangeState(Triggers.Attack2start);

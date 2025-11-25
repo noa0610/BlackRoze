@@ -1,8 +1,8 @@
-using UnityEngine;
-using DG.Tweening;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+﻿using DG.Tweening;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 
 //＝＝＝＝メニュー全般を制御しています。＝＝＝＝
@@ -43,7 +43,7 @@ public class Menu : MonoBehaviour
     private Vector3 _EndPos = new Vector3(0, 0, 0);
 
 
-    void Start()//初期化
+    private void Start()//初期化
     {
         foreach (var obj in _Objects)
         {
@@ -54,18 +54,18 @@ public class Menu : MonoBehaviour
         {
             _Log_MenuObject.transform.DOLocalMove(_StartPos, 0f);
         }
-        catch 
+        catch
         {
             // タイトルにはログメニューが存在しないので、エラーを無視
         }
-        
+
         _Setting_MenuObject.transform.localScale = new Vector3(1f, 0f, 1f);
 
         _InputAction = new GFFInputAction();//InputActionのインスタンスを生成
         _InputAction.Enable();//InputActionを有効化
     }
 
-    void Update()
+    private void Update()
     {
         if (_IsKey == true)//Escまたはゲームパットスタートでメニューを開くか
         {
@@ -74,7 +74,7 @@ public class Menu : MonoBehaviour
                 Judgement(); //メニューの選択を監視
             }
         }
-        
+
     }
 
     public void Judgement()
@@ -106,7 +106,7 @@ public class Menu : MonoBehaviour
             {
                 MenuButton.interactable = true; //Button連打対策解除
                 _Menu = true; //メニューを開いている状態にする
-                Debug.Log("メニューを開きました"); 
+                Debug.Log("メニューを開きました");
             });
         }
     }
@@ -135,8 +135,8 @@ public class Menu : MonoBehaviour
                 _Setting_MenuObject.transform.DOScale(new Vector3(1f, 1f, 1f), _AnimationTime);
                 break;
             case "Log":
-            _IsKey = false; //メニューを開くキーを無効化
-            _Log_MenuObject.transform.DOLocalMove(_EndPos, 0f);
+                _IsKey = false; //メニューを開くキーを無効化
+                _Log_MenuObject.transform.DOLocalMove(_EndPos, 0f);
                 break;
         }
     }

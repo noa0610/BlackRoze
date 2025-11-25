@@ -5672,7 +5672,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 2016307210}
   selectedCommands:
-  - {fileID: 2016307291}
+  - {fileID: 2016307095}
   variables: []
   description: 
   stepPause: 0
@@ -7685,7 +7685,7 @@ MonoBehaviour:
   waitUntilFinished: 0
 --- !u!114 &2016307286
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7699,7 +7699,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &2016307287
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7717,7 +7717,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &2016307288
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7731,7 +7731,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &2016307289
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7749,7 +7749,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &2016307290
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7767,7 +7767,7 @@ MonoBehaviour:
   fadeDuration: 1
 --- !u!114 &2016307291
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7781,7 +7781,7 @@ MonoBehaviour:
   indentLevel: 0
 --- !u!114 &2016307292
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -8249,6 +8249,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 680521763}
+    - target: {fileID: 6173174167495302744, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: "\uFF11\uFF13\uFF0C\u30CE\u30D9\u30EB\uFF1A\u9ED2\u4E0A\u306E\u6238\u60D1\u3044"
+      objectReference: {fileID: 0}
     - target: {fileID: 8411626237843014275, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}
       propertyPath: m_Name
       value: ---UI---

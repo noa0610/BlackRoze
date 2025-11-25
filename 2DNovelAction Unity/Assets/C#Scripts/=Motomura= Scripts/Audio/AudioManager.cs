@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Audio;
@@ -10,10 +10,12 @@ public class AudioManager : MonoBehaviour
     [SerializeField, Header("BGM")] private AudioMixer BGMMixer;
     [SerializeField] private TextMeshProUGUI _BGMVolumeText;
     [SerializeField] private Slider _BGMSlider;
+    [SerializeField, Range(0, 1.5f)] private float _bgmMultiplier = 1.0f;
 
     [SerializeField,Header("Voice")] private AudioMixer VoiceMixer;
     [SerializeField] private TextMeshProUGUI _VoiceVolumeText;
     [SerializeField] private Slider _VoiceSlider;
+    [SerializeField, Range(0, 1.5f)] private float _seMultiplier = 1.0f;
 
     void Start()
     {

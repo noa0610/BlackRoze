@@ -26,7 +26,7 @@ namespace BlackRose.Core.Models.Units.State
                 l.gameObject.transform.DOScaleX(0, _duration * 2).AsyncWaitForCompletion().AsUniTask(),
                 l.gameObject.transform.DOScaleY(0, _duration * 0.4f).AsyncWaitForCompletion().AsUniTask());
 
-            l.NotifyDestoy();
+            l?.NotifyDestoy();
         }
         private Quaternion GetQuaternion()
         {

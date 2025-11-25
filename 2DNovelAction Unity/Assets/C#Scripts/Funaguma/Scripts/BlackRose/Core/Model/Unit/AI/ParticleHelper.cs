@@ -1,31 +1,34 @@
 ﻿using Cysharp.Threading.Tasks;
 using HighElixir.Unity.Pools;
+using System;
 using UnityEngine;
 
 namespace BlackRose.Core.Models.Units
 {
     public class ParticleHelper : MonoBehaviour
     {
-        [Header("Effect")]
-        [SerializeField] private ParticleSystem _chargeEffect; // チャージエフェクト
-        [SerializeField] private Transform _container;
-        [SerializeField] private ObjectPool<ParticleSystem> _chargeEffectPool;
-
-        public void PlayAndSetPos(Vector3 position)
+        [SerializeField] private ParticleSystem _normal;
+        [SerializeField] private ParticleSystem _heavy;
+        [SerializeField] private ParticleSystem _light;
+        [SerializeField] private float _effectDuration = 1f;
+        public void PlayAndSetPos(Vector3 position, AIController.AIStates aIStates)
         {
-            var effect = _chargeEffectPool.Get();
+            var effect = aIStates switch
+            {
+                AIController.AIStates.Normal => _normal,
+                AIController.AIStates.Heavy => _heavy,
+                AIController.AIStates.Light => _light,
+                _ => null,
+            };
             effect.transform.position = position;
-            effect.Play();
             ReleaseAfterPlay(effect).Forget();
         }
         private async UniTask ReleaseAfterPlay(ParticleSystem effect)
         {
-            await System.Threading.Tasks.Task.Delay((int)(effect.main.duration * 1000));
-            _chargeEffectPool.Release(effect);
-        }
-        private void Awake()
-        {
-            _chargeEffectPool = new ObjectPool<ParticleSystem>(_chargeEffect,5, _container);
+            effect.gameObject.SetActive(true);
+            effect.Play();
+            await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(_effectDuration));
+            effect.gameObject.SetActive(false);
         }
     }
 }

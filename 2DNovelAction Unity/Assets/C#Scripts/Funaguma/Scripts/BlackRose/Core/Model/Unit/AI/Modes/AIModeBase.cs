@@ -258,12 +258,12 @@ namespace BlackRose.Core.Models.Units
                 if (!_halfEffectPlayed && t.Current >= _chargeTime[0])
                 {
                     _halfEffectPlayed = true;
-                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position);
+                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position, _parent.Machine.Current.id);
                 }
                 else if (!_fullEffectPlayed && t.Current >= _chargeTime[1])
                 {
                     _fullEffectPlayed = true;
-                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position);
+                    _parent.ParticleHelper.PlayAndSetPos(_parent.transform.position, _parent.Machine.Current.id);
                 }
             }).AddTo(_parent);
         }

@@ -1,6 +1,9 @@
 ﻿using HighElixir;
 using HighElixir.Timers;
 using UnityEngine;
+using UniRx;
+using BlackRose.Core.Models.SearchSystems;
+using DG.Tweening;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -31,6 +34,20 @@ namespace BlackRose.Core.Models.Units
         protected override void BeforeAwake()
         {
             _flippingUnit = GetComponent<AutoFlipHelper>();
+            AutoFlipper.OnFlipped.Subscribe(flip =>
+            {
+                _searchEffects.GetComponent<RecursionFliper>().SetFlipRecursively(_searchEffects, flip.x < 0);
+                if (GetComponent<SearchAssistanceMono>().TryGetProfile("LockShoot", out var profile))
+                {
+                    foreach (var comp in profile.comps)
+                    {
+                        if (comp.Comp is FilterByLookingForward look)
+                        {
+                            look.EyeAngleOffset = flip;
+                        }
+                    }
+                }
+            }).AddTo(this);
             TimerRegist();
             ModeRegist();
         }

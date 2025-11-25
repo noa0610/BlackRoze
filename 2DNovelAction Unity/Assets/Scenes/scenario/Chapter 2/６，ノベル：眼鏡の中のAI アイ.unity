@@ -1317,6 +1317,8 @@ GameObject:
   - component: {fileID: 876989880}
   - component: {fileID: 876989881}
   - component: {fileID: 876989882}
+  - component: {fileID: 876989883}
+  - component: {fileID: 876989884}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -2792,7 +2794,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 66.633484
     y: 98.32672
-    width: 138.8
+    width: 141.2
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -2802,14 +2804,15 @@ MonoBehaviour:
   eventHandler: {fileID: 876989854}
   commandList:
   - {fileID: 876989872}
+  - {fileID: 876989883}
   - {fileID: 876989880}
   - {fileID: 876989845}
   - {fileID: 876989871}
-  - {fileID: 876989846}
   - {fileID: 876989847}
   - {fileID: 876989848}
   - {fileID: 876989849}
   - {fileID: 876989850}
+  - {fileID: 876989846}
   - {fileID: 876989851}
   - {fileID: 876989870}
   - {fileID: 876989852}
@@ -2818,6 +2821,7 @@ MonoBehaviour:
   - {fileID: 876989882}
   - {fileID: 876989869}
   - {fileID: 876989868}
+  - {fileID: 876989884}
   - {fileID: 876989879}
   - {fileID: 876989835}
   - {fileID: 876989836}
@@ -2893,7 +2897,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 82.36652, y: 71.97328}
+  scrollPos: {x: 55.16652, y: -10.42672}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
   blockViewHeight: 200
@@ -2907,7 +2911,7 @@ MonoBehaviour:
   selectedBlocks:
   - {fileID: 876989855}
   selectedCommands:
-  - {fileID: 876989802}
+  - {fileID: 876989884}
   variables: []
   description: 
   stepPause: 0
@@ -3526,6 +3530,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 206
   indentLevel: 0
+--- !u!114 &876989883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876989800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 207
+  indentLevel: 0
+  volume: 0.05
+  fadeDuration: 1
+  waitUntilFinished: 1
+--- !u!114 &876989884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876989800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4015e84616cc45cfb498561373899d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemId: 208
+  indentLevel: 0
+  volume: 0.08
+  fadeDuration: 1
+  waitUntilFinished: 1
 --- !u!114 &914852692 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3018817602858839108, guid: 34c4c1d986396fa42bdcec8ffd8c53c2, type: 3}

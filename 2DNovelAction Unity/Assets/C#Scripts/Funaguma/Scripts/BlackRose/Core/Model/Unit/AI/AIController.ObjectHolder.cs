@@ -13,6 +13,7 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private TrailRenderer _trailRenderer;
         [SerializeField] private ParticleHelper _helper;
         [SerializeField] private ParticleSystem _searchEffects;
+        [SerializeField] private ParticleSystem _warpEffect;
 
         private AutoFlipHelper _flippingUnit;
 
@@ -22,5 +23,6 @@ namespace BlackRose.Core.Models.Units
         public TrailRenderer TrailRenderer => _trailRenderer;
         public ParticleHelper ParticleHelper => _helper;
         public ParticleSystem SearchEffects => _searchEffects;
+        public ParticleSystem WarpEffect => _warpEffect;
     }
 }

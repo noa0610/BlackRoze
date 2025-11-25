@@ -1,4 +1,5 @@
 ﻿using BlackRose.Core.Models.Units.State;
+using Cysharp.Threading.Tasks;
 using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
 using System;
@@ -60,7 +61,11 @@ namespace BlackRose.Core.Models.Units
             _stateMachine.RegisterState(SubState.Full, _full, "Shoot")
                 .OnEnter.Subscribe(_ => _parent.PlaySE(_fullshootSE.SEName, _fullshootSE.Volume));
             _stateMachine.RegisterState(SubState.Skill, _warpState, "Skill")
-                .OnEnter.Subscribe(_ => _parent.PlaySE(_skillSE.SEName, _skillSE.Volume));
+                .OnEnter.Subscribe(_ =>
+                {
+                    _parent.PlaySE(_skillSE.SEName, _skillSE.Volume);
+                    WarpEffectAsync(_parent.destroyCancellationToken).Forget();
+                });
 
             // Skill
             _stateMachine.RegisterAnyTransition(AITriggers.skillFinished, SubState.Idle, "toIdle");
@@ -141,6 +146,60 @@ namespace BlackRose.Core.Models.Units
         public override void ModeChange_V()
         {
             _parent.SwitchModeHeavy();
+        }
+
+        private UniTask WarpEffectAsync(CancellationToken token)
+        {
+            return UniTask.Create(async () =>
+            {
+                // Spawn a detached instance of the warp effect so it stays in world space
+                if (_parent == null || _parent.WarpEffect == null) return;
+
+                var original = _parent.WarpEffect.gameObject;
+                var originalTransform = _parent.WarpEffect.transform;
+
+                var instance = UnityEngine.Object.Instantiate(original, originalTransform.position, originalTransform.rotation);
+                // detach from any parent to avoid following the player
+                instance.transform.SetParent(null);
+
+                var ps = instance.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    // estimate total lifetime: duration + startLifetime
+                    var main = ps.main;
+                    float total = main.duration;
+                    try
+                    {
+                        var sl = main.startLifetime;
+                        if (sl.mode == ParticleSystemCurveMode.Constant)
+                            total += sl.constant;
+                        else
+                            total += sl.constantMax;
+                    }
+                    catch
+                    {
+                        // fallback
+                        total += main.startLifetime.constant;
+                    }
+
+                    instance.SetActive(true);
+                    ps.Play();
+                    try
+                    {
+                        await UniTask.Delay(TimeSpan.FromSeconds(total), cancellationToken: token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // ignored - proceed to cleanup
+                    }
+                }
+                else
+                {
+                    instance.SetActive(true);
+                }
+
+                UnityEngine.Object.Destroy(instance);
+            });
         }
     }
 }

@@ -2,6 +2,7 @@
 using HighElixir.StateMachine;
 using HighElixir.StateMachine.Extention;
 using HighElixir.Timers;
+using HighElixir.Unity;
 using HighElixir.Unity.Loggings;
 using System;
 using System.Threading;
@@ -166,6 +167,10 @@ namespace BlackRose.Core.Models.Units
                 if (Mathf.Abs(Rigidbody2D.velocity.x) < 0.01f)
                     _fms.Send(Trigger.cancelMove);
             }
+            else
+            _fms.Send(Trigger.moveInput);
+            if (_fms.Current.id == State.Move && Interval.Check(20))
+                Animator.SetTrigger("Walking");
         }
         #endregion
 
@@ -178,7 +183,6 @@ namespace BlackRose.Core.Models.Units
             if (vec != Vector2.zero)
             {
                 Direction = vec;
-                _fms.Send(Trigger.moveInput);
             }
         }
 
@@ -201,6 +205,10 @@ namespace BlackRose.Core.Models.Units
         {
             _jump.ResetLeaptFlag();
             _fms.Send(Trigger.landing);
+            if (_fms.Current.id != State.Idle)
+            {
+                Animator.SetTrigger("Landing");
+            }
         }
 
         protected override void OnFall()

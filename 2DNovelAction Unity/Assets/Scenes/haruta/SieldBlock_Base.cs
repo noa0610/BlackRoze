@@ -116,7 +116,6 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] protected Vector2 knockbackDirection = new Vector2(1f, 0.6f); // ローカル方向（Xは正方向 -> 被弾側へ反転可）
         [SerializeField] protected float knockbackForce = 8f; // インパルスの強さ
 
-        private bool isHit = false;
 
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
@@ -198,7 +197,6 @@ namespace BlackRose.Core.Models.Units
 
             if (collision.gameObject.CompareTag("Playerbullet"))
             {
-                isHit = true;
                 Bullet bullet = collision.gameObject.GetComponent<Bullet>();
                 if (bullet != null)
                 {
@@ -220,7 +218,6 @@ namespace BlackRose.Core.Models.Units
                     Debug.LogError("Bulletコンポーネントが見つかりません");
                 }
             }
-            isHit = false;
         }
 
         public bool ShieldThrough(float damage)

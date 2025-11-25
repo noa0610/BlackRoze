@@ -899,7 +899,7 @@ namespace BlackRose.Core.Models.Units
             {
                 Destroy(
                     Instantiate(_WarpPartecl, new Vector3(_WarpParteclPoint.position.x, _WarpParteclPoint.position.y, _WarpPartecl.transform.position.z), Quaternion.identity, null),
-                    _DeadParteclTime);
+                    _WarpParteclTime);
             }
             WarpSE();
         }

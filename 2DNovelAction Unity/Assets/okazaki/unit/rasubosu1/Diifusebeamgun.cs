@@ -58,7 +58,7 @@ namespace BlackRose.Core.Models.Units
         //     _searchAssistance = GetComponent<SearchAssistanceMono>();
         // }
 
-        protected override async void OnDeath()
+        protected override void OnDeath()
         {
             base.OnDeath();
             UnitManager.instance.RemoveUnit(this);

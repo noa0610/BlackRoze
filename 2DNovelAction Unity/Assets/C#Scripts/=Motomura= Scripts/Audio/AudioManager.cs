@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 //＝＝＝＝Audioを管理し保存する機構＝＝＝＝
 
@@ -12,12 +12,12 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private Slider _BGMSlider;
     [SerializeField, Range(0, 1.5f)] private float _bgmMultiplier = 1.0f;
 
-    [SerializeField,Header("Voice")] private AudioMixer VoiceMixer;
+    [SerializeField, Header("Voice")] private AudioMixer VoiceMixer;
     [SerializeField] private TextMeshProUGUI _VoiceVolumeText;
     [SerializeField] private Slider _VoiceSlider;
     [SerializeField, Range(0, 1.5f)] private float _seMultiplier = 1.0f;
 
-    void Start()
+    private void Start()
     {
         try
         {
@@ -27,19 +27,19 @@ public class AudioManager : MonoBehaviour
             _BGMVolumeText.text = SaveSystem.Instance.AudioData.BGMVolume.ToString();
             _VoiceVolumeText.text = SaveSystem.Instance.AudioData.VoiceVolume.ToString();
 
-        _BGMSlider.value = SaveSystem.Instance.AudioData.BGMVolume;
-        _VoiceSlider.value = SaveSystem.Instance.AudioData.VoiceVolume;
+            _BGMSlider.value = SaveSystem.Instance.AudioData.BGMVolume;
+            _VoiceSlider.value = SaveSystem.Instance.AudioData.VoiceVolume;
         }
         catch
         {
             Debug.LogWarning("[オーディオ]書き込みは機能しません。");
         }
 
-            BGMMixer.SetFloat("BGM", MapValue(SaveSystem.Instance.AudioData.BGMVolume));
-            VoiceMixer.SetFloat("Voice", MapValue(SaveSystem.Instance.AudioData.VoiceVolume));
+        BGMMixer.SetFloat("BGM", MapValue(SaveSystem.Instance.AudioData.BGMVolume));
+        VoiceMixer.SetFloat("Voice", MapValue(SaveSystem.Instance.AudioData.VoiceVolume));
 
 
-        }
+    }
 
     public void SetBGMVolume(float value)
     {

@@ -714,6 +714,7 @@ namespace BlackRose.Core.Models.Units
             TurnAround();
             MoveDirection = Direction;
             _DashDirection = Direction.x;
+            flashBeamSword.SetDirection(Direction);
         }
 
         private void FlashBeamSwordDashStay()

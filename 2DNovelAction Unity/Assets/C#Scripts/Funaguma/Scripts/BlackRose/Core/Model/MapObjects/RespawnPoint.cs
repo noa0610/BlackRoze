@@ -14,7 +14,13 @@ namespace BlackRose.Core.Models.Objects
     [DefaultExecutionOrder(-3)]
     public class RespawnPoint : MonoBehaviour, IPlayerFollower
     {
+
+#if UNITY_EDITOR
         [SerializeField, ReadOnly] public static List<RespawnPoint> points = new();
+#else
+        [SerializeField] public static List<RespawnPoint> points = new();
+#endif
+
         [SerializeField] private bool _enable = true;
         [SerializeField] private bool _isStart = false; // スタート地点かどうか
         private UnitBase _target;
@@ -22,7 +28,7 @@ namespace BlackRose.Core.Models.Objects
         public bool IsStart => _isStart;
 #if UNITY_EDITOR
         [SerializeField] private int count = 0; // スタート地点のカウント
-    #endif
+#endif
 
         public void SetEnable(bool enable)
         {
@@ -40,10 +46,10 @@ namespace BlackRose.Core.Models.Objects
                 if (point._isStart)
                 {
                     point._isStart = false;
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
                     EditorUtility.SetDirty(point);
                     EditorSceneManager.MarkSceneDirty(point.gameObject.scene);
-    #endif
+#endif
                 }
             }
 
@@ -58,7 +64,7 @@ namespace BlackRose.Core.Models.Objects
         // Ensure a PlayerSpawnner exists in the scene; create one if missing
         private PlayerSpawnner EnsurePlayerSpawner()
         {
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
             // Try instance first
             var mgr = PlayerSpawnner.instance;
             if (mgr != null) return mgr;
@@ -74,14 +80,14 @@ namespace BlackRose.Core.Models.Objects
             EditorUtility.SetDirty(mgr);
             EditorSceneManager.MarkSceneDirty(go.scene);
             return mgr;
-    #else
+#else
             // Runtime: if instance exists return it, otherwise create a GameObject and add component
             var mgr = PlayerSpawnner.instance;
             if (mgr != null) return mgr;
             var go = new GameObject("PlayerSpawnner");
             mgr = go.AddComponent<PlayerSpawnner>();
             return mgr;
-    #endif
+#endif
         }
 
         // === Unity Lifecycle ===
@@ -111,7 +117,7 @@ namespace BlackRose.Core.Models.Objects
         {
             points.Remove(this);
         }
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         private void Reset()
         {
             if (!points.Contains(this)) points.Add(this);
@@ -134,11 +140,11 @@ namespace BlackRose.Core.Models.Objects
                 EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
         }
+#endif
 
         public void SetTarget(UnitBase target)
         {
             _target = target;
         }
-#endif
     }
 }

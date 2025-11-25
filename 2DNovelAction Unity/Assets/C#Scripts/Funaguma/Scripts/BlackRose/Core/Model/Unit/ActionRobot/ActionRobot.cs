@@ -24,13 +24,12 @@ namespace BlackRose.Core.Models.Units
         [SerializeField] private float _DeadEventTime = 3f;
         private bool isDeadEvent = false;
 
-#if UNITY_EDITOR
+# if UNITY_EDITOR
         [Header("Debug")]
         [SerializeField] private bool _forceEnableJump;
-#endif
-
+# endif
         // 地面にいるかどうか（OverlapCircle判定＆コヨーテタイム管理）
-        public bool CanJump => _forceEnableJump || !Timer.IsFinished(_coyoteTicket);
+        public bool CanJump => !Timer.IsFinished(_coyoteTicket);
 
         protected override bool BeforeTakeDamage(IUnit unit, ref float damage)
         {

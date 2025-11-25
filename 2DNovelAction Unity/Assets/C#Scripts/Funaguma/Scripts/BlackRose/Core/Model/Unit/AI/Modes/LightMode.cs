@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UniRx;
 using static BlackRose.Core.Models.Units.AIController;
 using BlackRose.Datas.Definitions;
+using Cysharp.Threading.Tasks;
 
 namespace BlackRose.Core.Models.Units
 {
@@ -24,11 +25,11 @@ namespace BlackRose.Core.Models.Units
         protected override void RegisterStates()
         {
             _stateMachine.RegisterState(SubState.Shoot, _shoot, "Shoot")
-                .OnEnter.Subscribe(_ => _parent.PlaySE(_shootSE.SEName, _shootSE.Volume));
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_shootSE.SEName, _shootSE.Volume)).AddTo(_parent);
             _stateMachine.RegisterState(SubState.Half, _half, "Shoot")
-                .OnEnter.Subscribe(_ => _parent.PlaySE(_halfshootSE.SEName, _halfshootSE.Volume));
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_halfshootSE.SEName, _halfshootSE.Volume)).AddTo(_parent);
             _stateMachine.RegisterState(SubState.Full, _full, "Shoot")
-                .OnEnter.Subscribe(_ => _parent.PlaySE(_fullshootSE.SEName, _fullshootSE.Volume));
+                .OnEnter.Subscribe(_ => _parent.PlaySE(_fullshootSE.SEName, _fullshootSE.Volume)).AddTo(_parent);
             _stateMachine.RegisterState(SubState.Other1, new Idle<AIController>(), "")
             .OnEnter.Subscribe(_ =>
             {
@@ -36,9 +37,11 @@ namespace BlackRose.Core.Models.Units
                 _parent.PlaySE(_skillSE.SEName, _skillSE.Volume);
                 _parent.GetComponent<SearchAndFire>().Shoot(_parent.transform.position, _missileData, _parent.AttackLayer);
                 _stateMachine.LazySend(AITriggers.shootCompleted);
-            });
+            }).AddTo(_parent);
 
-            _stateMachine.RegisterState(SubState.Skill, _locked, "");
+            var hook = _stateMachine.RegisterState(SubState.Skill, _locked, "");
+            hook.OnEnter.Subscribe(_ => _parent.SearchEffects.gameObject.SetActive(true)).AddTo(_parent);
+            hook.OnExit.Subscribe(_ => _parent.SearchEffects.gameObject.SetActive(false)).AddTo(_parent);
 
             // Skill
             _stateMachine.RegisterTransition(SubState.Skill, AITriggers.skillFinished, SubState.Other1, "toMultiShot");
@@ -49,7 +52,7 @@ namespace BlackRose.Core.Models.Units
         {
             if (value.isPressed)
             {
-                _stateMachine.Send(AITriggers.skillInput);
+                _stateMachine.SendEventAndLockExitAsync(AITriggers.skillInput, TimeSpan.FromSeconds(0.2f), _parent.destroyCancellationToken).AsUniTask().Forget();
             }
             else
             {
